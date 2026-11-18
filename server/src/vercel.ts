@@ -7,6 +7,10 @@ import type { IncomingMessage, ServerResponse } from 'node:http';
 import { createApp } from './app.js';
 import { pool } from './db/pool.js';
 import { migrateOnce } from './db/migrate.js';
+import { bootstrapAdmin } from './bootstrap.js';
+
+let ready: Promise<void> | null = null;
+const prepare = () => (ready ??= migrateOnce(pool).then(() => bootstrapAdmin()).catch((e) => { ready = null; throw e; }));
 
 const app = createApp();
 
@@ -21,7 +25,7 @@ export default async function handler(req: IncomingMessage, res: ServerResponse)
     req.url = `/api${req.url}`;
   }
   try {
-    await migrateOnce(pool);
+    await prepare();
   } catch (e) {
     console.error(e);
     res.statusCode = 503;
