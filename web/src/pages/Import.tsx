@@ -17,7 +17,9 @@ export function ImportPage() {
 
   const add = (files: FileList | null) => {
     if (!files) return;
-    setItems((prev) => [...prev, ...Array.from(files).map((file) => ({ file, type: '', state: 'fila' as const }))]);
+    // Copia a lista agora: o FileList é esvaziado quando o campo é limpo logo em seguida.
+    const picked = Array.from(files).map((file) => ({ file, type: '', state: 'fila' as const }));
+    setItems((prev) => [...prev, ...picked]);
   };
   const onDrop = (e: DragEvent) => {
     e.preventDefault();
@@ -33,7 +35,14 @@ export function ImportPage() {
       if (it.state === 'ok') continue;
       update(i, { state: 'enviando', message: undefined });
       const fd = new FormData();
-      fd.append('file', it.file);
+      // Compacta no navegador (arquivos texto reduzem ~10x) para caber no limite de requisição da hospedagem.
+      if (typeof CompressionStream !== 'undefined' && it.file.size > 0) {
+        const gz = await new Response(it.file.stream().pipeThrough(new CompressionStream('gzip'))).blob();
+        fd.append('encoding', 'gzip');
+        fd.append('file', new File([gz], it.file.name, { type: 'application/gzip' }));
+      } else {
+        fd.append('file', it.file);
+      }
       if (it.type) fd.append('fileType', it.type);
       try {
         const r = await api('/imports', { method: 'POST', body: fd });

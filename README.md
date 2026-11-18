@@ -36,7 +36,7 @@ server/  Node.js 22 + Express + PostgreSQL (pg), TypeScript
 docs/    dicionário técnico gerado + relatório de validação das cargas
 ```
 
-**Modelo de dados**: `imports` (arquivo, hash, header/trailer, contagens, situação) → `records` (uma linha por registro, com a linha original, os campos interpretados em JSONB e as chaves extraídas) → `contracts` e `agreements` (entidades com integridade referencial, vinculadas na confirmação) → `reconciliation_runs` / `reconciliation_results` (execução vigente de cada fluxo) → `divergences` (pendências persistentes, identificadas por *fingerprint*) e `audit_log`.
+**Modelo de dados**: `imports` (arquivo, hash, header/trailer, contagens, situação) + `import_files` (original compactado) → `records` (uma linha por registro, com a linha original, os campos interpretados em JSONB e as chaves extraídas) → `contracts` e `agreements` (entidades com integridade referencial, vinculadas na confirmação) → `reconciliation_runs` / `reconciliation_results` (execução vigente de cada fluxo) → `divergences` (pendências persistentes, identificadas por *fingerprint*) e `audit_log`.
 
 **Volume**: a leitura é feita em fluxo, a inserção em lotes (padrão 1.000 linhas) e os batimentos em conjunto. A carga de teste completa (~45 mil registros) importa e concilia em cerca de 10 s.
 
@@ -83,6 +83,22 @@ DB_PASSWORD=... JWT_SECRET=$(openssl rand -hex 32) docker compose up -d --build
 ```bash
 docker compose exec app node dist/cli/create-user.js admin "Administrador" ADMIN
 ```
+
+## Publicar na Vercel
+
+O projeto gera a própria saída da Vercel (`npm run build:vercel` → `.vercel/output`): a interface fica como site estático e a API como uma função. As migrações do banco rodam sozinhas na primeira requisição.
+
+1. **Banco:** no projeto da Vercel, abra *Storage* → *Create Database* → **Neon (Postgres)** e conecte ao projeto. A variável `DATABASE_URL` é criada automaticamente. Qualquer PostgreSQL acessível pela internet também serve: basta criar a variável à mão.
+2. **Configurações do projeto** (*Settings* → *Build and Deployment*):
+   - *Root Directory*: em branco (raiz do repositório, **não** a pasta `web`).
+   - *Framework Preset*: *Other*. Os comandos vêm do `vercel.json`.
+3. **Branch:** em *Settings* → *Git*, a *Production Branch* precisa ser o branch que contém este código.
+4. Faça um novo deploy (*Deployments* → *Redeploy*).
+
+Observações:
+- Cada requisição tem limite de ~4,5 MB. O navegador compacta os arquivos antes do envio: o REM_CONTRATOS de 5 MB trafega com cerca de 0,7 MB.
+- A função tem até 60 s por requisição (`maxDuration`). A confirmação dos maiores arquivos de teste, incluindo os batimentos, fica bem abaixo disso.
+- Os arquivos originais ficam no banco (tabela `import_files`, compactados). Acompanhe o espaço do plano do banco: cada carga diária completa ocupa algumas dezenas de MB.
 
 ## Testes e validação
 

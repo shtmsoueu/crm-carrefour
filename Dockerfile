@@ -17,7 +17,6 @@ RUN npm ci --omit=dev -w server && npm cache clean --force
 COPY --from=build /app/server/dist server/dist
 COPY --from=build /app/web/dist web/dist
 WORKDIR /app/server
-ENV WEB_DIST_DIR=/app/web/dist STORAGE_DIR=/data/storage
-VOLUME /data/storage
+ENV WEB_DIST_DIR=/app/web/dist
 EXPOSE 3333
 CMD ["node", "dist/index.js"]

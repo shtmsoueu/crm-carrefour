@@ -8,7 +8,7 @@ import { config } from '../config.js';
 import { audit, type Actor } from '../services/audit.js';
 import { getSetting, SETTING_REJEICAO } from '../services/settings.js';
 import { upsertDivergences, type DivergenceInput } from '../services/divergences.js';
-import { hashFile, storedAbsolutePath, storeOriginal } from './storage.js';
+import { hashFile, materializeOriginal, removeTemp, saveOriginal } from './storage.js';
 
 export class ImportError extends Error {
   constructor(
@@ -191,17 +191,17 @@ export async function createImport(input: CreateImportInput) {
   if (dup.rows[0]) {
     throw new ImportError(`Arquivo já importado (importação #${dup.rows[0].id}, ${dup.rows[0].original_name}, situação ${dup.rows[0].status}). Importação duplicada bloqueada.`, 409, { importId: dup.rows[0].id });
   }
-  const storedPath = await storeOriginal(tempPath, sha256, originalName);
 
   const importId = await withTransaction(async (db) => {
     const ins = await db.query<{ id: number }>(
       `INSERT INTO imports (file_type, type_detection, original_name, stored_path, sha256, size_bytes, agency_code, file_name_date, status, uploaded_by)
        VALUES ($1,$2,$3,$4,$5,$6,$7,$8,'PRE_VISUALIZACAO',$9) RETURNING id`,
-      [code, detection, originalName, storedPath, sha256, size, ident?.agency ?? null, ident?.fileDate ?? null, actor.id],
+      [code, detection, originalName, 'db:import_files', sha256, size, ident?.agency ?? null, ident?.fileDate ?? null, actor.id],
     );
     const id = ins.rows[0].id;
+    await saveOriginal(db, id, tempPath);
     const batcher = new RecordBatcher(db, id, code);
-    const res = await parseStored(layout, storedAbsolutePath(storedPath), (r) => batcher.add(r), db);
+    const res = await parseStored(layout, tempPath, (r) => batcher.add(r), db);
     await batcher.flush();
     for (const w of warnings) res?.issues.unshift({ line: null, recordType: null, field: null, value: null, message: w, severity: 'ALERTA' });
 
@@ -364,7 +364,14 @@ export async function reprocessImport(id: number, actor: Actor) {
     const del = await db.query(`DELETE FROM records WHERE import_id = $1`, [id]);
     await db.query(`DELETE FROM import_issues WHERE import_id = $1`, [id]);
     const batcher = new RecordBatcher(db, id, before.file_type);
-    const res = await parseStored(layout, storedAbsolutePath(before.stored_path), (r) => batcher.add(r), db);
+    const original = await materializeOriginal(db, id);
+    if (!original) throw new ImportError('Arquivo original não encontrado no armazenamento.', 404);
+    let res: ParseResult | null;
+    try {
+      res = await parseStored(layout, original, (r) => batcher.add(r), db);
+    } finally {
+      await removeTemp(original);
+    }
     await batcher.flush();
     let status = decideStatus(layout, res).status;
     if (before.status === 'CONFIRMADO' && status === 'PRE_VISUALIZACAO') status = 'CONFIRMADO';

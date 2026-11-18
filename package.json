@@ -3,7 +3,10 @@
   "private": true,
   "version": "1.0.0",
   "description": "CRM de batimento da Carteira Carrefour — importação de layouts Cyber, conciliação e auditoria",
-  "workspaces": ["server", "web"],
+  "workspaces": [
+    "server",
+    "web"
+  ],
   "scripts": {
     "dev": "npm run dev -w server & npm run dev -w web",
     "build": "npm run build -w server && npm run build -w web",
@@ -12,6 +15,10 @@
     "migrate": "npm run migrate -w server",
     "create-user": "npm run create-user -w server --",
     "validate-loads": "npm run validate-loads -w server --",
-    "docs:dictionary": "npm run docs:dictionary -w server"
+    "docs:dictionary": "npm run docs:dictionary -w server",
+    "build:vercel": "npm run build -w web && node scripts/build-vercel.mjs"
+  },
+  "devDependencies": {
+    "esbuild": "^0.25.12"
   }
 }

@@ -1,3 +1,6 @@
+/* eslint-disable */
+// Esquema inicial (mantido em TS para ser empacotado junto com a função serverless).
+export default `
 -- CRM de Batimento — Carteira Carrefour
 -- Estrutura inicial. Convenções:
 --   * Nenhum dado importado é apagado silenciosamente: importações são canceladas
@@ -231,3 +234,4 @@ CREATE TABLE divergences (
 CREATE INDEX divergences_status_idx ON divergences (status, category);
 CREATE INDEX divergences_contract_idx ON divergences (contract_key);
 CREATE INDEX divergences_cpf_idx ON divergences (cpf);
+`;

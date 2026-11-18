@@ -13,9 +13,8 @@ export const config = {
   /** Login obrigatório. Desativado por padrão (acesso livre); defina AUTH_ENABLED=true para exigir usuário e senha. */
   authEnabled: process.env.AUTH_ENABLED === 'true',
   port: Number(process.env.PORT ?? 3333),
-  databaseUrl: required('DATABASE_URL', isProd ? undefined : 'postgres://crm:crm_dev_password@localhost:5432/crm_carrefour'),
-  /** Diretório de armazenamento dos arquivos originais (auditoria). */
-  storageDir: resolve(process.env.STORAGE_DIR ?? './storage'),
+  // Na Vercel, a integração Neon/Postgres pode expor DATABASE_URL ou POSTGRES_URL.
+  databaseUrl: process.env.DATABASE_URL ?? process.env.POSTGRES_URL ?? (isProd ? '' : 'postgres://crm:crm_dev_password@localhost:5432/crm_carrefour'),
   jwtSecret: required('JWT_SECRET', isProd && process.env.AUTH_ENABLED === 'true' ? undefined : 'dev-only-secret-change-me'),
   sessionHours: Number(process.env.SESSION_HOURS ?? 10),
   maxUploadMb: Number(process.env.MAX_UPLOAD_MB ?? 300),

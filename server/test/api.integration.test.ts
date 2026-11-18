@@ -3,16 +3,13 @@
  * gerados a partir das definições oficiais de layout.
  * Requer TEST_DATABASE_URL (padrão: banco local crm_test). O schema é recriado.
  */
-import { mkdtempSync } from 'node:fs';
-import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { gzipSync } from 'node:zlib';
 import request from 'supertest';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { head, line, rec, trail } from './helpers.js';
 
 process.env.DATABASE_URL = process.env.TEST_DATABASE_URL ?? 'postgres://crm:crm_dev_password@localhost:5432/crm_test';
 process.env.AUTH_ENABLED = 'true';
-process.env.STORAGE_DIR = mkdtempSync(join(tmpdir(), 'crm-test-storage-'));
 
 const { pool } = await import('../src/db/pool.js');
 const { migrate } = await import('../src/db/migrate.js');
@@ -157,6 +154,16 @@ describe('importação, batimento e auditoria', () => {
     expect(div.rows.every((r) => r.status === 'RESOLVIDA_AUTOMATICAMENTE')).toBe(true);
     const kept = await pool.query(`SELECT count(*)::int n FROM records WHERE import_id = $1`, [batId]);
     expect(kept.rows[0].n).toBe(3);
+  });
+
+  it('aceita upload compactado (gzip) e devolve o original idêntico', async () => {
+    const content = repasseFile().replace('4154', '4155');
+    const r = await admin.post('/api/imports').field('encoding', 'gzip')
+      .attach('file', gzipSync(Buffer.from(content, 'latin1')), 'REPASSE_LEALCO_18112026.txt').expect(201);
+    expect(r.body.size_bytes).toBe(String(Buffer.byteLength(content, 'latin1')));
+    const d = await admin.get(`/api/imports/${r.body.id}/download`).expect(200);
+    expect(d.text).toBe(content);
+    await admin.post(`/api/imports/${r.body.id}/discard`).send({}).expect(200);
   });
 
   it('arquivo vazio fica como VAZIO, gera pendência e não pode ser confirmado', async () => {

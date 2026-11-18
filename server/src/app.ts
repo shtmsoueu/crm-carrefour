@@ -12,7 +12,7 @@ import { pool } from './db/pool.js';
 import { actorOf, authenticate, hashPassword, issueSession, login, COOKIE, requireAuth, requireRole, validatePassword } from './auth/auth.js';
 import { LAYOUTS } from './layouts/definitions.js';
 import { cancelImport, confirmImport, createImport, discardImport, getImport, ImportError, reprocessImport } from './imports/service.js';
-import { storedAbsolutePath } from './imports/storage.js';
+import { gunzipToTemp, readOriginal, removeTemp } from './imports/storage.js';
 import { flowsForFileType, listFlows, runAllFlows, runFlow } from './reconciliation/index.js';
 import { audit } from './services/audit.js';
 import { getDashboard } from './services/dashboard.js';
@@ -86,11 +86,21 @@ export function createApp() {
     // O navegador envia o nome em latin1 no multipart; normaliza para UTF-8.
     const converted = Buffer.from(req.file.originalname, 'latin1').toString('utf8');
     const originalName = converted.includes('\uFFFD') ? req.file.originalname : converted;
+    // O navegador envia o arquivo compactado (gzip) para respeitar limites de tamanho de requisição.
+    let raw: string | null = null;
     try {
-      const imp = await createImport({ tempPath: req.file.path, originalName, manualType: str(req.body?.fileType) ?? null, actor: actorOf(req) });
+      if (req.body?.encoding === 'gzip') {
+        try {
+          raw = await gunzipToTemp(req.file.path);
+        } catch {
+          return res.status(400).json({ error: 'Não foi possível descompactar o arquivo enviado.' });
+        }
+      }
+      const imp = await createImport({ tempPath: raw ?? req.file.path, originalName, manualType: str(req.body?.fileType) ?? null, actor: actorOf(req) });
       res.status(201).json(imp);
     } finally {
       await rm(req.file.path, { force: true });
+      await removeTemp(raw);
     }
   }));
 
@@ -181,10 +191,12 @@ export function createApp() {
   }));
   api.get('/imports/:id/download', requireRole('OPERADOR'), h(async (req, res) => {
     const imp = await getImport(int(req.params.id, 0, 2 ** 31 - 1));
-    const abs = storedAbsolutePath(imp.stored_path);
-    if (!existsSync(abs)) return res.status(404).json({ error: 'Arquivo original não encontrado no armazenamento.' });
+    const buf = await readOriginal(pool, imp.id);
+    if (!buf) return res.status(404).json({ error: 'Arquivo original não encontrado no armazenamento.' });
     await audit(actorOf(req), 'DOWNLOAD_ORIGINAL', 'import', imp.id);
-    res.download(abs, imp.original_name);
+    res.setHeader('Content-Type', 'text/plain; charset=iso-8859-1');
+    res.setHeader('Content-Disposition', `attachment; filename="${String(imp.original_name).replace(/[^A-Za-z0-9._-]/g, '_')}"`);
+    res.send(buf);
   }));
 
   // ---------------------------------------------------------------- Batimentos

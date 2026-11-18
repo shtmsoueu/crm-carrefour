@@ -1,8 +1,14 @@
-import { createHash } from 'node:crypto';
+import { createHash, randomUUID } from 'node:crypto';
 import { createReadStream } from 'node:fs';
-import { copyFile, mkdir, rm, stat } from 'node:fs/promises';
+import { readFile, rm, stat, writeFile } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { config } from '../config.js';
+import { promisify } from 'node:util';
+import { gunzip as gunzipCb, gzip as gzipCb } from 'node:zlib';
+import type { Db } from '../db/pool.js';
+
+const gzip = promisify(gzipCb);
+const gunzip = promisify(gunzipCb);
 
 export async function hashFile(path: string): Promise<{ sha256: string; size: number }> {
   const h = createHash('sha256');
@@ -13,27 +19,30 @@ export async function hashFile(path: string): Promise<{ sha256: string; size: nu
   return { sha256: h.digest('hex'), size: s.size };
 }
 
-export function sanitizeName(name: string): string {
-  const base = name.split(/[\\/]/).pop() ?? 'arquivo';
-  return base.replace(/[^A-Za-z0-9._-]/g, '_').slice(0, 180) || 'arquivo';
+/** Descompacta um upload enviado em gzip pelo navegador; retorna o caminho do arquivo original. */
+export async function gunzipToTemp(path: string): Promise<string> {
+  const out = join(tmpdir(), `crm-${randomUUID()}`);
+  await writeFile(out, await gunzip(await readFile(path)));
+  return out;
 }
 
-/**
- * Armazena o arquivo original (imutável) em STORAGE_DIR/AAAA/MM/<sha256>_<nome>.
- * Retorna o caminho relativo ao diretório de armazenamento.
- */
-export async function storeOriginal(tempPath: string, sha256: string, originalName: string): Promise<string> {
-  const now = new Date();
-  const rel = join(String(now.getFullYear()), String(now.getMonth() + 1).padStart(2, '0'), `${sha256}_${sanitizeName(originalName)}`);
-  const abs = join(config.storageDir, rel);
-  await mkdir(join(abs, '..'), { recursive: true });
-  await copyFile(tempPath, abs);
-  await rm(tempPath, { force: true });
-  return rel;
+/** Armazena o arquivo original (imutável, compactado) no banco, vinculado à importação. */
+export async function saveOriginal(db: Db, importId: number, path: string): Promise<void> {
+  await db.query(`INSERT INTO import_files (import_id, encoding, content) VALUES ($1, 'gzip', $2)`, [importId, await gzip(await readFile(path))]);
 }
 
-export function storedAbsolutePath(rel: string): string {
-  const abs = join(config.storageDir, rel);
-  if (!abs.startsWith(config.storageDir)) throw new Error('Caminho de armazenamento inválido');
-  return abs;
+export async function readOriginal(db: Db, importId: number): Promise<Buffer | null> {
+  const r = await db.query<{ content: Buffer }>(`SELECT content FROM import_files WHERE import_id = $1`, [importId]);
+  return r.rows[0] ? gunzip(r.rows[0].content) : null;
 }
+
+/** Grava o original em um arquivo temporário para reprocessamento. O chamador remove o arquivo. */
+export async function materializeOriginal(db: Db, importId: number): Promise<string | null> {
+  const buf = await readOriginal(db, importId);
+  if (!buf) return null;
+  const out = join(tmpdir(), `crm-${randomUUID()}`);
+  await writeFile(out, buf);
+  return out;
+}
+
+export const removeTemp = (p: string | null | undefined) => (p ? rm(p, { force: true }) : Promise.resolve());

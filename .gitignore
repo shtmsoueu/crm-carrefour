@@ -8,3 +8,4 @@ coverage/
 cargas/
 Cargas_teste*/
 *.zip
+.vercel/
