@@ -17,7 +17,13 @@ export async function api<T = any>(path: string, init: RequestInit & { json?: un
   });
   if (res.status === 401 && !path.startsWith('/auth/')) onUnauthorized();
   const text = await res.text();
-  const data = text ? JSON.parse(text) : null;
+  let data: any = null;
+  try {
+    data = text ? JSON.parse(text) : null;
+  } catch {
+    // Resposta não-JSON (ex.: página HTML da hospedagem quando a API não existe).
+    throw new ApiError(`A API respondeu em formato inesperado (HTTP ${res.status})`, res.status === 200 ? 502 : res.status);
+  }
   if (!res.ok) throw new ApiError(data?.error ?? `Falha na requisição (${res.status})`, res.status, data?.details);
   return data as T;
 }

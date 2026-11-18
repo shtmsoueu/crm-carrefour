@@ -6,7 +6,7 @@ import { useAuth } from '../auth';
 const ROLE_LABEL = { ADMIN: 'Administrador', OPERADOR: 'Operador', CONSULTA: 'Consulta' };
 
 export function Layout() {
-  const { user, setUser, can } = useAuth();
+  const { user, setUser, can, authEnabled } = useAuth();
   const [open, setOpen] = useState(false);
   const [pending, setPending] = useState<{ imports: number; divergences: number } | null>(null);
   const loc = useLocation();
@@ -55,9 +55,15 @@ export function Layout() {
           )}
         </nav>
         <div className="userbox">
-          <div>{user?.name}</div>
-          <div className="muted small">{user ? ROLE_LABEL[user.role] : ''}</div>
-          <button onClick={logout}>Sair</button>
+          {authEnabled ? (
+            <>
+              <div>{user?.name}</div>
+              <div className="muted small">{user ? ROLE_LABEL[user.role] : ''}</div>
+              <button onClick={logout}>Sair</button>
+            </>
+          ) : (
+            <div className="muted small">Acesso livre, sem login</div>
+          )}
         </div>
       </aside>
       <main className="main" id="conteudo">

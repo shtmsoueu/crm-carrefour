@@ -1,4 +1,5 @@
 import bcrypt from 'bcryptjs';
+import { randomBytes } from 'node:crypto';
 import type { NextFunction, Request, Response } from 'express';
 import jwt from 'jsonwebtoken';
 import { config } from '../config.js';
@@ -63,7 +64,36 @@ export function issueSession(res: Response, user: SessionUser) {
   res.cookie(COOKIE, token, { httpOnly: true, sameSite: 'strict', secure: config.isProd, maxAge: config.sessionHours * 3600 * 1000, path: '/' });
 }
 
+/**
+ * Acesso livre (AUTH_ENABLED diferente de 'true'): todas as requisições usam o usuário
+ * técnico "acesso-livre" (perfil ADMIN), criado sob demanda com senha aleatória inutilizável.
+ * As operações continuam registradas na auditoria em nome desse usuário.
+ */
+let openUser: Promise<SessionUser> | null = null;
+function openAccessUser(): Promise<SessionUser> {
+  return (openUser ??= (async () => {
+    const hash = await bcrypt.hash(randomBytes(32).toString('hex'), 10);
+    const r = await pool.query(
+      `INSERT INTO users (username, name, role, password_hash) VALUES ('acesso-livre', 'Acesso livre', 'ADMIN', $1)
+       ON CONFLICT (username) DO UPDATE SET role = 'ADMIN', active = TRUE RETURNING id, username, name, role`,
+      [hash],
+    );
+    return r.rows[0] as SessionUser;
+  })().catch((e) => {
+    openUser = null;
+    throw e;
+  }));
+}
+
 export async function authenticate(req: Request, _res: Response, next: NextFunction) {
+  if (!config.authEnabled) {
+    try {
+      req.user = await openAccessUser();
+    } catch (e) {
+      return next(e);
+    }
+    return next();
+  }
   const token = req.cookies?.[COOKIE];
   if (!token) return next();
   try {

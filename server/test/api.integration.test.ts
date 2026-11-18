@@ -11,6 +11,7 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { head, line, rec, trail } from './helpers.js';
 
 process.env.DATABASE_URL = process.env.TEST_DATABASE_URL ?? 'postgres://crm:crm_dev_password@localhost:5432/crm_test';
+process.env.AUTH_ENABLED = 'true';
 process.env.STORAGE_DIR = mkdtempSync(join(tmpdir(), 'crm-test-storage-'));
 
 const { pool } = await import('../src/db/pool.js');

@@ -71,7 +71,7 @@ export function createApp() {
     res.clearCookie(COOKIE, { path: '/' });
     res.json({ ok: true });
   }));
-  api.get('/auth/me', (req, res) => (req.user ? res.json({ user: req.user }) : res.status(401).json({ error: 'Não autenticado.' })));
+  api.get('/auth/me', (req, res) => (req.user ? res.json({ user: req.user, authEnabled: config.authEnabled }) : res.status(401).json({ error: 'Não autenticado.' })));
 
   api.use(requireAuth);
 

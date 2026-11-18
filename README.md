@@ -13,7 +13,7 @@ Sistema web para importar os arquivos diários e mensais enviados pelo banco (la
 | **Consulta de contrato** | Busca por contrato ou CPF e linha do tempo completa (recebimento, distribuição, alterações, elegibilidade, acordos, boletos, pagamentos, quebras, retiradas, comissão), com o resultado do batimento de cada evento. |
 | **Pendências de batimento** | 11 categorias, tratamento (em análise / resolvida / justificada, com observação), encerramento automático quando a divergência some e reabertura quando volta. Exportação em Excel e CSV. |
 | **Histórico e auditoria** | Cada importação com recebidos / processados / conciliados / divergências / rejeitados, usuário e resultado. Log de todas as operações. O original fica armazenado e pode ser baixado. |
-| **Acesso** | Perfis Administrador, Operador e Consulta. Senhas com bcrypt, sessão em cookie httpOnly/SameSite, bloqueio após tentativas de login. |
+| **Acesso** | **Login desativado por padrão (acesso livre)**: todas as operações são feitas e auditadas como o usuário técnico `acesso-livre`. Para exigir login, defina `AUTH_ENABLED=true`. Aí valem os perfis Administrador, Operador e Consulta, senhas com bcrypt, sessão em cookie httpOnly/SameSite e bloqueio após tentativas de login. |
 
 ## Princípios aplicados
 
@@ -55,6 +55,8 @@ cp .env.example .env   # preencha DATABASE_URL e JWT_SECRET
 ```bash
 npm run migrate
 ```
+
+Somente se o login estiver ativo (`AUTH_ENABLED=true`):
 
 ```bash
 npm run create-user -- admin "Nome do Administrador" ADMIN
@@ -105,6 +107,8 @@ npm run docs:dictionary
 > Os arquivos de carga e as planilhas de layout recebidos do banco contêm dados pessoais e **não devem ser versionados** (já estão no `.gitignore`).
 
 ## Limitações conhecidas
+
+- Com o login desativado, qualquer pessoa que tenha o endereço do sistema vê os dados (inclui CPF e valores). Use apenas em rede interna ou reative o login antes de expor o sistema na internet.
 
 - BAT_CONTRATOS, BAT_ACORDO e BAT_ACORDO_PGTO não vieram nas cargas de teste. Os importadores e regras estão prontos e testados com arquivos sintéticos; os indicadores de reconhecimento pelo banco ficam como *aguardando arquivo* até a primeira importação.
 - Faltam o layout de CY_IE003 (campanha da assessoria) e o da Rajada PIX. Esses arquivos são identificados e guardados, mas não interpretados.

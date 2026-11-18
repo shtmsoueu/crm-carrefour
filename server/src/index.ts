@@ -8,8 +8,10 @@ await migrate(pool);
 
 // Primeiro acesso em hospedagens sem terminal: cria o administrador a partir de
 // ADMIN_USERNAME / ADMIN_PASSWORD somente se ainda não existir nenhum usuário.
-const users = await pool.query('SELECT count(*)::int n FROM users');
-if (users.rows[0].n === 0) {
+const users = await pool.query(`SELECT count(*)::int n FROM users WHERE username <> 'acesso-livre'`);
+if (!config.authEnabled) {
+  console.warn('ATENÇÃO: login desativado (AUTH_ENABLED != true). Qualquer pessoa com o endereço acessa os dados.');
+} else if (users.rows[0].n === 0) {
   const u = process.env.ADMIN_USERNAME;
   const p = process.env.ADMIN_PASSWORD;
   if (u && p) {
