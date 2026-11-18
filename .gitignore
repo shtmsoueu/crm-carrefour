@@ -1,0 +1,10 @@
+node_modules/
+dist/
+storage/
+.env
+*.log
+coverage/
+# Cargas e layouts recebidos do banco contêm dados pessoais: nunca versionar.
+cargas/
+Cargas_teste*/
+*.zip
