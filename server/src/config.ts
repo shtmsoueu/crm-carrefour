@@ -21,5 +21,12 @@ export const config = {
   /** Código da assessoria esperado na nomenclatura (ex.: LEALCO). Vazio = não valida. */
   agencyCode: process.env.AGENCY_CODE ?? '',
   insertBatchSize: Number(process.env.INSERT_BATCH_SIZE ?? 1000),
+  /** API SIC (somente leitura). Credenciais só por variável de ambiente. */
+  sic: {
+    url: process.env.SIC_API_URL ?? '',
+    usuario: process.env.SIC_USUARIO ?? '',
+    senha: process.env.SIC_SENHA ?? '',
+    server: process.env.SIC_SERVER ?? '',
+  },
   webDistDir: process.env.WEB_DIST_DIR ? resolve(process.env.WEB_DIST_DIR) : resolve('../web/dist'),
 };

@@ -1,7 +1,49 @@
 import { useEffect, useState } from 'react';
 import { api } from '../api';
 import { useAuth } from '../auth';
-import { Notice, useToast, titulo, Hint } from '../components/ui';
+import { Badge, Notice, useToast, titulo, Hint } from '../components/ui';
+import { fmtDateTime } from '../format';
+
+/** Situação da conexão com a API SIC (somente leitura). As credenciais ficam nas variáveis de ambiente. */
+function SicPanel() {
+  const [st, setSt] = useState<any>(null);
+  const [busy, setBusy] = useState(false);
+  const test = async () => {
+    setBusy(true);
+    try {
+      setSt(await api('/integracoes/sic/status'));
+    } catch (e) {
+      setSt({ erro: (e as Error).message });
+    } finally {
+      setBusy(false);
+    }
+  };
+  const tone = !st ? 'wait' : st.conectado && !st.erro ? 'ok' : st.configurado === false ? 'wait' : 'bad';
+  const label = !st ? 'Não testado' : st.conectado && !st.erro ? 'Conectado' : st.configurado === false ? 'Não configurado' : 'Falha';
+  return (
+    <section className="panel">
+      <div className="panel-head">
+        <div><h2>API SIC <Hint text="Conexão somente leitura. Endereço, usuário, senha e servidor são definidos nas variáveis de ambiente SIC_API_URL, SIC_USUARIO, SIC_SENHA e SIC_SERVER." /></h2></div>
+        <span className="row"><Badge tone={tone}>{label}</Badge><button className="btn sm" disabled={busy} onClick={test}>{busy ? 'Testando…' : 'Testar conexão'}</button></span>
+      </div>
+      {st && (
+        <div className="panel-body stack" style={{ gap: 12 }}>
+          {st.erro && <Notice tone={st.conectado ? 'warn' : 'bad'}>{st.erro}</Notice>}
+          {st.configurado !== undefined && (
+            <dl className="facts">
+              <div><dt>Endereço</dt><dd className="code">{st.host ?? '—'}</dd></div>
+              <div><dt>Usuário</dt><dd>{st.usuario ?? '—'}</dd></div>
+              <div><dt>Perfil</dt><dd>{st.perfil ?? '—'}</dd></div>
+              <div><dt>Servidor</dt><dd className="code">{st.servidor ?? <span style={{ color: 'var(--warn)' }}>não definido</span>}</dd></div>
+              <div><dt>Token válido até</dt><dd>{st.expira_em ? fmtDateTime(st.expira_em) : '—'}</dd></div>
+              <div><dt>Consulta de dados</dt><dd>{st.consulta_liberada ? 'Liberada' : <span style={{ color: 'var(--warn)' }}>Requer login ativo</span>}</dd></div>
+            </dl>
+          )}
+        </div>
+      )}
+    </section>
+  );
+}
 
 export function SettingsPage() {
   const { can } = useAuth();
@@ -25,6 +67,7 @@ export function SettingsPage() {
   return (
     <div className="stack">
       <div className="page-head"><div><h1>{titulo('Configurações')}</h1></div></div>
+      <SicPanel />
       <section className="panel">
         <div className="panel-head"><div><h2>Arquivos de rejeição de campanha <Hint text="O De-Para informa que estes arquivos não possuem layout e contêm somente o contrato e o motivo da rejeição. Defina como extrair esses dados quando a estrutura for confirmada com o banco. Até lá, as linhas são armazenadas integralmente e o batimento de campanhas fica pendente de configuração." /></h2></div></div>
         <div className="panel-body stack" style={{ gap: 12 }}>

@@ -21,6 +21,7 @@ import { contractDetail, searchContracts } from './services/contracts.js';
 import { clientDetail } from './services/clients.js';
 import { CATEGORY_LABELS } from './services/divergences.js';
 import { sendExport, type Column } from './services/export.js';
+import { SIC_RESOURCES, SicError, sicConsulta, sicStatus, type SicResource } from './integrations/sic.js';
 import { getSetting, setSetting, SETTING_REJEICAO, validateUnstructuredConfig } from './services/settings.js';
 
 type Handler = (req: Request, res: Response) => Promise<unknown>;
@@ -421,6 +422,22 @@ export function createApp() {
   }));
 
   // ---------------------------------------------------------------- Configurações
+  // ---------------------------------------------------------------- Integração API SIC (somente leitura)
+  api.get('/integracoes/sic/status', requireRole('ADMIN'), h(async (req, res) => {
+    const st = await sicStatus();
+    await audit(actorOf(req), 'INTEGRACAO_SIC_TESTE', 'integracao', 'sic', { conectado: st.conectado, erro: st.erro });
+    res.json({ ...st, recursos: SIC_RESOURCES, consulta_liberada: config.authEnabled });
+  }));
+  api.get('/integracoes/sic/:recurso/:id', requireRole('OPERADOR'), h(async (req, res) => {
+    // Dados pessoais do banco de cobrança: só com login ativo, para não expor a base a qualquer pessoa com o endereço.
+    if (!config.authEnabled) return res.status(403).json({ error: 'Consulta ao SIC disponível somente com o login ativado (AUTH_ENABLED=true).' });
+    const recurso = req.params.recurso as SicResource;
+    if (!SIC_RESOURCES.includes(recurso)) return res.status(400).json({ error: 'Recurso do SIC não liberado.' });
+    const data = await sicConsulta(recurso, req.params.id);
+    await audit(actorOf(req), 'CONSULTA_SIC', 'sic', `${recurso}/${req.params.id}`, { encontrado: data !== null });
+    res.json({ recurso, id: req.params.id, encontrado: data !== null, data });
+  }));
+
   api.get('/settings/rejeicao', h(async (_req, res) => res.json({ value: await getSetting(SETTING_REJEICAO) })));
   api.put('/settings/rejeicao', requireRole('ADMIN'), h(async (req, res) => {
     const v = req.body?.value === null ? null : validateUnstructuredConfig(req.body?.value);
@@ -442,6 +459,7 @@ export function createApp() {
   }
 
   app.use((err: unknown, _req: Request, res: Response, _next: NextFunction) => {
+    if (err instanceof SicError) return res.status(err.status).json({ error: err.message });
     if (err instanceof ImportError) return res.status(err.status).json({ error: err.message, details: err.details });
     if (err instanceof multer.MulterError) return res.status(400).json({ error: err.code === 'LIMIT_FILE_SIZE' ? `Arquivo excede ${config.maxUploadMb} MB.` : err.message });
     if (err instanceof Error && /^(Modo|Delimitador|Índice|contract|Posição|Fluxo desconhecido)/.test(err.message)) return res.status(400).json({ error: err.message });
