@@ -119,3 +119,13 @@ describe('layouts sem header e arquivos vazios', () => {
     expect(out[0].fields.MOTIVO).toBe('Endereço inválido');
   });
 });
+
+describe('conexão com o banco', () => {
+  it('explicita sslmode=verify-full sem alterar o restante do endereço', async () => {
+    const { normalizeSslMode } = await import('../src/db/pool.js');
+    expect(normalizeSslMode('postgres://u:p@h/db?sslmode=require')).toBe('postgres://u:p@h/db?sslmode=verify-full');
+    expect(normalizeSslMode('postgres://u:p@h/db?sslmode=require&channel_binding=require')).toBe('postgres://u:p@h/db?sslmode=verify-full&channel_binding=require');
+    expect(normalizeSslMode('postgres://u:p@localhost/db')).toBe('postgres://u:p@localhost/db');
+    expect(normalizeSslMode('postgres://u:p@h/db?sslmode=disable')).toBe('postgres://u:p@h/db?sslmode=disable');
+  });
+});

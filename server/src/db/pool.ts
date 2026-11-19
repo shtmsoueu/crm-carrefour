@@ -4,7 +4,15 @@ import { config } from '../config.js';
 // DATE como string ISO (sem conversão de fuso); BIGINT e NUMERIC como string (sem perda de precisão).
 pg.types.setTypeParser(1082, (v) => v);
 
-export const pool = new pg.Pool({ connectionString: config.databaseUrl, max: 10 });
+/**
+ * O pg trata sslmode=prefer/require/verify-ca como verify-full e emite um aviso a cada conexão.
+ * Explicita verify-full: mesma segurança atual, sem o aviso e sem mudança de comportamento na próxima versão do pg.
+ */
+export function normalizeSslMode(url: string): string {
+  return url.replace(/([?&]sslmode=)(prefer|require|verify-ca)(?=&|$)/, '$1verify-full');
+}
+
+export const pool = new pg.Pool({ connectionString: normalizeSslMode(config.databaseUrl), max: 10 });
 
 export type Db = pg.Pool | pg.PoolClient;
 
