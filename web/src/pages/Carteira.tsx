@@ -17,6 +17,7 @@ export function CarteiraPage() {
   const [q, setQ] = useState('');
   const [page, setPage] = useState(1);
   const regras = useLoad(() => api('/carteira/regras'), []);
+  const pilares = useLoad(() => api(`/carteira/pilares${qs({ scope: f.scope })}`), [f.scope]);
   const { data, error, loading } = useLoad(() => api(`/carteira${qs({ ...f, page, pageSize: 50 })}`), [f, page]);
   const set = (patch: Partial<typeof EMPTY>) => { setPage(1); setF({ ...f, ...patch }); };
   const s = data?.summary;
@@ -131,6 +132,44 @@ export function CarteiraPage() {
             </div>
           </section>
 
+          {pilares.data && (
+            <section className="panel">
+              <div className="panel-head">
+                <div><h2>Três pilares de identificação</h2><p>Totais independentes por visão: acordos, contratos e clientes não se misturam.</p></div>
+                {pilares.data.fechamento_ok ? <Badge tone="ok">Totais fecham</Badge> : <Badge tone="bad">Totais não fecham</Badge>}
+              </div>
+              <div className="panel-body grid-2" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))' }}>
+                <div>
+                  <h3>Pilar 1: Número do acordo (visão conta)</h3>
+                  <ul className="kpi-list" style={{ marginTop: 8 }}>
+                    <li>Acordos no escopo <b>{fmtInt(pilares.data.pilar1_acordo.acordos_distintos_no_escopo)}</b></li>
+                    {Object.entries(pilares.data.pilar1_acordo.por_origem as Record<string, number>).map(([k, n]) => <li key={k}>{k} <b>{fmtInt(n)}</b></li>)}
+                    <li className={pilares.data.pilar1_acordo.acordos_com_mais_de_um_contrato ? 'alert' : ''}>Acordos com mais de um contrato (todos os arquivos) <b>{fmtInt(pilares.data.pilar1_acordo.acordos_com_mais_de_um_contrato)}</b></li>
+                  </ul>
+                </div>
+                <div>
+                  <h3>Pilar 2: Nº conta / contrato (visão contrato)</h3>
+                  <ul className="kpi-list" style={{ marginTop: 8 }}>
+                    <li>Contratos no escopo <b>{fmtInt(pilares.data.pilar2_contrato.contratos_no_escopo)}</b></li>
+                    <li>Com acordo <b>{fmtInt(pilares.data.pilar2_contrato.contratos_com_acordo)}</b></li>
+                    <li>Com mais de um acordo <b>{fmtInt(pilares.data.pilar2_contrato.contratos_com_mais_de_um_acordo)}</b></li>
+                    {Object.entries(pilares.data.pilar2_contrato.tamanhos_da_chave as Record<string, number>).map(([k, n]) => <li key={k}>Chave com {k} <b>{fmtInt(n)}</b></li>)}
+                    <li className={pilares.data.pilar2_contrato.contratos_com_mais_de_um_cpf ? 'alert' : ''}>Contratos com mais de um CPF (todos os arquivos) <b>{fmtInt(pilares.data.pilar2_contrato.contratos_com_mais_de_um_cpf)}</b></li>
+                  </ul>
+                </div>
+                <div>
+                  <h3>Pilar 3: CPF/CNPJ (visão unique)</h3>
+                  <ul className="kpi-list" style={{ marginTop: 8 }}>
+                    <li>Clientes únicos <b>{fmtInt(pilares.data.pilar3_cpf.clientes_unicos)}</b></li>
+                    <li>Com mais de um contrato <b>{fmtInt(pilares.data.pilar3_cpf.clientes_com_mais_de_um_contrato)}</b></li>
+                    <li>Máximo de contratos por cliente <b>{fmtInt(pilares.data.pilar3_cpf.maximo_contratos_por_cliente)}</b></li>
+                    <li>Contratos sem CPF/CNPJ <b>{fmtInt(pilares.data.pilar3_cpf.contratos_sem_cpf)}</b></li>
+                  </ul>
+                </div>
+              </div>
+            </section>
+          )}
+
           <section className="panel">
             <div className="panel-head">
               <div><h2>Distribuição por ranking e faixa de atraso</h2><p>Quantidade de contas (e saldo de risco) por ranking e faixa. Clique em um número para listar as contas.</p></div>
@@ -202,12 +241,12 @@ export function CarteiraPage() {
           </div>
 
           <section className="panel">
-            <div className="panel-head"><div><h2>Comissão por origem</h2><p>Arquivo de comissão preservado integralmente (todas as linhas). Remuneração em valor bruto, pois o layout não define casas decimais.</p></div></div>
+            <div className="panel-head"><div><h2>Comissão por origem</h2><p>Arquivo de comissão preservado integralmente. O arquivo traz linhas idênticas: veja o total com todas as linhas e com as linhas distintas. A regra de contagem aguarda definição. A remuneração é exibida em valor bruto, pois o layout não define casas decimais.</p></div></div>
             <div className="table-wrap">
               <table className="data">
-                <thead><tr><th>Origem</th><th className="num">Contas</th><th className="num">Linhas de comissão</th><th className="num">Valor recebido</th><th className="num">Remuneração devida (bruto)</th></tr></thead>
+                <thead><tr><th>Origem</th><th className="num">Contas</th><th className="num">Linhas de comissão</th><th className="num">Valor recebido (todas as linhas)</th><th className="num">Linhas distintas</th><th className="num">Valor (linhas distintas)</th><th className="num">Remuneração devida (bruto)</th></tr></thead>
                 <tbody>{Object.entries(s.comissaoPorOrigem as Record<string, any>).map(([k, v]) => (
-                  <tr key={k}><td>{k === VAZIO ? 'Sem acordo identificado' : k}</td><td className="num">{fmtInt(v.contas)}</td><td className="num">{fmtInt(v.linhas)}</td><td className="num">{fmtMoney(v.valor_recebido)}</td><td className="num">{fmtInt(v.remuneracao_bruta)}</td></tr>
+                  <tr key={k}><td>{k === VAZIO ? 'Sem acordo identificado' : k}</td><td className="num">{fmtInt(v.contas)}</td><td className="num">{fmtInt(v.linhas)}</td><td className="num">{fmtMoney(v.valor_recebido)}</td><td className="num">{fmtInt(v.linhas_distintas)}</td><td className="num">{fmtMoney(v.valor_linhas_distintas)}</td><td className="num">{fmtInt(v.remuneracao_bruta)}</td></tr>
                 ))}</tbody>
               </table>
               {Object.keys(s.comissaoPorOrigem).length === 0 && <div className="empty">Nenhuma conta com comissão neste escopo.</div>}

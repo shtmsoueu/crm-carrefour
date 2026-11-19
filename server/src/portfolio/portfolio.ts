@@ -56,6 +56,9 @@ export interface PortfolioRow {
   ultimo_pagamento_parcela: string | null;
   comissao_linhas: number;
   comissao_valor_recebido: number;
+  /** Mesma comissão contando cada linha idêntica do arquivo uma única vez (para decisão de negócio). */
+  comissao_linhas_distintas: number;
+  comissao_valor_linhas_distintas: number;
   comissao_remuneracao_bruta: number;
   comissao_ultima_data: string | null;
   comissao_status: string | null;
@@ -65,7 +68,7 @@ export interface PortfolioRow {
 const num = (v: unknown) => (v === null || v === undefined || v === '' ? null : Number(v));
 
 const SQL = `
-WITH conf AS (
+WITH conf AS NOT MATERIALIZED (  -- NOT MATERIALIZED: permite ao planejador usar índices por tipo de arquivo (35x mais rápido)
   SELECT r.*, COALESCE(i.generation_date, i.file_name_date) AS file_date
   FROM records r JOIN imports i ON i.id = r.import_id AND i.status = 'CONFIRMADO'
   WHERE r.valid AND r.contract_key IS NOT NULL
@@ -121,16 +124,21 @@ ahc_n AS (
 ),
 com_ct AS (        -- comissão: todas as linhas preservadas (integridade do arquivo de remuneração)
   SELECT contract_key, count(*)::int AS linhas, COALESCE(sum(amount), 0)::text AS valor,
+    count(DISTINCT (import_id, record_hash))::int AS linhas_distintas,
     COALESCE(sum(NULLIF(fields->>'REMUNERACAO_DEVIDA', '')::numeric), 0)::text AS remuneracao,
     max(event_date) AS ult_data,
     (array_agg(fields->>'STATUS_CONTRATO' ORDER BY event_date DESC NULLS LAST, line_number DESC))[1] AS status
   FROM conf WHERE file_type = 'COMISSAO' GROUP BY contract_key
+),
+com_dist AS (      -- mesma comissão considerando cada linha idêntica do arquivo uma única vez
+  SELECT contract_key, COALESCE(sum(amount), 0)::text AS valor
+  FROM (SELECT DISTINCT ON (import_id, record_hash) contract_key, amount FROM conf WHERE file_type = 'COMISSAO') x GROUP BY contract_key
 )
 SELECT c.contract_key, c.cpf, c.name, c.status, c.status_date,
   cad.file_type AS cad_tipo, cad.file_date AS cad_data, cad.fields AS cad,
   a.ahid::text AS acordo_id, a.fields AS aco, a.qtde AS acordos_qtde, ag.status AS acordo_status,
   p.qtde AS pag_qtde, p.valor AS pag_valor, p.ult_data, p.ult_codigo, p.ult_canal, p.ult_parcela,
-  m.linhas AS com_linhas, m.valor AS com_valor, m.remuneracao AS com_rem, m.ult_data AS com_data, m.status AS com_status,
+  m.linhas AS com_linhas, m.valor AS com_valor, m.linhas_distintas AS com_linhas_dist, md.valor AS com_valor_dist, m.remuneracao AS com_rem, m.ult_data AS com_data, m.status AS com_status,
   COALESCE(a.ahid, p.ult_ahid)::text AS origem_ahid, hp.v AS origem_v, hp.file_type AS origem_fonte, hn.n AS origem_n, hn.detalhe AS origem_detalhe
 FROM contracts c
 LEFT JOIN cad ON cad.contract_key = c.contract_key
@@ -138,6 +146,7 @@ LEFT JOIN aco_ct a ON a.contract_key = c.contract_key
 LEFT JOIN agreements ag ON ag.ahid = a.ahid
 LEFT JOIN pag_ct p ON p.contract_key = c.contract_key
 LEFT JOIN com_ct m ON m.contract_key = c.contract_key
+LEFT JOIN com_dist md ON md.contract_key = c.contract_key
 LEFT JOIN ahc_pick hp ON hp.ahid = COALESCE(a.ahid, p.ult_ahid)
 LEFT JOIN ahc_n hn ON hn.ahid = COALESCE(a.ahid, p.ult_ahid)
 WHERE EXISTS (SELECT 1 FROM conf WHERE conf.contract_key = c.contract_key)
@@ -207,6 +216,8 @@ export async function buildPortfolio(db: Db = pool): Promise<{ rows: PortfolioRo
       ultimo_pagamento_parcela: x.ult_parcela,
       comissao_linhas: x.com_linhas ?? 0,
       comissao_valor_recebido: Number(x.com_valor ?? 0),
+      comissao_linhas_distintas: x.com_linhas_dist ?? 0,
+      comissao_valor_linhas_distintas: Number(x.com_valor_dist ?? 0),
       comissao_remuneracao_bruta: Number(x.com_rem ?? 0),
       comissao_ultima_data: x.com_data,
       comissao_status: x.com_status,
@@ -266,3 +277,145 @@ export async function getPortfolioCached() {
   cache = { version, at: Date.now(), value };
   return value;
 }
+
+// ---------------------------------------------------------------- Visão Conta (Pilar 1: Número do Acordo)
+export interface AgreementRow {
+  acordo_id: string;
+  contrato: string | null;
+  cpf: string | null;
+  acordo_status: string | null;
+  acordo_tipo: string | null;
+  acordo_data: string | null;
+  acordo_valor: number | null;
+  parcelas: number | null;
+  origem: string | null;
+  origem_ahcollid: string | null;
+  pagamentos_qtde: number;
+  pagamentos_valor: number;
+  status_contrato: string | null;
+  produto: string | null;
+  ranking: string | null;
+  faixa_codigo: string | null;
+  arquivos: string;
+}
+
+/** Uma linha por acordo (AHID) presente em qualquer arquivo confirmado — inclusive vários acordos do mesmo contrato. */
+export async function buildAgreementView(db: Db = pool): Promise<AgreementRow[]> {
+  const r = await db.query(`
+    WITH conf AS NOT MATERIALIZED (
+      SELECT r.*, COALESCE(i.generation_date, i.file_name_date) AS file_date
+      FROM records r JOIN imports i ON i.id = r.import_id AND i.status = 'CONFIRMADO' WHERE r.valid AND r.ahid IS NOT NULL
+    ),
+    ids AS (SELECT ahid, string_agg(DISTINCT file_type, ', ') AS arquivos FROM conf GROUP BY ahid),
+    aco AS (
+      SELECT DISTINCT ON (ahid) ahid, contract_key, cpf, fields FROM conf WHERE file_type = 'ACORDO_ASSESSORIA'
+      ORDER BY ahid, file_date DESC NULLS LAST, import_id DESC, line_number
+    ),
+    pag AS (
+      SELECT ahid, count(*)::int AS qtde, COALESCE(sum(amount), 0)::text AS valor FROM
+        (SELECT DISTINCT ON (record_hash) ahid, amount FROM conf WHERE file_type = 'REPASSE' ORDER BY record_hash, import_id) x GROUP BY ahid
+    ),
+    ahc AS (
+      SELECT DISTINCT ON (ahid) ahid, trim(fields->>'AHCOLLID') AS v FROM conf
+      WHERE COALESCE(trim(fields->>'AHCOLLID'), '') <> '' AND file_type IN ('REPASSE', 'ACORDO_ASSESSORIA', 'BAT_ACORDO', 'BAT_ACORDO_PGTO')
+      ORDER BY ahid, CASE file_type WHEN 'REPASSE' THEN 1 WHEN 'ACORDO_ASSESSORIA' THEN 2 WHEN 'BAT_ACORDO' THEN 3 ELSE 4 END, file_date DESC NULLS LAST, import_id DESC
+    )
+    SELECT ids.ahid::text, COALESCE(aco.contract_key, ag.contract_key) AS contrato, COALESCE(aco.cpf, c.cpf) AS cpf, ag.status, ag.agreement_type,
+      ag.agreement_date, ag.total_amount::text, ag.installments, ahc.v AS ahcollid, pag.qtde, pag.valor, ids.arquivos
+    FROM ids JOIN agreements ag ON ag.ahid = ids.ahid
+    LEFT JOIN aco ON aco.ahid = ids.ahid LEFT JOIN contracts c ON c.contract_key = COALESCE(aco.contract_key, ag.contract_key)
+    LEFT JOIN pag ON pag.ahid = ids.ahid LEFT JOIN ahc ON ahc.ahid = ids.ahid
+    ORDER BY ids.ahid`);
+  const { rows: port } = await getPortfolioCached();
+  const byCt = new Map(port.map((p) => [p.contrato, p]));
+  return r.rows.map((x) => {
+    const p = x.contrato ? byCt.get(x.contrato) : undefined;
+    return {
+      acordo_id: x.ahid,
+      contrato: x.contrato,
+      cpf: x.cpf,
+      acordo_status: x.status,
+      acordo_tipo: x.agreement_type,
+      acordo_data: x.agreement_date,
+      acordo_valor: num(x.total_amount),
+      parcelas: x.installments,
+      origem: classifyOrigem(x.ahcollid).value,
+      origem_ahcollid: x.ahcollid,
+      pagamentos_qtde: x.qtde ?? 0,
+      pagamentos_valor: Number(x.valor ?? 0),
+      status_contrato: p?.status_contrato ?? null,
+      produto: p?.produto ?? null,
+      ranking: p?.ranking ?? null,
+      faixa_codigo: p?.faixa_codigo ?? null,
+      arquivos: x.arquivos,
+    };
+  });
+}
+
+// ---------------------------------------------------------------- Visão Unique (Pilar 3: CPF/CNPJ)
+export interface PersonRow {
+  cpf: string;
+  nome: string | null;
+  contratos_qtde: number;
+  contratos: string;
+  contratos_ativos: number;
+  acordos_qtde: number;
+  saldo_risco_total: number;
+  pagamentos_valor: number;
+  comissao_valor_recebido: number;
+}
+export const normCpf = (v: string | null | undefined) => (v ?? '').replace(/\D/g, '').replace(/^0+/, '');
+
+/** Agrega contratos por CPF/CNPJ sem descartar nenhum contrato (multiplicidade natural preservada). */
+export function buildPersonView(rows: PortfolioRow[]): { people: PersonRow[]; semCpf: number } {
+  const m = new Map<string, PersonRow & { c: number; s: number; pg: number; cm: number }>();
+  let semCpf = 0;
+  for (const p of rows) {
+    const k = normCpf(p.cpf);
+    if (!k) {
+      semCpf++;
+      continue;
+    }
+    const e = m.get(k) ?? { cpf: k, nome: p.nome, contratos_qtde: 0, contratos: '', contratos_ativos: 0, acordos_qtde: 0, saldo_risco_total: 0, pagamentos_valor: 0, comissao_valor_recebido: 0, c: 0, s: 0, pg: 0, cm: 0 };
+    e.contratos_qtde++;
+    e.contratos = e.contratos ? `${e.contratos}, ${p.contrato}` : p.contrato;
+    if (p.status_contrato === 'ATIVO') e.contratos_ativos++;
+    e.acordos_qtde += p.acordos_qtde;
+    e.s += Math.round((p.saldo_risco ?? 0) * 100);
+    e.pg += Math.round(p.pagamentos_valor * 100);
+    e.cm += Math.round(p.comissao_valor_recebido * 100);
+    e.nome ??= p.nome;
+    m.set(k, e);
+  }
+  const people = [...m.values()].map(({ c, s, pg, cm, ...e }) => ({ ...e, saldo_risco_total: s / 100, pagamentos_valor: pg / 100, comissao_valor_recebido: cm / 100 }));
+  return { people, semCpf };
+}
+
+export const AGREEMENT_ATTRIBUTES: { key: keyof AgreementRow; label: string; kind: 'text' | 'number' | 'date'; source: string }[] = [
+  { key: 'acordo_id', label: 'Número do acordo (AHID)', kind: 'text', source: 'Chave do Pilar 1' },
+  { key: 'contrato', label: 'Contrato do acordo', kind: 'text', source: 'DMACCT do ACORDO_ASSESSORIA (ou primeiro arquivo)' },
+  { key: 'cpf', label: 'CPF/CNPJ', kind: 'text', source: 'DMSSNUM' },
+  { key: 'acordo_status', label: 'Status do acordo', kind: 'text', source: 'ATIVO / QUEBRADO / NAO_IDENTIFICADO' },
+  { key: 'acordo_tipo', label: 'Tipo do acordo', kind: 'text', source: 'AHTYPE' },
+  { key: 'acordo_data', label: 'Data do acordo', kind: 'date', source: 'AHDT' },
+  { key: 'acordo_valor', label: 'Valor do acordo', kind: 'number', source: 'AHTOTPMT' },
+  { key: 'parcelas', label: 'Quantidade de parcelas', kind: 'number', source: 'AHPRD' },
+  { key: 'origem', label: 'Origem (DIRETO/INDIRETO)', kind: 'text', source: 'Regra 1 sobre o AHCOLLID do acordo' },
+  { key: 'origem_ahcollid', label: 'AHCOLLID', kind: 'text', source: 'REPASSE, ACORDO_ASSESSORIA, BAT_ACORDO, BAT_ACORDO_PGTO' },
+  { key: 'pagamentos_qtde', label: 'Quantidade de pagamentos', kind: 'number', source: 'REPASSE (linhas distintas)' },
+  { key: 'pagamentos_valor', label: 'Valor pago', kind: 'number', source: 'Soma PMAMT do REPASSE' },
+  { key: 'status_contrato', label: 'Status do contrato', kind: 'text', source: 'Fluxo A' },
+  { key: 'produto', label: 'Produto Carrefour', kind: 'text', source: 'Regra 4' },
+  { key: 'ranking', label: 'Ranking', kind: 'text', source: 'Regra 3' },
+  { key: 'faixa_codigo', label: 'Faixa de atraso (código)', kind: 'text', source: 'Regra 5' },
+];
+export const PERSON_ATTRIBUTES: { key: keyof PersonRow; label: string; kind: 'text' | 'number' | 'date'; source: string }[] = [
+  { key: 'cpf', label: 'CPF/CNPJ', kind: 'text', source: 'Chave do Pilar 3 (somente dígitos, sem zeros à esquerda)' },
+  { key: 'nome', label: 'Nome', kind: 'text', source: 'DMNAME' },
+  { key: 'contratos_qtde', label: 'Quantidade de contratos', kind: 'number', source: 'Contratos do CPF no escopo' },
+  { key: 'contratos_ativos', label: 'Contratos ativos', kind: 'number', source: 'Contratos com situação ATIVO' },
+  { key: 'acordos_qtde', label: 'Quantidade de acordos', kind: 'number', source: 'Acordos dos contratos do CPF' },
+  { key: 'saldo_risco_total', label: 'Saldo de risco total', kind: 'number', source: 'Soma do saldo de risco dos contratos' },
+  { key: 'pagamentos_valor', label: 'Valor pago total', kind: 'number', source: 'Soma PMAMT' },
+  { key: 'comissao_valor_recebido', label: 'Comissão: valor recebido', kind: 'number', source: 'Soma VALOR_RECEBIDO (todas as linhas)' },
+];

@@ -192,6 +192,15 @@ export async function createImport(input: CreateImportInput) {
   }
 
   const importId = await withTransaction(async (db) => {
+    // Serializa importações do mesmo conteúdo: um envio simultâneo do mesmo arquivo aguarda o
+    // primeiro e então é bloqueado como duplicado (índice único em sha256 garante a integridade).
+    await db.query('SELECT pg_advisory_xact_lock(hashtext($1))', [`import:${sha256}`]);
+    const again = size > 0
+      ? await db.query(`SELECT id, original_name, status FROM imports WHERE sha256 = $1 AND size_bytes > 0 AND status = ANY($2) LIMIT 1`, [sha256, ACTIVE_STATUSES])
+      : await db.query(`SELECT id, original_name, status FROM imports WHERE size_bytes = 0 AND file_type = $1 AND original_name = $2 AND status = ANY($3) LIMIT 1`, [code, originalName, ACTIVE_STATUSES]);
+    if (again.rows[0]) {
+      throw new ImportError(`Arquivo já importado (importação #${again.rows[0].id}, ${again.rows[0].original_name}, situação ${again.rows[0].status}). Importação duplicada bloqueada.`, 409, { importId: again.rows[0].id });
+    }
     const ins = await db.query<{ id: number }>(
       `INSERT INTO imports (file_type, type_detection, original_name, stored_path, sha256, size_bytes, agency_code, file_name_date, status, uploaded_by)
        VALUES ($1,$2,$3,$4,$5,$6,$7,$8,'PRE_VISUALIZACAO',$9) RETURNING id`,

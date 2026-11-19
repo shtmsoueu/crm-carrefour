@@ -49,7 +49,15 @@ export async function getDashboard(f: DashboardFilters) {
        (SELECT COALESCE(sum(a.total_amount), 0) FROM agreements a WHERE a.ahid IN (SELECT ahid FROM recs WHERE file_type = 'ACORDO_ASSESSORIA'))::text AS valor_negociado,
        (SELECT count(DISTINCT record_hash) FROM recs WHERE file_type = 'REPASSE')::int AS pagamentos_identificados,
        (SELECT COALESCE(sum(amount), 0) FROM (SELECT DISTINCT ON (record_hash) amount FROM recs WHERE file_type = 'REPASSE') x)::text AS valor_recebido,
-       (SELECT count(DISTINCT ahid) FROM recs WHERE file_type = 'QUEBRA_ACORDO')::int AS acordos_quebrados`,
+       (SELECT count(DISTINCT ahid) FROM recs WHERE file_type = 'QUEBRA_ACORDO')::int AS acordos_quebrados,
+       (SELECT count(*) FROM recs WHERE file_type = 'REPASSE')::int AS pagamentos_linhas,
+       (SELECT COALESCE(sum(amount), 0) FROM recs WHERE file_type = 'REPASSE')::text AS pagamentos_valor_linhas,
+       (SELECT count(DISTINCT ltrim(regexp_replace(cpf, '\D', '', 'g'), '0')) FROM recs WHERE COALESCE(ltrim(regexp_replace(cpf, '\D', '', 'g'), '0'), '') <> '')::int AS clientes_unicos,
+       (SELECT count(DISTINCT ahid) FROM recs WHERE ahid IS NOT NULL)::int AS acordos_todos_arquivos,
+       (SELECT count(*) FROM recs WHERE file_type = 'COMISSAO')::int AS comissao_linhas,
+       (SELECT COALESCE(sum(amount), 0) FROM recs WHERE file_type = 'COMISSAO')::text AS comissao_valor_linhas,
+       (SELECT count(DISTINCT record_hash) FROM recs WHERE file_type = 'COMISSAO')::int AS comissao_linhas_distintas,
+       (SELECT COALESCE(sum(amount), 0) FROM (SELECT DISTINCT ON (import_id, record_hash) amount FROM recs WHERE file_type = 'COMISSAO') x)::text AS comissao_valor_distinto`,
     params,
   );
   const k = kpi.rows[0];

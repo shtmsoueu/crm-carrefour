@@ -7,7 +7,7 @@ import { fmtDateTime, fmtInt, fmtMoney } from '../format';
 
 interface Attr { key: string; label: string; kind: string; source: string }
 interface Comparison { crmColumn: string; baseAttribute: string; kind?: string; equivalences?: { crm: string; base: string }[]; whenBaseEmpty?: 'ignore' | 'compare' }
-interface Profile { keyColumn: string; key: { stripLeadingZeros: boolean; digitsOnly: boolean }; comparisons: Comparison[] }
+interface Profile { pillar?: string; keyColumn: string; key: { stripLeadingZeros: boolean; digitsOnly: boolean }; comparisons: Comparison[] }
 
 const SITUACAO: Record<string, { label: string; tone: string }> = {
   CONFORME: { label: 'Conforme', tone: 'ok' },
@@ -20,7 +20,7 @@ const eqToText = (e?: { crm: string; base: string }[]) => (e ?? []).map((x) => `
 const textToEq = (t: string) =>
   t.split('\n').map((l) => l.split('=')).filter((p) => p.length >= 2 && p[0].trim()).map(([a, ...b]) => ({ crm: a.trim(), base: b.join('=').trim() }));
 
-function MappingEditor({ headers, attrs, initial, onSaved }: { headers: string[]; attrs: Attr[]; initial: Profile; onSaved: () => void }) {
+function MappingEditor({ headers, attrsByPillar, pillars, initial, onSaved }: { headers: string[]; attrsByPillar: Record<string, Attr[]>; pillars: Record<string, string>; initial: Profile; onSaved: () => void }) {
   const toast = useToast();
   const [p, setP] = useState<Profile>(initial);
   const [eqText, setEqText] = useState<string[]>(initial.comparisons.map((c) => eqToText(c.equivalences)));
@@ -36,17 +36,24 @@ function MappingEditor({ headers, attrs, initial, onSaved }: { headers: string[]
       toast.show('bad', (e as Error).message);
     }
   };
+  const pillar = p.pillar ?? 'CONTRATO';
+  const attrs = attrsByPillar[pillar] ?? [];
   const attrBy = new Map(attrs.map((a) => [a.key, a]));
   return (
     <div className="stack" style={{ gap: 12 }}>
+      <label className="field">Identificador do confronto (pilar)
+        <select value={pillar} style={{ width: 380 }} onChange={(e) => { setP({ ...p, pillar: e.target.value, comparisons: [] }); setEqText([]); }}>
+          {Object.entries(pillars).map(([k, l]) => <option key={k} value={k}>{l}</option>)}
+        </select>
+      </label>
       <div className="row" style={{ alignItems: 'flex-end' }}>
-        <label className="field">Coluna do CRM com o número do contrato (chave)
+        <label className="field">{pillar === 'ACORDO' ? 'Coluna do CRM com o número do acordo (chave)' : pillar === 'CPF' ? 'Coluna do CRM com o CPF/CNPJ (chave)' : 'Coluna do CRM com o número do contrato (chave)'}
           <select value={p.keyColumn} onChange={(e) => setP({ ...p, keyColumn: e.target.value })} style={{ width: 260 }}>
             {headers.map((h) => <option key={h}>{h}</option>)}
           </select>
         </label>
-        <label className="row small"><input type="checkbox" style={{ height: 'auto' }} checked={p.key.stripLeadingZeros} onChange={(e) => setP({ ...p, key: { ...p.key, stripLeadingZeros: e.target.checked } })} /> Ignorar zeros à esquerda</label>
-        <label className="row small"><input type="checkbox" style={{ height: 'auto' }} checked={p.key.digitsOnly} onChange={(e) => setP({ ...p, key: { ...p.key, digitsOnly: e.target.checked } })} /> Considerar só dígitos (remove pontos, traços e espaços)</label>
+        {pillar === 'CONTRATO' ? <><label className="row small"><input type="checkbox" style={{ height: 'auto' }} checked={p.key.stripLeadingZeros} onChange={(e) => setP({ ...p, key: { ...p.key, stripLeadingZeros: e.target.checked } })} /> Ignorar zeros à esquerda</label>
+        <label className="row small"><input type="checkbox" style={{ height: 'auto' }} checked={p.key.digitsOnly} onChange={(e) => setP({ ...p, key: { ...p.key, digitsOnly: e.target.checked } })} /> Considerar só dígitos (remove pontos, traços e espaços)</label></> : <span className="small muted">Comparado só por dígitos, sem zeros à esquerda.</span>}
       </div>
       <div className="table-wrap">
         <table className="data">
@@ -80,7 +87,7 @@ function MappingEditor({ headers, attrs, initial, onSaved }: { headers: string[]
         </table>
       </div>
       <div className="row">
-        <button className="btn" onClick={() => { setP({ ...p, comparisons: [...p.comparisons, { crmColumn: headers[0], baseAttribute: 'status_contrato', kind: 'text', equivalences: [] }] }); setEqText([...eqText, '']); }}>Adicionar campo</button>
+        <button className="btn" onClick={() => { setP({ ...p, comparisons: [...p.comparisons, { crmColumn: headers[0], baseAttribute: attrs[1]?.key ?? attrs[0].key, kind: attrs[1]?.kind ?? 'text', equivalences: [] }] }); setEqText([...eqText, '']); }}>Adicionar campo</button>
         <button className="btn primary" onClick={save}>Salvar mapeamento</button>
       </div>
       <p className="small muted">Quando a base original não tem a informação da conta (ex.: conta sem acordo não tem parcelas nem AHCOLLID), o campo não é confrontado, a menos que a opção acima esteja marcada. Textos são comparados sem acentos, sem diferença de maiúsculas e com espaços normalizados. Números aceitam formatos 1.234,56 e 1234.56. Datas aceitam dd/mm/aaaa, aaaa-mm-dd e o formato do Excel.</p>
@@ -134,7 +141,7 @@ function Results({ runId }: { runId: number }) {
               </p>
             )}
             <p className="small muted" style={{ marginTop: 12 }}>
-              CRM: {fmtInt(s.crm_linhas)} linhas, {fmtInt(s.crm_contas)} contas distintas{s.crm_linhas_sem_chave ? `, ${fmtInt(s.crm_linhas_sem_chave)} linhas sem número de contrato` : ''}. Escopo: {s.escopo}. Processado em {(s.duracao_ms / 1000).toLocaleString('pt-BR')} s.
+              {s.pilar_descricao ?? 'Pilar 2 — visão contrato'}. {s.conforme_sem_campos_confrontados ? `${fmtInt(s.conforme_sem_campos_confrontados)} conforme(s) sem nenhum campo confrontado (base sem os dados). ` : ''}CRM: {fmtInt(s.crm_linhas)} linhas, {fmtInt(s.crm_contas)} chaves distintas{s.crm_linhas_sem_chave ? `, ${fmtInt(s.crm_linhas_sem_chave)} linhas sem número de contrato` : ''}. Escopo: {s.escopo}. Processado em {(s.duracao_ms / 1000).toLocaleString('pt-BR')} s.
             </p>
           </div>
         </section>
@@ -188,7 +195,7 @@ function Results({ runId }: { runId: number }) {
                   return (
                     <Fragment key={it.id}>
                       <tr>
-                        <td className="code">{it.base ? <Link to={`/contratos/${encodeURIComponent(it.contrato)}`}>{it.contrato}</Link> : it.contrato}</td>
+                        <td className="code">{it.base?.contrato || (it.base && s.pilar !== 'ACORDO' && s.pilar !== 'CPF') ? <Link to={`/contratos/${encodeURIComponent(it.base?.contrato ?? it.contrato)}`}>{it.contrato}</Link> : it.contrato}{s.pilar === 'ACORDO' && it.base?.contrato && <div className="small muted">contrato {it.base.contrato}</div>}</td>
                         <td><Badge tone={SITUACAO[it.situacao].tone}>{SITUACAO[it.situacao].label}</Badge>{it.duplicado && <div className="small" style={{ color: 'var(--warn)' }}>duplicado no CRM</div>}</td>
                         <td className="small">{divs.length ? shown.map((d: any, i: number) => <div key={i}>{d.campo} <span className="muted">({d.coluna_crm})</span></div>) : <span className="muted">{it.motivo}</span>}</td>
                         <td className="small">{shown.map((d: any, i: number) => <div key={i}>{String(d.base ?? '—')}</div>)}</td>
@@ -307,7 +314,7 @@ export function CrmPage() {
             <p>Defina qual coluna do CRM corresponde a cada campo da base original. {profile && !missing.length ? 'Mapeamento salvo carregado.' : 'Sugestão automática pelo nome das colunas: revise antes de salvar.'}</p></div></div>
           {missing.length > 0 && profile && <div className="panel-body"><Notice tone="warn">O mapeamento salvo usa colunas que não existem nesta exportação: {missing.join(', ')}. Revise e salve novamente.</Notice></div>}
           <div className="panel-body">
-            {can('OPERADOR') ? <MappingEditor headers={headers} attrs={perfil.data.atributos} initial={initial} onSaved={perfil.reload} /> : <p className="muted">Somente operadores alteram o mapeamento.</p>}
+            {can('OPERADOR') ? <MappingEditor headers={headers} attrsByPillar={perfil.data.atributosPorPilar} pillars={perfil.data.pilares} initial={initial} onSaved={perfil.reload} /> : <p className="muted">Somente operadores alteram o mapeamento.</p>}
           </div>
         </section>
       )}

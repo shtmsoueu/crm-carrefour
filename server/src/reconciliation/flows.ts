@@ -119,6 +119,13 @@ function groupBy<T>(items: T[], key: (t: T) => string | null): Map<string, T[]> 
 
 const agreementHead = (list: Rec[]) => list[0];
 
+/** Registro sem a contraparte importada: resultado individual explícito (sem simular conciliação). */
+function waiting(ctx: FlowContext, rule: string, recs: Rec[], keyName: string, target: string) {
+  for (const r of recs) {
+    ctx.result({ ...base(r, keyName, r.ahid ?? r.contract_key), rule, status: 'AGUARDANDO_ARQUIVO', target_type: target, reason: `Aguardando importação de ${target} para confronto` });
+  }
+}
+
 // ===========================================================================
 // A. DISTRIBUIÇÃO DE CONTRATOS — REM_CONTRATOS x BAT_CONTRATOS x RET_DISTRIBUICAO x RET_CARTEIRA
 // ===========================================================================
@@ -370,13 +377,19 @@ registerFlow({
       return;
     }
     const byHash = groupBy(all, (r) => r.record_hash);
-    dupResults(ctx, 'PAGAMENTO_DUPLICADO', 'LINHA', new Map([...byHash].filter(([, l]) => new Set(l.map((x) => x.import_id)).size > 1)), (_k, l) =>
-      `Pagamento do contrato ${l[0].contract_key} (${fmtMoney(l[0].amount)} em ${br(l[0].event_date)}) repetido em ${l.length} arquivos: ${[...new Set(l.map((x) => x.import_name))].join(', ')}`,
-    );
+    // Linhas idênticas (no mesmo arquivo ou entre arquivos) entram uma única vez nos totais e
+    // geram pendência de duplicidade, para que nenhuma unificação ocorra em silêncio.
+    dupResults(ctx, 'PAGAMENTO_DUPLICADO', 'LINHA', byHash, (_k, l) => {
+      const files = [...new Set(l.map((x) => x.import_name))];
+      return `Pagamento do contrato ${l[0].contract_key} (${fmtMoney(l[0].amount)} em ${br(l[0].event_date)}) em ${l.length} linhas idênticas ${files.length > 1 ? `em ${files.length} arquivos: ${files.join(', ')}` : `no arquivo ${files[0]}`}; contabilizado uma vez`;
+    });
     const payments = [...byHash.values()].map((l) => l[0]);
     const acoAvailable = await hasConfirmed(db, 'ACORDO_ASSESSORIA');
     const aco = acoAvailable ? await loadLatestPerAhid(db, 'ACORDO_ASSESSORIA') : new Map<string, Rec[]>();
-    if (!acoAvailable) ctx.note('AGUARDANDO', 'ACORDO_ASSESSORIA não importado: pagamentos não podem ser relacionados aos acordos.');
+    if (!acoAvailable) {
+      ctx.note('AGUARDANDO', 'ACORDO_ASSESSORIA não importado: pagamentos não podem ser relacionados aos acordos.');
+      waiting(ctx, 'REPASSE_X_ACORDO', payments, 'AHID', 'ACORDO_ASSESSORIA');
+    }
 
     const paidAhids = new Set<string>();
     for (const p of payments) {
@@ -495,6 +508,7 @@ registerFlow({
     }
     if (!(await hasConfirmed(db, 'ACORDO_ASSESSORIA'))) {
       ctx.note('AGUARDANDO', 'ACORDO_ASSESSORIA não importado: boletos não podem ser confrontados.');
+      waiting(ctx, 'BOLETO_X_ACORDO', parcels, 'AHID', 'ACORDO_ASSESSORIA');
       return;
     }
     const aco = await loadLatestPerAhid(db, 'ACORDO_ASSESSORIA');
@@ -561,8 +575,15 @@ registerFlow({
       await db.query(`UPDATE agreements SET status='ATIVO', broken_at=NULL WHERE status='QUEBRADO'`);
       return;
     }
+    // Uma entrada por (AHID, contrato): o mesmo AHID pode vir com contratos diferentes e nenhum
+    // registro pode ser descartado. Para a situação do acordo vale a quebra mais recente do AHID.
     const latest = new Map<string, Rec>();
-    for (const r of q) if (r.ahid) latest.set(r.ahid, r); // ordenado por data do arquivo
+    const perKey = new Map<string, Rec>();
+    for (const r of q) {
+      if (!r.ahid) continue;
+      latest.set(r.ahid, r); // ordenado por data do arquivo
+      perKey.set(`${r.ahid}|${r.contract_key}`, r);
+    }
     await db.query(`UPDATE agreements SET status = CASE WHEN agreement_date IS NULL THEN 'NAO_IDENTIFICADO' ELSE 'ATIVO' END, broken_at=NULL WHERE status='QUEBRADO'`);
     await db.query(
       `UPDATE agreements a SET status='QUEBRADO', broken_at=x.d, updated_at=now() FROM jsonb_to_recordset($1::jsonb) AS x(ahid bigint, d date) WHERE a.ahid=x.ahid`,
@@ -571,18 +592,23 @@ registerFlow({
     const acoAvailable = await hasConfirmed(db, 'ACORDO_ASSESSORIA');
     if (!acoAvailable) ctx.note('AGUARDANDO', 'ACORDO_ASSESSORIA não importado: quebras não podem ser relacionadas ao acordo original.');
     const aco = acoAvailable ? await loadLatestPerAhid(db, 'ACORDO_ASSESSORIA') : new Map<string, Rec[]>();
-    for (const [ahid, r] of latest) {
+    for (const r of perKey.values()) {
+      const ahid = r.ahid!;
+      const fpk = `${ahid}|${r.contract_key}`;
       if (config.agencyCode && norm(r.fields.DMAGENCY) !== norm(config.agencyCode)) {
         ctx.result({ ...base(r, 'AHID', ahid), rule: 'QUEBRA_OUTRA_ASSESSORIA', status: 'INFORMATIVO', field: 'DMAGENCY', value_received: r.fields.DMAGENCY, value_expected: config.agencyCode, reason: 'Acordo criado por outra assessoria' });
       }
-      if (!acoAvailable) continue;
+      if (!acoAvailable) {
+        waiting(ctx, 'QUEBRA_X_ACORDO', [r], 'AHID', 'ACORDO_ASSESSORIA');
+        continue;
+      }
       const a = aco.get(ahid);
       if (!a) {
-        ctx.divergence({ ...base(r, 'AHID', ahid), rule: 'QUEBRA_X_ACORDO', status: 'SOMENTE_ORIGEM', target_type: 'ACORDO_ASSESSORIA', reason: `Quebra em ${br(r.event_date)} de acordo não localizado nos ACORDO_ASSESSORIA importados` }, 'ACORDO_NAO_RECONHECIDO', ahid);
+        ctx.divergence({ ...base(r, 'AHID', ahid), rule: 'QUEBRA_X_ACORDO', status: 'SOMENTE_ORIGEM', target_type: 'ACORDO_ASSESSORIA', reason: `Quebra em ${br(r.event_date)} de acordo não localizado nos ACORDO_ASSESSORIA importados` }, 'ACORDO_NAO_RECONHECIDO', fpk);
         continue;
       }
       const h = agreementHead(a);
-      const n = compareFields(ctx, 'QUEBRA_X_ACORDO', r, h, 'AHID', ahid, ahid, [
+      const n = compareFields(ctx, 'QUEBRA_X_ACORDO', r, h, 'AHID', ahid, fpk, [
         { field: 'DMACCT', label: 'Contrato', src: r.contract_key, dst: h.contract_key, kind: 'text', category: 'DIVERGENCIA_CADASTRAL' },
         { field: 'AHTYPE', label: 'Tipo de acordo', src: r.fields.AHTYPE, dst: h.fields.AHTYPE, kind: 'text', category: 'DIVERGENCIA_CADASTRAL' },
         { field: 'AHDT', label: 'Data de negociação', src: r.fields.AHDT, dst: h.fields.AHDT, kind: 'date', category: 'DIVERGENCIA_DATA' },
@@ -769,5 +795,72 @@ registerFlow({
       if (ccamKeys.has(k)) continue;
       ctx.result({ ...base(l[0], 'CONTRATO', k), rule: 'REJEICAO_X_CCAM', status: 'SOMENTE_DESTINO', reason: `Rejeição de campanha para contrato sem CCAM importada${l[0].fields.MOTIVO ? ' (' + l[0].fields.MOTIVO + ')' : ''}` });
     }
+  },
+});
+
+// ===========================================================================
+// I. INTEGRIDADE DAS CHAVES — três pilares de identificação
+//   Pilar 1 (visão conta): Número do Acordo (AHID) -> deve apontar para um único contrato.
+//   Pilar 2 (visão contrato): Nº Conta/Contrato (DMACCT) -> deve ter um único CPF/CNPJ.
+//   Pilar 3 (visão unique): CPF/CNPJ -> pode ter vários contratos (multiplicidade natural, informativa).
+// ===========================================================================
+registerFlow({
+  code: 'I_INTEGRIDADE',
+  title: 'I. Integridade das chaves (três pilares)',
+  description: 'Prova que cada acordo aponta para um único contrato e cada contrato para um único CPF/CNPJ, em todos os arquivos.',
+  sources: ['REM_CONTRATOS', 'BAT_CONTRATOS', 'RET_DISTRIBUICAO', 'RET_CARTEIRA', 'ACORDO_ASSESSORIA', 'BAT_ACORDO', 'BAT_ACORDO_PGTO', 'REPASSE', 'REM_BOLETOS', 'QUEBRA_ACORDO', 'COMISSAO', 'CCAM'],
+  rules: [
+    'Pilar 1: um AHID associado a mais de um contrato (em qualquer arquivo) é divergência cadastral — nenhum dos registros é descartado.',
+    'Pilar 2: um contrato com mais de um CPF/CNPJ entre arquivos é divergência cadastral (CPF comparado só por dígitos, sem zeros à esquerda).',
+    'Pilar 3: CPF/CNPJ com vários contratos é multiplicidade natural da operação (informativo), não duplicidade.',
+    'Chaves não são substituídas entre si: Nº Contrato, Nº Conta-Contrato (15/19 posições) e CPF são tratados como identificadores distintos.',
+  ],
+  async run(ctx) {
+    const db = ctx.db;
+    const BASE = `FROM records r JOIN imports i ON i.id = r.import_id AND i.status = 'CONFIRMADO' WHERE r.valid`;
+    // Pilar 1
+    const p1 = await db.query<{ ahid: string; contratos: string[]; arquivos: string[]; rid: string }>(
+      `SELECT r.ahid::text, array_agg(DISTINCT r.contract_key) AS contratos, array_agg(DISTINCT r.file_type) AS arquivos, min(r.id)::text AS rid
+       ${BASE} AND r.ahid IS NOT NULL AND r.contract_key IS NOT NULL GROUP BY r.ahid`,
+    );
+    if (!p1.rows.length && !(await db.query(`SELECT 1 ${BASE} AND r.contract_key IS NOT NULL LIMIT 1`)).rowCount) {
+      ctx.note('AGUARDANDO', 'Nenhum registro confirmado.');
+      return;
+    }
+    for (const a of p1.rows) {
+      const r = { rule: 'PILAR1_ACORDO_CONTRATO', key_name: 'AHID', key_value: a.ahid, ahid: a.ahid, source_record_id: a.rid, source_type: a.arquivos.join(', ') };
+      if (a.contratos.length === 1) ctx.result({ ...r, status: 'CONCILIADO', contract_key: a.contratos[0], reason: `Acordo associado a um único contrato em ${a.arquivos.length} tipo(s) de arquivo` });
+      else
+        ctx.divergence(
+          { ...r, status: 'DIVERGENTE', contract_key: a.contratos[0], field: 'DMACCT', value_received: a.contratos.join(', '), reason: `O acordo ${a.ahid} aparece com ${a.contratos.length} contratos diferentes (${a.arquivos.join(', ')})` },
+          'DIVERGENCIA_CADASTRAL',
+          a.ahid,
+        );
+    }
+    // Pilar 2
+    const p2 = await db.query<{ contract_key: string; cpfs: string[]; arquivos: string[]; rid: string }>(
+      `SELECT r.contract_key, array_agg(DISTINCT ltrim(regexp_replace(r.cpf, '\\D', '', 'g'), '0')) AS cpfs, array_agg(DISTINCT r.file_type) AS arquivos, min(r.id)::text AS rid
+       ${BASE} AND r.contract_key IS NOT NULL AND COALESCE(ltrim(regexp_replace(r.cpf, '\\D', '', 'g'), '0'), '') <> '' GROUP BY r.contract_key`,
+    );
+    for (const c of p2.rows) {
+      const r = { rule: 'PILAR2_CONTRATO_CPF', key_name: 'DMACCT', key_value: c.contract_key, contract_key: c.contract_key, source_record_id: c.rid, source_type: c.arquivos.join(', ') };
+      if (c.cpfs.length === 1) ctx.result({ ...r, status: 'CONCILIADO', cpf: c.cpfs[0], reason: `Contrato com um único CPF/CNPJ em ${c.arquivos.length} tipo(s) de arquivo` });
+      else
+        ctx.divergence(
+          { ...r, status: 'DIVERGENTE', cpf: c.cpfs[0], field: 'DMSSNUM', value_received: c.cpfs.join(', '), reason: `O contrato ${c.contract_key} aparece com ${c.cpfs.length} CPF/CNPJ diferentes (${c.arquivos.join(', ')})` },
+          'DIVERGENCIA_CADASTRAL',
+          c.contract_key,
+        );
+    }
+    // Pilar 3 (informativo): CPF com mais de um contrato
+    const byCpf = new Map<string, string[]>();
+    for (const c of p2.rows) if (c.cpfs.length === 1) byCpf.set(c.cpfs[0], [...(byCpf.get(c.cpfs[0]) ?? []), c.contract_key]);
+    let multi = 0;
+    for (const [cpf, cts] of byCpf) {
+      if (cts.length < 2) continue;
+      multi++;
+      ctx.result({ rule: 'PILAR3_CPF_MULTIPLOS_CONTRATOS', status: 'INFORMATIVO', key_name: 'CPF', key_value: cpf, cpf, contract_key: cts[0], reason: `CPF/CNPJ com ${cts.length} contratos: ${cts.join(', ')} (multiplicidade natural)` });
+    }
+    ctx.note('INFO', `Pilar 1: ${p1.rows.length} acordos; Pilar 2: ${p2.rows.length} contratos com CPF; Pilar 3: ${byCpf.size} CPF/CNPJ distintos, ${multi} com mais de um contrato.`);
   },
 });

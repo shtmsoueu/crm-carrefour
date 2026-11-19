@@ -12,9 +12,9 @@ import { audit } from '../services/audit.js';
 import { sendExport, type Column } from '../services/export.js';
 import { setSetting } from '../services/settings.js';
 import { ImportError } from '../imports/service.js';
-import { BASE_ATTRIBUTES, DEFAULT_CARTEIRA, getPortfolioCached, SETTING_CARTEIRA, type PortfolioRow } from '../portfolio/portfolio.js';
+import { AGREEMENT_ATTRIBUTES, BASE_ATTRIBUTES, buildAgreementView, buildPersonView, DEFAULT_CARTEIRA, getPortfolioCached, PERSON_ATTRIBUTES, SETTING_CARTEIRA, type PortfolioRow } from '../portfolio/portfolio.js';
 import { FAIXAS, faixaLabel, FLAG_LABELS, SALDO_LIMITE } from '../portfolio/rules.js';
-import { createSnapshot, getProfile, getSnapshot, readSnapshotFile, runReconciliation, saveProfile, SCOPES, suggestProfile, type Scope } from '../crm/service.js';
+import { createSnapshot, getProfile, getSnapshot, PILLARS, readSnapshotFile, runReconciliation, saveProfile, SCOPES, suggestProfile, type Scope } from '../crm/service.js';
 
 const gunzip = promisify(gunzipCb);
 type Handler = (req: Request, res: Response) => Promise<unknown>;
@@ -34,7 +34,8 @@ const PORTFOLIO_COLUMNS: Column[] = [
   { key: 'acordo_id', header: 'Acordo (AHID)' }, { key: 'acordo_status', header: 'Status do acordo' }, { key: 'parcelas', header: 'Parcelas (AHPRD)' },
   { key: 'canal_acordo', header: 'Canal do acordo' }, { key: 'pagamentos_qtde', header: 'Pagamentos' }, { key: 'pagamentos_valor', header: 'Valor pago' },
   { key: 'ultimo_pagamento_codigo', header: 'Último pagamento: código' }, { key: 'comissao_linhas', header: 'Comissão: linhas' },
-  { key: 'comissao_valor_recebido', header: 'Comissão: valor recebido' }, { key: 'comissao_remuneracao_bruta', header: 'Comissão: remuneração (bruto)' },
+  { key: 'comissao_valor_recebido', header: 'Comissão: valor recebido (todas as linhas)' },
+  { key: 'comissao_linhas_distintas', header: 'Comissão: linhas distintas' }, { key: 'comissao_valor_linhas_distintas', header: 'Comissão: valor (linhas distintas)' }, { key: 'comissao_remuneracao_bruta', header: 'Comissão: remuneração (bruto)' },
   { key: 'alertas', header: 'Alertas de regra', width: 60 },
 ];
 
@@ -60,6 +61,9 @@ function filterPortfolio(rows: PortfolioRow[], q: Request['query']) {
   }
   return { scope, rows: out };
 }
+
+/** Soma em centavos para evitar acúmulo de erro de ponto flutuante em totais financeiros. */
+const round2 = (v: number) => Math.round(v * 100) / 100;
 
 function summarize(rows: PortfolioRow[]) {
   const by = (k: keyof PortfolioRow) => {
@@ -90,13 +94,15 @@ function summarize(rows: PortfolioRow[]) {
   }
   const flags: Record<string, { label: string; contas: number }> = {};
   for (const p of rows) for (const f of p.flags) (flags[f] ??= { label: FLAG_LABELS[f], contas: 0 }).contas++;
-  const comissaoPorOrigem: Record<string, { contas: number; linhas: number; valor_recebido: number; remuneracao_bruta: number }> = {};
+  const comissaoPorOrigem: Record<string, { contas: number; linhas: number; valor_recebido: number; remuneracao_bruta: number; linhas_distintas: number; valor_linhas_distintas: number }> = {};
   for (const p of rows.filter((x) => x.comissao_linhas > 0)) {
-    const e = (comissaoPorOrigem[p.origem ?? '__VAZIO__'] ??= { contas: 0, linhas: 0, valor_recebido: 0, remuneracao_bruta: 0 });
+    const e = (comissaoPorOrigem[p.origem ?? '__VAZIO__'] ??= { contas: 0, linhas: 0, valor_recebido: 0, remuneracao_bruta: 0, linhas_distintas: 0, valor_linhas_distintas: 0 });
     e.contas++;
     e.linhas += p.comissao_linhas;
-    e.valor_recebido += p.comissao_valor_recebido;
+    e.valor_recebido = round2(e.valor_recebido + p.comissao_valor_recebido);
     e.remuneracao_bruta += p.comissao_remuneracao_bruta;
+    e.linhas_distintas += p.comissao_linhas_distintas;
+    e.valor_linhas_distintas = round2(e.valor_linhas_distintas + p.comissao_valor_linhas_distintas);
   }
   const produtoCodigos: Record<string, { produto: string | null; contas: number }> = {};
   for (const p of rows) {
@@ -105,7 +111,9 @@ function summarize(rows: PortfolioRow[]) {
   }
   return {
     contas: rows.length,
-    saldo_risco: rows.reduce((s, p) => s + (p.saldo_risco ?? 0), 0),
+    saldo_risco: round2(rows.reduce((s, p) => s + Math.round((p.saldo_risco ?? 0) * 100), 0) / 100),
+    clientes_unicos: new Set(rows.map((p) => (p.cpf ?? '').replace(/\D/g, '').replace(/^0+/, '')).filter(Boolean)).size,
+    acordos_distintos: new Set(rows.map((p) => p.acordo_id).filter(Boolean)).size,
     porProduto: by('produto'),
     porOrigem: by('origem'),
     porRanking: by('ranking'),
@@ -156,7 +164,52 @@ export function carteiraCrmRouter() {
   }));
 
   // ---------------------------------------------------------------- CRM externo
-  r.get('/crm/perfil', h(async (_req, res) => res.json({ profile: await getProfile(), atributos: BASE_ATTRIBUTES, escopos: SCOPES })));
+  r.get('/crm/perfil', h(async (_req, res) =>
+    res.json({ profile: await getProfile(), atributos: BASE_ATTRIBUTES, atributosPorPilar: { CONTRATO: BASE_ATTRIBUTES, ACORDO: AGREEMENT_ATTRIBUTES, CPF: PERSON_ATTRIBUTES }, pilares: PILLARS, escopos: SCOPES })));
+
+  // Totais independentes das três visões de identificação (não se misturam contas, contratos e clientes).
+  r.get('/carteira/pilares', h(async (req, res) => {
+    const { rows } = await getPortfolioCached();
+    const { rows: scoped } = filterPortfolio(rows, req.query);
+    const ag = await buildAgreementView();
+    const scopedCts = new Set(scoped.map((p) => p.contrato));
+    const agScoped = ag.filter((a) => a.contrato && scopedCts.has(a.contrato));
+    const people = buildPersonView(scoped);
+    const agPorContrato = new Map<string, number>();
+    for (const a of agScoped) agPorContrato.set(a.contrato!, (agPorContrato.get(a.contrato!) ?? 0) + 1);
+    const integ = await pool.query(
+      `SELECT rule, status, count(*)::int n FROM reconciliation_results WHERE flow = 'I_INTEGRIDADE' GROUP BY 1, 2`,
+    );
+    const ig = (rule: string, st: string) => integ.rows.find((x) => x.rule === rule && x.status === st)?.n ?? 0;
+    res.json({
+      escopo: str(req.query.scope) ?? 'ATIVOS',
+      pilar1_acordo: {
+        acordos_distintos_no_escopo: agScoped.length,
+        acordos_distintos_todos_arquivos: ag.length,
+        acordos_sem_contrato_no_escopo: ag.length - agScoped.length,
+        por_origem: agScoped.reduce((m: Record<string, number>, a) => ((m[a.origem ?? 'Sem AHCOLLID'] = (m[a.origem ?? 'Sem AHCOLLID'] ?? 0) + 1), m), {}),
+        integridade_acordo_um_contrato: ig('PILAR1_ACORDO_CONTRATO', 'CONCILIADO'),
+        acordos_com_mais_de_um_contrato: ig('PILAR1_ACORDO_CONTRATO', 'DIVERGENTE'),
+      },
+      pilar2_contrato: {
+        contratos_no_escopo: scoped.length,
+        contratos_com_acordo: agPorContrato.size,
+        contratos_com_mais_de_um_acordo: [...agPorContrato.values()].filter((n) => n > 1).length,
+        tamanhos_da_chave: scoped.reduce((m: Record<string, number>, p) => ((m[`${p.contrato.length} posições`] = (m[`${p.contrato.length} posições`] ?? 0) + 1), m), {}),
+        integridade_contrato_um_cpf: ig('PILAR2_CONTRATO_CPF', 'CONCILIADO'),
+        contratos_com_mais_de_um_cpf: ig('PILAR2_CONTRATO_CPF', 'DIVERGENTE'),
+      },
+      pilar3_cpf: {
+        clientes_unicos: people.people.length,
+        contratos_sem_cpf: people.semCpf,
+        clientes_com_mais_de_um_contrato: people.people.filter((x) => x.contratos_qtde > 1).length,
+        maximo_contratos_por_cliente: people.people.reduce((m, x) => Math.max(m, x.contratos_qtde), 0),
+        soma_contratos_dos_clientes: people.people.reduce((m, x) => m + x.contratos_qtde, 0),
+      },
+      // Prova de fechamento: contratos com CPF + contratos sem CPF = contratos do escopo.
+      fechamento_ok: people.people.reduce((m, x) => m + x.contratos_qtde, 0) + people.semCpf === scoped.length,
+    });
+  }));
   r.put('/crm/perfil', requireRole('OPERADOR'), h(async (req, res) => res.json(await saveProfile(req.body?.profile, actorOf(req)))));
 
   r.post('/crm/snapshots', requireRole('OPERADOR'), upload.single('file'), h(async (req, res) => {

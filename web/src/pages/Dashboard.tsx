@@ -123,6 +123,7 @@ export function DashboardPage() {
                 <li title="Contratos distintos presentes em qualquer arquivo importado">Recebidos (todos os arquivos) <b>{fmtInt(k.contratos_recebidos)}</b></li>
                 <li title="Contratos distintos em REM_CONTRATOS">Distribuídos <b>{fmtInt(k.contratos_distribuidos)}</b></li>
                 <li title="Contratos distintos em RET_DISTRIBUICAO ou RET_CARTEIRA">Retirados <b>{fmtInt(k.contratos_retirados)}</b></li>
+                <li title="CPF/CNPJ distintos (visão unique): uma pessoa pode ter vários contratos">Clientes únicos (CPF/CNPJ) <b>{fmtInt(k.clientes_unicos)}</b></li>
               </ul>
             </div>
             <div className="kpi-group">
@@ -140,7 +141,11 @@ export function DashboardPage() {
               <div className="kpi-lead">{fmtMoney(k.valor_recebido)}</div>
               <div className="kpi-lead-label">recebidos em {fmtInt(k.pagamentos_identificados)} pagamentos</div>
               <ul className="kpi-list">
-                <li title="Pagamentos distintos do REPASSE (linhas repetidas entre arquivos contam uma vez)">Identificados no repasse <b>{fmtInt(k.pagamentos_identificados)}</b></li>
+                <li title="Pagamentos distintos do REPASSE (linhas idênticas contam uma vez)">Identificados no repasse <b>{fmtInt(k.pagamentos_identificados)}</b></li>
+                {k.pagamentos_linhas > k.pagamentos_identificados && (
+                  <li className="alert" title="Linhas idênticas desconsideradas no total (ver pendências de duplicidade)">Linhas idênticas desconsideradas <b>{fmtInt(k.pagamentos_linhas - k.pagamentos_identificados)} ({fmtMoney(Number(k.pagamentos_valor_linhas) - Number(k.valor_recebido))})</b></li>
+                )}
+                <li title="Acordos (AHID) distintos em qualquer arquivo — visão conta">Acordos em todos os arquivos <b>{fmtInt(k.acordos_todos_arquivos)}</b></li>
               </ul>
             </div>
             <div className={`kpi-group ${k.pendentes ? 'alert' : ''}`}>
