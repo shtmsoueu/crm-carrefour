@@ -63,9 +63,14 @@ export function Layout() {
   const nav = useNavigate();
   useEffect(() => setOpen(false), [loc.pathname]);
   useEffect(() => {
-    Promise.all([api('/imports?status=PRE_VISUALIZACAO&pageSize=1'), api('/divergences?status=ABERTAS&pageSize=1')])
-      .then(([i, d]) => setPending({ imports: i.total, divergences: d.total }))
-      .catch(() => undefined);
+    const load = () =>
+      Promise.all([api('/imports?status=PRE_VISUALIZACAO&pageSize=1'), api('/divergences?status=ABERTAS&pageSize=1')])
+        .then(([i, d]) => setPending({ imports: i.total, divergences: d.total }))
+        .catch(() => undefined);
+    load();
+    // Telas que mudam os contadores (ex.: confirmação em lote) avisam sem trocar de rota.
+    window.addEventListener('crm:pendentes', load);
+    return () => window.removeEventListener('crm:pendentes', load);
   }, [loc.pathname]);
   const logout = async () => {
     await api('/auth/logout', { method: 'POST' });

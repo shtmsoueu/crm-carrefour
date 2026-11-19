@@ -177,6 +177,36 @@ export function createApp() {
     res.json({ counts: imp.issue_counts, rows });
   }));
 
+  /**
+   * Confirmação em lote. Cada arquivo é confirmado na sua própria transação (uma falha não desfaz os demais),
+   * em ordem de data de geração. Os batimentos rodam uma única vez para os tipos afetados (runFlowsFor),
+   * o que permite ao navegador enviar o lote em partes e pedir os batimentos só na última.
+   */
+  api.post('/imports/confirm-batch', requireRole('OPERADOR'), h(async (req, res) => {
+    const ids = (Array.isArray(req.body?.ids) ? req.body.ids : []).map(Number).filter((n: number) => Number.isInteger(n) && n > 0);
+    if (ids.length > 50) return res.status(400).json({ error: 'Envie no máximo 50 arquivos por lote.' });
+    const ordered = ids.length
+      ? (await pool.query(`SELECT id FROM imports WHERE id = ANY($1::int[]) ORDER BY COALESCE(generation_date, file_name_date) NULLS LAST, id`, [ids])).rows.map((r) => r.id as number)
+      : [];
+    const results: { id: number; ok: boolean; file_type?: string; name?: string; error?: string }[] = [];
+    for (const id of ordered) {
+      try {
+        const imp = await confirmImport(id, actorOf(req));
+        results.push({ id, ok: true, file_type: imp.file_type, name: imp.original_name });
+      } catch (e) {
+        results.push({ id, ok: false, error: (e as Error).message });
+      }
+    }
+    const types = new Set<string>([...(Array.isArray(req.body?.runFlowsFor) ? req.body.runFlowsFor.map(String) : [])]);
+    const codes = new Set<string>();
+    for (const t of types) for (const c of flowsForFileType(t)) codes.add(c);
+    const flows = [];
+    for (const code of codes) {
+      const r = await runFlow(code, actorOf(req));
+      flows.push({ flow: r.flow, total: r.total, divergences: r.divergences });
+    }
+    res.json({ results, flows });
+  }));
   api.post('/imports/:id/confirm', requireRole('OPERADOR'), h(async (req, res) => {
     const imp = await confirmImport(int(req.params.id, 0, 2 ** 31 - 1), actorOf(req));
     const flows = await rerunFlows(imp.file_type, req);

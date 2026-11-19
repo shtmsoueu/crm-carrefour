@@ -2,7 +2,7 @@ import { useRef, useState, type DragEvent } from 'react';
 import { Link } from 'react-router-dom';
 import { api, ApiError } from '../api';
 import { useAuth } from '../auth';
-import { MapBadge, Notice, useLoad, titulo, Hint } from '../components/ui';
+import { MapBadge, Modal, Notice, useLoad, useToast, titulo, Hint } from '../components/ui';
 import { FILE_TYPE_LABELS, fmtBytes, fmtDateTime, fmtInt, IMPORT_STATUS } from '../format';
 
 interface Item { file: File; type: string; state: 'fila' | 'enviando' | 'ok' | 'erro'; message?: string; importId?: number; status?: string; records?: number; rejected?: number }
@@ -13,7 +13,52 @@ export function ImportPage() {
   const [over, setOver] = useState(false);
   const [busy, setBusy] = useState(false);
   const input = useRef<HTMLInputElement>(null);
-  const pending = useLoad(() => api('/imports?status=PRE_VISUALIZACAO&pageSize=20'), []);
+  const pending = useLoad(() => api('/imports?status=PRE_VISUALIZACAO&pageSize=500'), []);
+  const toast = useToast();
+  const [askAll, setAskAll] = useState(false);
+  const [progress, setProgress] = useState<{ done: number; total: number; stage: 'arquivos' | 'batimentos' } | null>(null);
+  const [failed, setFailed] = useState<{ id: number; name: string; error: string }[]>([]);
+  const pend: any[] = pending.data?.rows ?? [];
+  const pendTotals = {
+    files: pend.length,
+    records: pend.reduce((m, r) => m + Number(r.data_records ?? 0), 0),
+    rejected: pend.reduce((m, r) => m + Number(r.rejected_records ?? 0), 0),
+    withRejects: pend.filter((r) => Number(r.rejected_records) > 0),
+  };
+
+  /** Confirma todos os arquivos aguardando, em lotes de 10, e roda os batimentos uma única vez no final. */
+  const confirmAll = async () => {
+    setAskAll(false);
+    setFailed([]);
+    const rows = [...pend];
+    const names = new Map(rows.map((r) => [r.id, r.original_name]));
+    const types = new Set<string>();
+    const fails: { id: number; name: string; error: string }[] = [];
+    let ok = 0;
+    setProgress({ done: 0, total: rows.length, stage: 'arquivos' });
+    try {
+      for (let i = 0; i < rows.length; i += 10) {
+        const chunk = rows.slice(i, i + 10).map((r) => r.id);
+        const r = await api('/imports/confirm-batch', { method: 'POST', json: { ids: chunk } });
+        for (const x of r.results) {
+          if (x.ok) { ok++; types.add(x.file_type); } else fails.push({ id: x.id, name: names.get(x.id) ?? `#${x.id}`, error: x.error });
+        }
+        setProgress({ done: Math.min(i + 10, rows.length), total: rows.length, stage: 'arquivos' });
+      }
+      if (types.size) {
+        setProgress({ done: rows.length, total: rows.length, stage: 'batimentos' });
+        await api('/imports/confirm-batch', { method: 'POST', json: { ids: [], runFlowsFor: [...types] } });
+      }
+      toast.show(fails.length ? 'warn' : 'ok', `${fmtInt(ok)} arquivo(s) confirmado(s)${fails.length ? `, ${fmtInt(fails.length)} com erro` : ''}. Batimentos atualizados.`);
+    } catch (e) {
+      toast.show('bad', `${(e as Error).message} (${fmtInt(ok)} confirmado(s) antes da falha).`);
+    } finally {
+      setFailed(fails);
+      setProgress(null);
+      pending.reload();
+      window.dispatchEvent(new Event('crm:pendentes'));
+    }
+  };
 
   const add = (files: FileList | null) => {
     if (!files) return;
@@ -130,7 +175,20 @@ export function ImportPage() {
       )}
 
       <section className="panel">
-        <div className="panel-head"><div><h2>Aguardando confirmação <Hint text="Arquivos interpretados que ainda não compõem a base." /></h2></div></div>
+        <div className="panel-head">
+          <div><h2>Aguardando confirmação <Hint text="Arquivos interpretados que ainda não compõem a base." /></h2></div>
+          {can('OPERADOR') && pend.length > 0 && (
+            <button className="btn primary sm" disabled={!!progress || busy} onClick={() => setAskAll(true)}>
+              {progress ? (progress.stage === 'arquivos' ? `Confirmando ${progress.done}/${progress.total}…` : 'Atualizando batimentos…') : `Confirmar todos (${fmtInt(pend.length)})`}
+            </button>
+          )}
+        </div>
+        {failed.length > 0 && (
+          <Notice tone="bad">
+            <div>Não confirmados:
+            <ul className="small" style={{ margin: '4px 0 0', paddingLeft: 18 }}>{failed.map((f) => <li key={f.id}><Link to={`/importacao/${f.id}`} className="code">{f.name}</Link>: {f.error}</li>)}</ul></div>
+          </Notice>
+        )}
         {pending.data?.rows.length ? (
           <div className="table-wrap">
             <table className="data">
@@ -153,6 +211,25 @@ export function ImportPage() {
           <div className="empty">Nenhum arquivo aguardando confirmação.</div>
         )}
       </section>
+
+      {askAll && (
+        <Modal title="Confirmar todos" onClose={() => setAskAll(false)}
+          footer={<><button className="btn" onClick={() => setAskAll(false)}>Voltar</button><button className="btn primary" onClick={confirmAll}>Confirmar {fmtInt(pendTotals.files)} arquivo(s)</button></>}>
+          <dl className="facts" style={{ gridTemplateColumns: 'repeat(3, 1fr)' }}>
+            <div><dt>Arquivos</dt><dd className="num">{fmtInt(pendTotals.files)}</dd></div>
+            <div><dt>Registros</dt><dd className="num">{fmtInt(pendTotals.records)}</dd></div>
+            <div><dt>Rejeitados</dt><dd className="num" style={{ color: pendTotals.rejected ? 'var(--bad)' : undefined }}>{fmtInt(pendTotals.rejected)}</dd></div>
+          </dl>
+          {pendTotals.withRejects.length > 0 && (
+            <Notice tone="warn">
+              <div>{fmtInt(pendTotals.withRejects.length)} arquivo(s) com linhas rejeitadas. Só os registros válidos entram na base; os rejeitados viram pendência.
+              <ul className="small" style={{ margin: '4px 0 0', paddingLeft: 18 }}>{pendTotals.withRejects.slice(0, 8).map((r) => <li key={r.id} className="code">{r.original_name} ({fmtInt(r.rejected_records)})</li>)}{pendTotals.withRejects.length > 8 && <li>…</li>}</ul></div>
+            </Notice>
+          )}
+          <p className="small muted">Os batimentos rodam uma vez ao final. Um arquivo confirmado por engano pode ser cancelado no Histórico.</p>
+        </Modal>
+      )}
+      {toast.node}
     </div>
   );
 }

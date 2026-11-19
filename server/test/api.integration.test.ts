@@ -185,6 +185,22 @@ describe('importação, batimento e auditoria', () => {
     expect(pay.results.some((x: any) => x.status === 'CONCILIADO')).toBe(true);
   });
 
+  it('confirma vários arquivos de uma vez e roda os batimentos uma única vez', async () => {
+    const a = await upload(admin, 'BAT_ACORDO_LEALCO_20261118_000041.txt', acordoFile('BAT_ACORDO', 6001, 41)).expect(201);
+    const b = await upload(admin, 'BAT_ACORDO_LEALCO_20261118_000042.txt', acordoFile('BAT_ACORDO', 6002, 42)).expect(201);
+    await viewer.post('/api/imports/confirm-batch').send({ ids: [a.body.id] }).expect(403);
+    const r = await admin.post('/api/imports/confirm-batch').send({ ids: [b.body.id, a.body.id, 999999] }).expect(200);
+    expect(r.body.results.filter((x: any) => x.ok).map((x: any) => x.id).sort()).toEqual([a.body.id, b.body.id].sort());
+    expect(r.body.flows).toEqual([]);
+    for (const id of [a.body.id, b.body.id]) expect((await admin.get(`/api/imports/${id}`).expect(200)).body.status).toBe('CONFIRMADO');
+    // segunda tentativa: já confirmados, falha por arquivo sem derrubar o lote
+    const again = await admin.post('/api/imports/confirm-batch').send({ ids: [a.body.id] }).expect(200);
+    expect(again.body.results[0]).toMatchObject({ ok: false });
+    const f = await admin.post('/api/imports/confirm-batch').send({ ids: [], runFlowsFor: ['BAT_ACORDO'] }).expect(200);
+    expect(f.body.flows.map((x: any) => x.flow)).toContain('B_ACORDOS');
+    await admin.post('/api/imports/confirm-batch').send({ ids: Array.from({ length: 51 }, (_, i) => i + 1) }).expect(400);
+  });
+
   it('visão do cliente agrega os contratos do CPF com totais e linha do tempo unificada', async () => {
     const r = await admin.get(`/api/clientes/${CPF[0]}`).expect(200);
     expect(r.body.cpf).toBe(CPF[0].replace(/^0+/, ''));
