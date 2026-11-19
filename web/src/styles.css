@@ -200,6 +200,7 @@ input:focus, select:focus, textarea:focus { outline: none; border-color: var(--p
 
 .filters { display: flex; flex-wrap: wrap; gap: var(--s3); align-items: flex-end; padding: var(--s4) var(--s5); background: var(--cor-cinza-10); border: 1px solid var(--rule); border-radius: var(--r-md); }
 .filters .field input, .filters .field select { width: 160px; }
+.filters .quick { flex-basis: 100%; padding: 0; }
 
 /* ------------------------------------------------------------------ Tabelas */
 .table-wrap { overflow-x: auto; }
@@ -430,6 +431,34 @@ details summary { cursor: pointer; color: var(--primary); font-size: var(--t-sm)
 .c-origin { background: #d9534f; }
 .c-dest { background: #8e1c16; }
 .c-dup { background: #eba39e; }
+
+/* ------------------------------------------------------------------ Filtros rápidos e ações por linha */
+.quick { display: flex; flex-wrap: wrap; gap: var(--s2); padding: var(--s3) var(--s4) 0; }
+.chip {
+  display: inline-flex; align-items: center; gap: 6px; height: 26px; padding: 0 var(--s3);
+  border: 1px solid var(--rule); border-radius: var(--r-sm); background: var(--surface);
+  font: 500 var(--t-xs) var(--font); color: var(--ink-2); cursor: pointer; white-space: nowrap;
+}
+.chip:hover { border-color: var(--ink-3); color: var(--ink); }
+.chip.on { background: var(--primary-tint); border-color: var(--primary); color: var(--cor-azul-70); }
+.chip .num { font-family: var(--font-num); color: var(--ink-3); }
+.chip.on .num { color: var(--cor-azul-70); }
+.chip.clear { border-style: dashed; }
+.row-actions { display: inline-flex; align-items: center; gap: 2px; white-space: nowrap; }
+.row-actions .btn { margin-left: var(--s2); }
+.chip.zero { color: var(--ink-3); }
+.ico {
+  display: inline-flex; align-items: center; justify-content: center; width: 26px; height: 26px;
+  border: 1px solid transparent; border-radius: var(--r-sm); background: transparent; color: var(--ink-3); cursor: pointer; padding: 0;
+}
+.ico:hover { border-color: var(--rule); color: var(--primary); background: var(--surface); }
+.ico.done { color: var(--ok); border-color: var(--ok-tint); background: var(--ok-tint); }
+.ico.inline { width: 20px; height: 20px; margin-left: 2px; vertical-align: middle; opacity: 0; }
+tr:hover .ico.inline, .ico.inline:focus-visible, .ico.inline.done, h2 .ico.inline, p .ico.inline { opacity: 1; }
+@media (hover: none) { .ico.inline { opacity: 1; } }
+td.acts { width: 1%; padding-left: var(--s1); padding-right: var(--s2); }
+.timeline .dot.k-PENDENCIA { border-color: var(--warn); background: var(--warn-tint); }
+.timeline .ctr { font-family: var(--font-num); font-size: var(--t-xs); color: var(--ink-3); margin-left: var(--s2); font-weight: 400; }
 
 @media (max-width: 600px) {
   .topbar { padding: 0 var(--s3); gap: var(--s2); }

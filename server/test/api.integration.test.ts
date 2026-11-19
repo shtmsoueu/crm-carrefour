@@ -185,6 +185,32 @@ describe('importação, batimento e auditoria', () => {
     expect(pay.results.some((x: any) => x.status === 'CONCILIADO')).toBe(true);
   });
 
+  it('visão do cliente agrega os contratos do CPF com totais e linha do tempo unificada', async () => {
+    const r = await admin.get(`/api/clientes/${CPF[0]}`).expect(200);
+    expect(r.body.cpf).toBe(CPF[0].replace(/^0+/, ''));
+    expect(r.body.contratos.map((c: any) => c.contrato)).toContain(ACC[0]);
+    expect(r.body.totais.contratos).toBe(r.body.contratos.length);
+    expect(r.body.totais.pago).toBe(100);
+    expect(r.body.timeline.every((e: any) => e.contrato)).toBe(true);
+    expect(r.body.timeline.some((e: any) => e.kind === 'PAGAMENTO')).toBe(true);
+    // mesma consulta com o CPF formatado e sem zeros à esquerda
+    const f = await admin.get(`/api/clientes/${encodeURIComponent('000.000.001-91')}`).expect(200);
+    expect(f.body.contratos.length).toBe(r.body.contratos.length);
+    await admin.get('/api/clientes/99999999999').expect(404);
+  });
+
+  it('filtros rápidos combinam várias categorias e resultados', async () => {
+    const all = await admin.get('/api/divergences?status=').expect(200);
+    const cats = [...new Set(all.body.rows.map((x: any) => x.category))].slice(0, 2) as string[];
+    const one = await admin.get(`/api/divergences?status=&category=${cats[0]}`).expect(200);
+    const two = await admin.get(`/api/divergences?status=&category=${cats.join(',')}`).expect(200);
+    expect(two.body.total).toBeGreaterThanOrEqual(one.body.total);
+    expect(two.body.rows.every((x: any) => cats.includes(x.category))).toBe(true);
+    const rr = await admin.get('/api/reconciliation/results?status=CONCILIADO,DIVERGENTE&pageSize=500').expect(200);
+    expect(rr.body.rows.every((x: any) => ['CONCILIADO', 'DIVERGENTE'].includes(x.status))).toBe(true);
+    expect(rr.body.rows.length).toBeGreaterThan(0);
+  });
+
   it('exporta pendências em CSV e Excel', async () => {
     const csv = await admin.get('/api/divergences?format=csv').expect(200);
     expect(csv.headers['content-type']).toMatch(/text\/csv/);

@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { api, exportUrl, qs } from '../api';
 import { useAuth } from '../auth';
-import { ExportButtons, Loading, MapBadge, Modal, Notice, Pager, useLoad, useToast, titulo } from '../components/ui';
+import { ContractLink, CpfLink, ExportButtons, Loading, MapBadge, Modal, Notice, Pager, QuickFilters, RowActions, useLoad, useToast, titulo } from '../components/ui';
 import { DIV_STATUS, fmtDateTime, fmtInt } from '../format';
 import { CATEGORY } from './Dashboard';
 
@@ -37,6 +37,27 @@ export function DivergencesPage() {
     if (status === 'ABERTAS' ? open : !status || r.status === status) counts[r.category] = (counts[r.category] ?? 0) + r.n;
   }
   const totalShown = Object.values(counts).reduce((a, b) => a + b, 0);
+  const sumCats = (cats: string[], st = status) =>
+    (summary.data?.rows ?? []).filter((r: any) => cats.includes(r.category) && (st === 'ABERTAS' ? r.status === 'ABERTA' || r.status === 'EM_ANALISE' : !st || r.status === st)).reduce((m: number, r: any) => m + r.n, 0);
+  const allCats = Object.keys(CATEGORY);
+  const catPreset = (id: string, label: string, cats: string[]) => {
+    const v = cats.join(',');
+    return { id, label, active: category === v, count: sumCats(cats), onClick: () => setParam('category', category === v ? '' : v) };
+  };
+  const quick = [
+    catPreset('valor', 'Divergência de valor', ['DIVERGENCIA_VALOR']),
+    catPreset('naoloc', 'Não localizado', ['NAO_LOCALIZADO_BANCO', 'NAO_LOCALIZADO_ASSESSORIA']),
+    catPreset('pgto', 'Pagamento não identificado', ['PAGAMENTO_NAO_IDENTIFICADO']),
+    catPreset('acordo', 'Acordo não reconhecido', ['ACORDO_NAO_RECONHECIDO']),
+    { id: 'semtrat', label: 'Sem tratamento', active: status === 'ABERTA', count: sumCats(category ? category.split(',') : allCats, 'ABERTA'), onClick: () => setParam('status', status === 'ABERTA' ? 'ABERTAS' : 'ABERTA') },
+  ];
+  const clearQuick = () => {
+    const n = new URLSearchParams(sp);
+    n.delete('category');
+    n.delete('status');
+    setSp(n);
+    setPage(1);
+  };
 
   const save = async () => {
     try {
@@ -66,6 +87,7 @@ export function DivergencesPage() {
             <button key={k} className={category === k ? 'on' : ''} onClick={() => setParam('category', k)}>{l}<span className="num">{fmtInt(counts[k] ?? 0)}</span></button>
           ))}
         </div>
+        <QuickFilters items={quick} onClear={clearQuick} />
         <form className="row" style={{ padding: '12px 16px', alignItems: 'flex-end' }} onSubmit={(e) => { e.preventDefault(); setQuery(q); setPage(1); }}>
           <label className="field">Status da resolução
             <select value={status} onChange={(e) => setParam('status', e.target.value)}>
@@ -89,8 +111,8 @@ export function DivergencesPage() {
                   <tr key={r.id}>
                     <td className="num">{r.id}</td>
                     <td className="small nowrap">{CATEGORY[r.category]}</td>
-                    <td className="code">{r.contract_key ? <Link to={`/contratos/${encodeURIComponent(r.contract_key)}`}>{r.contract_key}</Link> : '—'}{r.ahid && <div className="small muted">Acordo {r.ahid}</div>}</td>
-                    <td className="code">{r.cpf ?? '—'}</td>
+                    <td><ContractLink contract={r.contract_key} />{r.ahid && <div className="small muted">Acordo {r.ahid}</div>}</td>
+                    <td><CpfLink cpf={r.cpf} /></td>
                     <td className="small">{r.source_file && <div className="code">{r.source_file}</div>}<span className="muted">{r.flow} {r.rule}</span></td>
                     <td className="code small">{r.field ?? ''}</td>
                     <td className="small">{r.value_received ?? ''}</td>
@@ -98,7 +120,7 @@ export function DivergencesPage() {
                     <td className="small" style={{ minWidth: 260 }}>{r.description}{r.occurrences > 1 && <div className="muted">{fmtInt(r.occurrences)} ocorrências</div>}{r.resolution_note && <div className="muted">Obs.: {r.resolution_note}</div>}</td>
                     <td className="small nowrap">{fmtDateTime(r.first_detected_at)}</td>
                     <td><MapBadge map={DIV_STATUS} value={r.status} /></td>
-                    <td>{can('OPERADOR') && <button className="btn sm" onClick={() => { setEdit(r); setNewStatus(r.status === 'ABERTA' ? 'EM_ANALISE' : 'RESOLVIDA'); setNote(''); }}>Tratar</button>}</td>
+                    <td className="acts"><RowActions cpf={r.cpf} related={r.contract_key || r.ahid ? { to: `/batimentos?${new URLSearchParams({ flow: r.flow ?? '', q: r.contract_key ?? r.ahid })}`, label: 'Resultados do batimento' } : undefined}>{can('OPERADOR') && <button className="btn sm" onClick={() => { setEdit(r); setNewStatus(r.status === 'ABERTA' ? 'EM_ANALISE' : 'RESOLVIDA'); setNote(''); }}>Tratar</button>}</RowActions></td>
                   </tr>
                 ))}
               </tbody>

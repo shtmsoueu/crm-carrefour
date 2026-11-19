@@ -47,6 +47,7 @@ export const NAV: Group[] = [
 ];
 
 function currentPage(path: string): { group: string; label: string } | null {
+  if (path.startsWith('/clientes/')) return { group: 'Dados', label: 'Cliente' };
   for (const g of NAV) for (const i of g.items) {
     if (i.end ? path === i.to : path === i.to || path.startsWith(i.to + '/')) return { group: g.label, label: i.label };
   }

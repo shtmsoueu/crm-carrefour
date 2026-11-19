@@ -1,4 +1,6 @@
 import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
+import { Link } from 'react-router-dom';
+import { Check, Copy, ListFilter, UserRound } from 'lucide-react';
 
 export function Badge({ tone = 'wait', children }: { tone?: string; children: ReactNode }) {
   return <span className={`badge ${tone}`}>{children}</span>;
@@ -115,6 +117,87 @@ export function Hint({ text }: { text: string }) {
   return (
     <span className="hint" tabIndex={0} role="note" aria-label={text} data-tip={text}>
       <svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><circle cx="8" cy="8" r="7" fill="none" stroke="currentColor" strokeWidth="1.4" /><path d="M8 7v4.2M8 4.6v.1" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" /></svg>
+    </span>
+  );
+}
+
+// ---------------------------------------------------------------- Filtros rápidos e ações por linha
+
+export interface Quick { id: string; label: string; active: boolean; onClick: () => void; count?: number }
+
+/** Filtros de 1 clique para os gargalos mais comuns; combinam com os demais filtros da tela. */
+export function QuickFilters({ items, onClear }: { items: Quick[]; onClear?: () => void }) {
+  const any = items.some((i) => i.active);
+  return (
+    <div className="quick" role="group" aria-label="Filtros rápidos">
+      {items.map((i) => (
+        <button key={i.id} type="button" className={`chip${i.active ? ' on' : ''}${i.count === 0 && !i.active ? ' zero' : ''}`} aria-pressed={i.active} onClick={i.onClick}>
+          {i.label}{i.count !== undefined && <span className="num">{i.count.toLocaleString('pt-BR')}</span>}
+        </button>
+      ))}
+      {any && onClear && <button type="button" className="chip clear" onClick={onClear}>Limpar</button>}
+    </div>
+  );
+}
+
+/** Copia o valor para a área de transferência, com confirmação visual no próprio botão. */
+export function CopyButton({ value, label, inline }: { value: string; label: string; inline?: boolean }) {
+  const [done, setDone] = useState(false);
+  const copy = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    try {
+      await navigator.clipboard.writeText(value);
+    } catch {
+      const t = document.createElement('textarea');
+      t.value = value;
+      document.body.appendChild(t);
+      t.select();
+      document.execCommand('copy');
+      t.remove();
+    }
+    setDone(true);
+    window.setTimeout(() => setDone(false), 1500);
+  };
+  return (
+    <button type="button" className={`ico${inline ? ' inline' : ''}${done ? ' done' : ''}`} onClick={copy} title={done ? 'Copiado' : `Copiar ${label}`} aria-label={done ? 'Copiado' : `Copiar ${label}`}>
+      {done ? <Check size={14} aria-hidden /> : <Copy size={14} aria-hidden />}
+    </button>
+  );
+}
+
+const onlyDigits = (v: string) => v.replace(/\D/g, '').replace(/^0+/, '');
+export const clienteHref = (cpf: string) => `/clientes/${onlyDigits(cpf)}`;
+
+/** CPF/CNPJ como link para a visão consolidada do cliente, com cópia ao lado. */
+export function CpfLink({ cpf, copy = true }: { cpf: string | null | undefined; copy?: boolean }) {
+  if (!cpf || !onlyDigits(cpf)) return <span className="muted">—</span>;
+  return (
+    <span className="nowrap">
+      <Link className="code" to={clienteHref(cpf)} onClick={(e) => e.stopPropagation()}>{cpf}</Link>
+      {copy && <CopyButton value={cpf} label="CPF/CNPJ" inline />}
+    </span>
+  );
+}
+
+/** Contrato como link para o dossiê, com cópia ao lado. */
+export function ContractLink({ contract }: { contract: string | null | undefined }) {
+  if (!contract) return <span className="muted">—</span>;
+  return (
+    <span className="nowrap">
+      <Link className="code" to={`/contratos/${encodeURIComponent(contract)}`} onClick={(e) => e.stopPropagation()}>{contract}</Link>
+      <CopyButton value={contract} label="contrato" inline />
+    </span>
+  );
+}
+
+/** Ações compactas da linha: abrir o cliente e abrir os itens relacionados (a cópia fica junto de cada valor). */
+export function RowActions({ cpf, related, children }: { cpf?: string | null; related?: { to: string; label: string }; children?: ReactNode }) {
+  const hasCpf = !!cpf && !!onlyDigits(cpf);
+  return (
+    <span className="row-actions" onClick={(e) => e.stopPropagation()}>
+      {hasCpf && <Link className="ico" to={clienteHref(cpf!)} title="Abrir cliente" aria-label="Abrir cliente"><UserRound size={14} aria-hidden /></Link>}
+      {related && <Link className="ico" to={related.to} title={related.label} aria-label={related.label}><ListFilter size={14} aria-hidden /></Link>}
+      {children}
     </span>
   );
 }

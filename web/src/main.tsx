@@ -18,6 +18,7 @@ import { UsersPage } from './pages/Users';
 import { SettingsPage } from './pages/Settings';
 import { CarteiraPage } from './pages/Carteira';
 import { CrmPage } from './pages/Crm';
+import { ClientePage } from './pages/Cliente';
 
 function App() {
   const { user } = useAuth();
@@ -33,6 +34,7 @@ function App() {
         <Route path="pendencias" element={<DivergencesPage />} />
         <Route path="contratos" element={<ContractPage />} />
         <Route path="contratos/:key" element={<ContractPage />} />
+        <Route path="clientes/:cpf" element={<ClientePage />} />
         <Route path="layouts" element={<LayoutsPage />} />
         <Route path="auditoria" element={<AuditPage />} />
         <Route path="usuarios" element={<UsersPage />} />

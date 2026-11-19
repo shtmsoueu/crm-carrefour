@@ -18,6 +18,7 @@ import { audit } from './services/audit.js';
 import { carteiraCrmRouter } from './routes/carteira-crm.js';
 import { getDashboard } from './services/dashboard.js';
 import { contractDetail, searchContracts } from './services/contracts.js';
+import { clientDetail } from './services/clients.js';
 import { CATEGORY_LABELS } from './services/divergences.js';
 import { sendExport, type Column } from './services/export.js';
 import { getSetting, setSetting, SETTING_REJEICAO, validateUnstructuredConfig } from './services/settings.js';
@@ -30,6 +31,8 @@ const int = (v: unknown, def: number, max = 1000) => {
   return Number.isInteger(n) && n > 0 ? Math.min(n, max) : def;
 };
 const str = (v: unknown) => (typeof v === 'string' && v.trim() !== '' ? v.trim() : undefined);
+/** Lista separada por vírgula (filtros rápidos combinam vários valores do mesmo campo). */
+const csv = (v: unknown) => String(v ?? '').split(',').map((x) => x.trim()).filter(Boolean);
 const MAX_EXPORT = 200_000;
 
 /** Reexecuta os fluxos afetados por um tipo de arquivo (após confirmação, cancelamento ou reprocessamento). */
@@ -214,7 +217,7 @@ export function createApp() {
     const p: unknown[] = [];
     const w: string[] = [];
     if (str(req.query.flow)) w.push(`rr.flow = $${p.push(req.query.flow)}`);
-    if (str(req.query.status)) w.push(`rr.status = $${p.push(req.query.status)}`);
+    if (str(req.query.status)) w.push(`rr.status = ANY($${p.push(csv(req.query.status))}::text[])`);
     if (str(req.query.rule)) w.push(`rr.rule = $${p.push(req.query.rule)}`);
     if (str(req.query.q)) {
       const q = String(req.query.q).trim();
@@ -250,7 +253,7 @@ export function createApp() {
   // ---------------------------------------------------------------- Pendências de batimento
   const divWhere = (q: Request['query'], p: unknown[]) => {
     const w: string[] = [];
-    if (str(q.category)) w.push(`d.category = $${p.push(q.category)}`);
+    if (str(q.category)) w.push(`d.category = ANY($${p.push(csv(q.category))}::text[])`);
     if (str(q.status)) w.push(q.status === 'ABERTAS' ? `d.status IN ('ABERTA','EM_ANALISE')` : `d.status = $${p.push(q.status)}`);
     if (str(q.flow)) w.push(`d.flow = $${p.push(q.flow)}`);
     if (str(q.from)) w.push(`d.last_detected_at::date >= $${p.push(q.from)}`);
@@ -314,6 +317,12 @@ export function createApp() {
       from: str(req.query.from), to: str(req.query.to), procFrom: str(req.query.procFrom), procTo: str(req.query.procTo),
       fileType: str(req.query.fileType), contract: str(req.query.contract), cpf: str(req.query.cpf), status: str(req.query.status),
     }));
+  }));
+  api.get('/clientes/:cpf', h(async (req, res) => {
+    const d = await clientDetail(req.params.cpf);
+    if (!d) return res.status(404).json({ error: 'Nenhum contrato com este CPF/CNPJ nos arquivos importados.' });
+    await audit(actorOf(req), 'CONSULTA_CLIENTE', 'cliente', d.cpf);
+    res.json(d);
   }));
   api.get('/contracts/search', h(async (req, res) => res.json(await searchContracts(String(req.query.q ?? '')))));
   api.get('/contracts/:key', h(async (req, res) => {

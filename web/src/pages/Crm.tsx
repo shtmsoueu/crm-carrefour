@@ -2,7 +2,7 @@ import { Fragment, useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { api, exportUrl, fileForm, qs } from '../api';
 import { useAuth } from '../auth';
-import { Badge, Empty, ExportButtons, Loading, Notice, Pager, useLoad, useToast, titulo, Hint } from '../components/ui';
+import { Badge, CopyButton, CpfLink, Empty, ExportButtons, Loading, Notice, Pager, QuickFilters, RowActions, useLoad, useToast, titulo, Hint } from '../components/ui';
 import { fmtDateTime, fmtInt, fmtMoney } from '../format';
 
 interface Attr { key: string; label: string; kind: string; source: string }
@@ -100,16 +100,24 @@ function Results({ runId }: { runId: number }) {
   const [sit, setSit] = useState('DIVERGENTE');
   const [campo, setCampo] = useState('');
   const [comissao, setComissao] = useState(false);
+  const [tipo, setTipo] = useState('');
   const [q, setQ] = useState('');
   const [query, setQuery] = useState('');
   const [page, setPage] = useState(1);
   const [open, setOpen] = useState<string | null>(null);
   const run = useLoad(() => api(`/crm/execucoes/${runId}`), [runId]);
-  const params = { situacao: sit === 'DUPLICADOS' ? '' : sit, duplicado: sit === 'DUPLICADOS' ? 'true' : '', campo, comissao: comissao ? 'true' : '', q: query };
-  const items = useLoad(() => api(`/crm/execucoes/${runId}/itens${qs({ ...params, page, pageSize: 50 })}`), [runId, sit, campo, comissao, query, page]);
+  const params = { situacao: sit === 'DUPLICADOS' ? '' : sit, duplicado: sit === 'DUPLICADOS' ? 'true' : '', campo, tipo, comissao: comissao ? 'true' : '', q: query };
+  const items = useLoad(() => api(`/crm/execucoes/${runId}/itens${qs({ ...params, page, pageSize: 50 })}`), [runId, sit, campo, tipo, comissao, query, page]);
   const s = run.data?.summary;
   if (!s) return <Loading />;
   const cards: [string, number][] = [['CONFORME', s.conforme], ['NAO_IMPORTADO', s.nao_importado], ['DIVERGENTE', s.divergente], ['NAO_CONSTA_NA_BASE', s.nao_consta_na_base]];
+  const goSit = (k: string, t = '') => { setSit(k); setCampo(''); setTipo(t); setPage(1); };
+  const quick = [
+    { id: 'valor', label: 'Divergência de valor', active: sit === 'DIVERGENTE' && tipo === 'valor', onClick: () => goSit('DIVERGENTE', tipo === 'valor' ? '' : 'valor') },
+    { id: 'comNaoImp', label: 'Comissão não importada', active: sit === 'NAO_IMPORTADO' && comissao, count: s.comissao.nao_importadas,
+      onClick: () => { const on = sit === 'NAO_IMPORTADO' && comissao; goSit(on ? 'DIVERGENTE' : 'NAO_IMPORTADO'); setComissao(!on); } },
+    { id: 'com', label: 'Com comissão', active: comissao, onClick: () => { setComissao(!comissao); setPage(1); } },
+  ];
   return (
     <div className="stack">
       <section className="kpi-band">
@@ -167,9 +175,10 @@ function Results({ runId }: { runId: number }) {
 
       <section className="panel">
         <div className="tabs" role="tablist">
-          {cards.map(([k, n]) => <button key={k} className={sit === k ? 'on' : ''} onClick={() => { setSit(k); setCampo(''); setPage(1); }}>{SITUACAO[k].label}<span className="num">{fmtInt(n)}</span></button>)}
-          <button className={sit === 'DUPLICADOS' ? 'on' : ''} onClick={() => { setSit('DUPLICADOS'); setCampo(''); setPage(1); }}>Duplicados no CRM<span className="num">{fmtInt(s.duplicados_itens ?? s.duplicados_no_crm)}</span></button>
+          {cards.map(([k, n]) => <button key={k} className={sit === k ? 'on' : ''} onClick={() => goSit(k)}>{SITUACAO[k].label}<span className="num">{fmtInt(n)}</span></button>)}
+          <button className={sit === 'DUPLICADOS' ? 'on' : ''} onClick={() => goSit('DUPLICADOS')}>Duplicados no CRM<span className="num">{fmtInt(s.duplicados_itens ?? s.duplicados_no_crm)}</span></button>
         </div>
+        <QuickFilters items={quick} onClear={() => { goSit('DIVERGENTE'); setComissao(false); }} />
         <form className="row" style={{ padding: '12px 16px', alignItems: 'flex-end' }} onSubmit={(e) => { e.preventDefault(); setQuery(q); setPage(1); }}>
           {sit === 'DIVERGENTE' && (
             <label className="field">Campo inconsistente
@@ -179,7 +188,6 @@ function Results({ runId }: { runId: number }) {
               </select>
             </label>
           )}
-          <label className="row small"><input type="checkbox" style={{ height: 'auto' }} checked={comissao} onChange={(e) => { setComissao(e.target.checked); setPage(1); }} /> Somente contas com comissão</label>
           <label className="field">Contrato ou CPF<input value={q} onChange={(e) => setQ(e.target.value)} /></label>
           <button className="btn">Buscar</button>
           <span style={{ marginLeft: 'auto' }}><ExportButtons href={(fmt) => exportUrl(`/crm/execucoes/${runId}/itens`, params, fmt)} /></span>
@@ -187,7 +195,7 @@ function Results({ runId }: { runId: number }) {
         {items.loading && !items.data ? <Loading /> : (
           <div className="table-wrap">
             <table className="data">
-              <thead><tr><th>Contrato</th><th>Situação</th><th>Campo inconsistente</th><th>Valor na base original</th><th>Valor no CRM</th><th>Produto / ranking / origem</th><th>Linha(s) no CRM</th></tr></thead>
+              <thead><tr><th>Contrato</th><th>Situação</th><th>Campo inconsistente</th><th>Valor na base original</th><th>Valor no CRM</th><th>Produto / ranking / origem</th><th>Linha(s) no CRM</th><th /></tr></thead>
               <tbody>
                 {items.data?.rows.map((it: any) => {
                   const divs = it.divergencias ?? [];
@@ -195,13 +203,14 @@ function Results({ runId }: { runId: number }) {
                   return (
                     <Fragment key={it.id}>
                       <tr>
-                        <td className="code">{it.base?.contrato || (it.base && s.pilar !== 'ACORDO' && s.pilar !== 'CPF') ? <Link to={`/contratos/${encodeURIComponent(it.base?.contrato ?? it.contrato)}`}>{it.contrato}</Link> : it.contrato}{s.pilar === 'ACORDO' && it.base?.contrato && <div className="small muted">contrato {it.base.contrato}</div>}</td>
+                        <td className="code nowrap">{s.pilar === 'CPF' ? <CpfLink cpf={it.contrato} /> : it.base?.contrato || (it.base && s.pilar !== 'ACORDO') ? <Link to={`/contratos/${encodeURIComponent(it.base?.contrato ?? it.contrato)}`}>{it.contrato}</Link> : it.contrato}{s.pilar !== 'CPF' && it.contrato && <CopyButton value={it.contrato} label="chave" inline />}{s.pilar === 'ACORDO' && it.base?.contrato && <div className="small muted">contrato {it.base.contrato}</div>}</td>
                         <td><Badge tone={SITUACAO[it.situacao].tone}>{SITUACAO[it.situacao].label}</Badge>{it.duplicado && <div className="small" style={{ color: 'var(--warn)' }}>duplicado no CRM</div>}</td>
                         <td className="small">{divs.length ? shown.map((d: any, i: number) => <div key={i}>{d.campo} <span className="muted">({d.coluna_crm})</span></div>) : <span className="muted">{it.motivo}</span>}</td>
                         <td className="small">{shown.map((d: any, i: number) => <div key={i}>{String(d.base ?? '—')}</div>)}</td>
                         <td className="small">{shown.map((d: any, i: number) => <div key={i} style={{ color: 'var(--bad)' }}>{String(d.crm ?? '—')}</div>)}</td>
                         <td className="small">{it.base ? `${it.base.produto ?? '—'} / ${it.base.ranking ?? '—'} / ${it.base.origem ?? '—'}` : '—'}</td>
                         <td className="small">{(it.crm_rows ?? []).join(', ') || '—'}{divs.length > 3 && <div><button className="btn ghost sm" onClick={() => setOpen(open === it.id ? null : it.id)}>{open === it.id ? 'ver menos' : `+${divs.length - 3} campos`}</button></div>}</td>
+                        <td className="acts"><RowActions cpf={it.base?.cpf ?? (s.pilar === 'CPF' ? it.contrato : null)} related={(it.base?.contrato ?? (it.base && s.pilar !== 'CPF' && s.pilar !== 'ACORDO' ? it.contrato : null)) ? { to: `/pendencias?status=&q=${encodeURIComponent(it.base?.contrato ?? it.contrato)}`, label: 'Pendências do contrato' } : undefined} /></td>
                       </tr>
                     </Fragment>
                   );

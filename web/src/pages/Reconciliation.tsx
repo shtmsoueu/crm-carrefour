@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { api, exportUrl, qs } from '../api';
 import { useAuth } from '../auth';
-import { ExportButtons, Loading, MapBadge, Notice, Pager, useLoad, useToast, titulo } from '../components/ui';
+import { ContractLink, ExportButtons, Loading, MapBadge, Notice, Pager, QuickFilters, RowActions, useLoad, useToast, titulo } from '../components/ui';
 import { FILE_TYPE_LABELS, fmtDate, fmtDateTime, fmtInt, RESULT_LABELS, shortNote } from '../format';
 
 export function ReconciliationPage() {
@@ -10,10 +10,10 @@ export function ReconciliationPage() {
   const toast = useToast();
   const [sp, setSp] = useSearchParams();
   const flow = sp.get('flow') ?? '';
-  const [status, setStatus] = useState('');
+  const [status, setStatus] = useState(sp.get('status') ?? '');
   const [rule, setRule] = useState('');
-  const [q, setQ] = useState('');
-  const [query, setQuery] = useState('');
+  const [q, setQ] = useState(sp.get('q') ?? '');
+  const [query, setQuery] = useState(sp.get('q') ?? '');
   const [page, setPage] = useState(1);
   const [running, setRunning] = useState<string | null>(null);
   const flows = useLoad(() => api('/reconciliation/flows'), []);
@@ -95,6 +95,16 @@ export function ReconciliationPage() {
       )}
 
       <form className="filters" onSubmit={(e) => { e.preventDefault(); setPage(1); setQuery(q); }}>
+        <QuickFilters
+        items={[
+          ['DIVERGENTE', 'Divergente'],
+          ['SOMENTE_ORIGEM', 'Não localizado no destino'],
+          ['SOMENTE_DESTINO', 'Não localizado na origem'],
+          ['DUPLICADO', 'Duplicado'],
+          ['AGUARDANDO_ARQUIVO', 'Aguardando arquivo'],
+        ].map(([v, label]) => ({ id: v, label, active: status === v, count: current?.lastRun?.summary?.byStatus?.[v], onClick: () => { setStatus(status === v ? '' : v); setPage(1); } }))}
+        onClear={() => { setStatus(''); setPage(1); }}
+        />
         <label className="field">Resultado
           <select value={status} onChange={(e) => { setStatus(e.target.value); setPage(1); }}>
             <option value="">Todos</option>
@@ -111,20 +121,21 @@ export function ReconciliationPage() {
         {results.loading && !results.data ? <Loading /> : (
           <div className="table-wrap">
             <table className="data">
-              <thead><tr><th>Fluxo / regra</th><th>Resultado</th><th>Chave</th><th>Contrato</th><th>Origem</th><th>Destino</th><th>Campo</th><th>Recebido</th><th>Esperado</th><th>Motivo</th></tr></thead>
+              <thead><tr><th>Fluxo / regra</th><th>Resultado</th><th>Chave</th><th>Contrato</th><th>Origem</th><th>Destino</th><th>Campo</th><th>Recebido</th><th>Esperado</th><th>Motivo</th><th /></tr></thead>
               <tbody>
                 {results.data?.rows.map((r: any) => (
                   <tr key={r.id}>
                     <td className="small"><b>{r.flow.split('_')[0]}</b> {r.rule}</td>
                     <td><MapBadge map={RESULT_LABELS} value={r.status} /></td>
                     <td className="small"><span className="muted">{r.key_name}</span><div className="code">{r.key_value ?? '—'}</div></td>
-                    <td className="code">{r.contract_key ? <Link to={`/contratos/${encodeURIComponent(r.contract_key)}`}>{r.contract_key}</Link> : '—'}</td>
+                    <td><ContractLink contract={r.contract_key} /></td>
                     <td className="small">{r.source_type ?? '—'}{r.source_file && <div className="muted code">{r.source_file}</div>}</td>
                     <td className="small">{r.target_type ?? '—'}{r.target_file && <div className="muted code">{r.target_file}</div>}</td>
                     <td className="code small">{r.field ?? ''}</td>
                     <td className="small">{r.value_received ?? ''}</td>
                     <td className="small">{r.value_expected ?? ''}</td>
                     <td className="small" style={{ minWidth: 260 }}>{r.reason}{r.event_date && <div className="muted">Data de referência {fmtDate(r.event_date)}</div>}</td>
+                    <td className="acts"><RowActions cpf={r.cpf} related={r.contract_key || r.ahid ? { to: `/pendencias?status=&q=${encodeURIComponent(r.contract_key ?? r.ahid)}`, label: "Pendências relacionadas" } : undefined} /></td>
                   </tr>
                 ))}
               </tbody>

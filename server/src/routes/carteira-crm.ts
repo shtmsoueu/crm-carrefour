@@ -19,6 +19,8 @@ import { createSnapshot, getProfile, getSnapshot, PILLARS, readSnapshotFile, run
 const gunzip = promisify(gunzipCb);
 type Handler = (req: Request, res: Response) => Promise<unknown>;
 const h = (fn: Handler) => (req: Request, res: Response, next: NextFunction) => fn(req, res).catch(next);
+/** Atributos monetários: base do filtro rápido "Divergência de valor" na conciliação com o CRM. */
+const MONEY_ATTRIBUTES = ['saldo_risco', 'saldo_devedor', 'acordo_valor', 'pagamentos_valor', 'comissao_valor_recebido', 'comissao_remuneracao_bruta', 'saldo_risco_total'];
 const str = (v: unknown) => (typeof v === 'string' && v.trim() !== '' ? v.trim() : undefined);
 const int = (v: unknown, def: number, max = 1000) => {
   const n = Number(v);
@@ -274,6 +276,7 @@ export function carteiraCrmRouter() {
     const w = ['run_id = $1'];
     if (str(req.query.situacao)) w.push(`situacao = $${p.push(req.query.situacao)}`);
     if (str(req.query.campo)) w.push(`divergencias @> $${p.push(JSON.stringify([{ campo: req.query.campo }]))}::jsonb`);
+    if (req.query.tipo === 'valor') w.push(`EXISTS (SELECT 1 FROM jsonb_array_elements(divergencias) e WHERE e->>'atributo' = ANY($${p.push(MONEY_ATTRIBUTES)}::text[]))`);
     if (req.query.duplicado === 'true') w.push('duplicado');
     if (req.query.comissao === 'true') w.push(`COALESCE((base->>'comissao_linhas')::int, 0) > 0`);
     for (const k of ['produto', 'ranking', 'origem'] as const) if (str(req.query[k])) w.push(`base->>'${k}' = $${p.push(req.query[k])}`);

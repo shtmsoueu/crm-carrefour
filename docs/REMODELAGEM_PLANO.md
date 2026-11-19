@@ -77,3 +77,20 @@ Nomes curtos e diretos, sem termos redundantes ("executivo", "central de", "cons
 - **D3. Perfis:** o que cada perfil (BackOffice, MIS, Gerência, CFO) pode **alterar**? Proposta: BackOffice importa, confirma e trata pendências; MIS executa batimentos e exporta; Gerência e CFO só consultam; Administrador faz tudo.
 - **D4. Comissão (C1, pendente):** regra de contagem das linhas idênticas.
 - **D5. Calendário de recebimento:** quais arquivos são esperados em quais dias, para os alertas de atraso.
+
+## Entregas complementares
+- **Filtros rápidos** (1 clique, combinam com os demais filtros):
+  - Pendências: Divergência de valor, Não localizado (banco + assessoria), Pagamento não identificado, Acordo não reconhecido, Sem tratamento.
+  - Batimentos: Divergente, Não localizado no destino, Não localizado na origem, Duplicado, Aguardando arquivo.
+  - Conciliação CRM: Divergência de valor (campos monetários), Comissão não importada, Com comissão.
+- **Ações por linha** em Pendências, Batimentos, Conciliação CRM, Contratos e Cliente:
+  - copiar contrato ou CPF ao lado do valor, com confirmação;
+  - abrir o cliente;
+  - abrir os itens relacionados (pendências ↔ resultados do batimento).
+- **Cliente** (`/clientes/:cpf`, API `GET /api/clientes/:cpf`): reúne todos os contratos do CPF/CNPJ.
+  - Totais: saldo em risco, acordado, pago, comissão e pendências.
+  - Faixa principal: a do contrato com maior saldo de risco.
+  - Lista dos contratos com situação e pendências de cada um.
+  - Linha do tempo unificada: arquivos, resultados de batimento e pendências.
+  - O CPF só agrupa; os vínculos continuam sendo contrato e acordo.
+  - A busca do topo por um CPF com mais de um contrato abre esta visão.

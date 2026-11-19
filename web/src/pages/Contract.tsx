@@ -1,11 +1,11 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { api } from '../api';
-import { Empty, Loading, MapBadge, Notice, titulo } from '../components/ui';
+import { clienteHref, ContractLink, CopyButton, CpfLink, Empty, Loading, MapBadge, Notice, RowActions, titulo } from '../components/ui';
 import { AGREEMENT_STATUS, CONTRACT_STATUS, DIV_STATUS, fmtDate, fmtDateTime, fmtInt, fmtMoney, RESULT_LABELS } from '../format';
 import { CATEGORY } from './Dashboard';
 
-function Search({ initial }: { initial: string }) {
+function Search({ initial, autoRun }: { initial: string; autoRun?: boolean }) {
   const nav = useNavigate();
   const [q, setQ] = useState(initial);
   const [rows, setRows] = useState<any[] | null>(null);
@@ -15,12 +15,20 @@ function Search({ initial }: { initial: string }) {
     setError(null);
     try {
       const r = await api(`/contracts/search?q=${encodeURIComponent(q)}`);
-      if (r.length === 1) nav(`/contratos/${encodeURIComponent(r[0].contract_key)}`);
+      const digits = (v: string) => (v ?? '').replace(/\D/g, '').replace(/^0+/, '');
+      const cpfs = new Set(r.map((x: any) => digits(x.cpf)));
+      // Busca por CPF/CNPJ com mais de um contrato: abre a visão consolidada do cliente.
+      if (r.length > 1 && cpfs.size === 1 && digits(q) && cpfs.has(digits(q))) return nav(clienteHref(r[0].cpf), { replace: true });
+      if (r.length === 1 && r[0].contract_key !== initial) return nav(`/contratos/${encodeURIComponent(r[0].contract_key)}`, { replace: true });
       setRows(r);
     } catch (err) {
       setError((err as Error).message);
     }
   };
+  useEffect(() => {
+    if (autoRun && initial) go();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [autoRun, initial]);
   return (
     <>
       <form className="filters" onSubmit={go} role="search">
@@ -31,14 +39,17 @@ function Search({ initial }: { initial: string }) {
       {rows && rows.length === 0 && <Notice tone="info">Nenhum contrato encontrado nos arquivos importados para "{q}".</Notice>}
       {rows && rows.length > 1 && (
         <section className="panel">
-          <div className="panel-head"><h2>{rows.length} contratos encontrados</h2></div>
+          <div className="panel-head"><h2>{rows.length} contratos encontrados</h2>
+            {new Set(rows.map((r) => (r.cpf ?? '').replace(/\D/g, '').replace(/^0+/, ''))).size === 1 && rows[0].cpf && <Link className="btn sm" to={clienteHref(rows[0].cpf)}>Ver cliente</Link>}
+          </div>
           <div className="table-wrap">
             <table className="data">
-              <thead><tr><th>Contrato</th><th>Titular</th><th>CPF/CNPJ</th><th>Situação</th><th className="num">Acordos</th><th className="num">Pendências</th></tr></thead>
+              <thead><tr><th>Contrato</th><th>Titular</th><th>CPF/CNPJ</th><th>Situação</th><th className="num">Acordos</th><th className="num">Pendências</th><th /></tr></thead>
               <tbody>{rows.map((r) => (
                 <tr key={r.contract_key} className="clickable" onClick={() => nav(`/contratos/${encodeURIComponent(r.contract_key)}`)}>
-                  <td className="code">{r.contract_key}</td><td>{r.name ?? '—'}</td><td className="code">{r.cpf ?? '—'}</td>
+                  <td><ContractLink contract={r.contract_key} /></td><td>{r.name ?? '—'}</td><td><CpfLink cpf={r.cpf} /></td>
                   <td><MapBadge map={CONTRACT_STATUS} value={r.status} /></td><td className="num">{r.acordos}</td><td className="num">{r.pendencias}</td>
+                  <td className="acts"><RowActions cpf={r.cpf} related={{ to: `/pendencias?status=&q=${encodeURIComponent(r.contract_key)}`, label: 'Pendências do contrato' }} /></td>
                 </tr>))}</tbody>
             </table>
           </div>
@@ -71,16 +82,16 @@ export function ContractPage() {
           <h1>{titulo('Contratos')}</h1>
         </div>
       </div>
-      <Search initial={key ?? ''} key={key} />
+      <Search initial={key ?? ''} key={key} autoRun={!!error} />
       {key && !data && !error && <Loading />}
-      {error && <Notice tone="bad">{error}</Notice>}
+      {error && <Notice tone="info">Nenhum contrato com o número "{key}". Resultado da busca por contrato ou CPF/CNPJ abaixo.</Notice>}
       {c && (
         <>
           <section className="panel">
             <div className="panel-head">
               <div>
-                <h2 className="code" style={{ fontSize: 'var(--t-xl)' }}>{c.contract_key}</h2>
-                <p>{c.name ?? 'Titular não informado'}{c.cpf ? `, CPF/CNPJ ${c.cpf}` : ''}</p>
+                <h2 className="code" style={{ fontSize: 'var(--t-xl)' }}>{c.contract_key} <CopyButton value={c.contract_key} label="contrato" /></h2>
+                <p>{c.name ?? 'Titular não informado'}{c.cpf && <>, CPF/CNPJ <CpfLink cpf={c.cpf} /></>}</p>
               </div>
               <div style={{ textAlign: 'right' }}>
                 <MapBadge map={CONTRACT_STATUS} value={c.status} />
