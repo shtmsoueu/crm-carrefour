@@ -226,3 +226,21 @@ describe('CRM visão CPF: cliente com vários contratos não é duplicidade', ()
     expect(it2.divergencias[0]).toMatchObject({ campo: 'LINHAS DO CPF NO CRM x CONTRATOS NA BASE', base: 2, crm: 3 });
   });
 });
+
+describe('PIX intradiário: fluxo aleatório não é problema', () => {
+  it('aceita nomes com hora/sequência, não gera pendência e reaproveita o mesmo arquivo baixado de novo', async () => {
+    const before = await pool.query(`SELECT count(*)::int n FROM divergences`);
+    const conteudo = 'qualquer conteudo do pix\r\n';
+    const a = await api.post('/api/imports').attach('file', Buffer.from(conteudo), 'CSF_RAJADAS_PGTOS_PIX_LEALCO_20261117_093001.txt').expect(201);
+    expect(a.body.file_type).toBe('RAJADA_PIX');
+    expect(a.body.status).toBe('SEM_LAYOUT');
+    const b = await api.post('/api/imports').attach('file', Buffer.from('outro lote\r\n'), 'CSF_RAJADAS_PGTOS_PIX_LEALCO_20261117_2.csv').expect(201);
+    expect(b.body.file_type).toBe('RAJADA_PIX');
+    // mesmo arquivo baixado novamente: sem erro, devolve a importação existente
+    const c = await api.post('/api/imports').attach('file', Buffer.from(conteudo), 'CSF_RAJADAS_PGTOS_PIX_LEALCO_20261117_093001.txt').expect(201);
+    expect(c.body.id).toBe(a.body.id);
+    expect(c.body.ja_armazenado).toBe(true);
+    const after = await pool.query(`SELECT count(*)::int n FROM divergences`);
+    expect(after.rows[0].n).toBe(before.rows[0].n);
+  });
+});

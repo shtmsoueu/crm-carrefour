@@ -969,13 +969,18 @@ export const LAYOUTS: LayoutDef[] = [
     sourceLayout: 'Layout_Rajada Pix (não fornecido)',
     namingPattern: 'CSF_RAJADAS_PGTOS_PIX_XXXXX_AAAAMMDD',
     purpose: 'Pagamentos via pix do contrato distribuído para assessoria',
-    filenameRegex: new RegExp(`^CSF_RAJADAS_PGTOS_PIX_${acct}_(\\d{8})(?:\\.\\w+)?$`, 'i'),
+    // Baixado várias vezes ao dia, em horários aleatórios: aceita sufixos de hora/sequência e qualquer extensão.
+    filenameRegex: new RegExp(`^CSF_RAJADAS_PGTOS_PIX_${acct}_(\\d{8})(?:[_-][A-Za-z0-9]+)*(?:\\.\\w+)?$`, 'i'),
     filenameGroups: { agency: 1, date: 2, dateFormat: 'AAAAMMDD' },
     encoding: 'latin1',
     layoutAvailable: false,
     headerTrailer: [],
     records: [],
-    notes: [{ kind: 'LIMITACAO', text: 'Citado no De-Para, mas o layout não está no pacote. Armazenado para auditoria sem interpretação.' }],
+    notes: [
+      { kind: 'INFORMACAO', text: 'Arquivo intradiário, baixado várias vezes ao dia e em fluxo aleatório. Serve apenas para marcar pagamentos durante o dia: não compõe batimentos, indicadores nem pendências. A confirmação oficial dos pagamentos é o REPASSE.' },
+      { kind: 'INFORMACAO', text: 'O mesmo arquivo baixado novamente não gera erro: a importação existente é reaproveitada.' },
+      { kind: 'LIMITACAO', text: 'Layout não fornecido no pacote: o arquivo é armazenado sem interpretação.' },
+    ],
   },
 ];
 

@@ -88,10 +88,11 @@ async function parseStored(
 }
 
 function decideStatus(layout: LayoutDef, res: ParseResult | null): { status: string; result: string } {
+  void 0;
+  if (!res && layout.code === 'RAJADA_PIX') return { status: 'SEM_LAYOUT', result: 'PIX intradiário armazenado para marcação dos pagamentos do dia. Não compõe batimentos nem pendências.' };
   if (!res) return { status: 'SEM_LAYOUT', result: 'Layout oficial não disponível no pacote: arquivo armazenado para auditoria, sem interpretação.' };
   if (res.empty) return { status: 'VAZIO', result: 'Arquivo vazio: nenhuma informação recebida. Não considerado processamento concluído.' };
   if (res.fileErrors > 0) return { status: 'INVALIDO', result: 'Arquivo fora do padrão do layout (header/trailer). Não pode ser confirmado.' };
-  void layout;
   return { status: 'PRE_VISUALIZACAO', result: 'Interpretado. Aguardando conferência e confirmação.' };
 }
 
@@ -159,6 +160,20 @@ export interface CreateImportInput {
 }
 
 export async function createImport(input: CreateImportInput) {
+  try {
+    return await createImportInner(input);
+  } catch (e) {
+    // PIX intradiário: baixar o mesmo arquivo de novo é normal no fluxo do dia e não é tratado como erro.
+    const id = (e as ImportError).details as { importId?: number } | undefined;
+    if (e instanceof ImportError && e.status === 409 && id?.importId) {
+      const existing = await getImport(id.importId);
+      if (existing.file_type === 'RAJADA_PIX') return { ...existing, ja_armazenado: true };
+    }
+    throw e;
+  }
+}
+
+async function createImportInner(input: CreateImportInput) {
   const { tempPath, originalName, actor } = input;
   const ident = identifyByFilename(originalName);
   let code: FileTypeCode;
