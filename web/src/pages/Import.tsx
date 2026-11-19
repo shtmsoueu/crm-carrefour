@@ -60,7 +60,7 @@ export function ImportPage() {
     <div className="stack">
       <div className="page-head">
         <div>
-          <h1>{titulo('Importar arquivos')}</h1>
+          <h1>{titulo('Importação de arquivos')}</h1>
           <p>Cada arquivo é identificado pela nomenclatura oficial do De-Para e interpretado com o seu próprio layout. Nada é gravado na base até você conferir a pré-visualização e confirmar.</p>
         </div>
       </div>

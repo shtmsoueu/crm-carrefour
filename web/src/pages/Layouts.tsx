@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Badge, Loading, Notice, titulo } from '../components/ui';
 import { getLayouts, type LayoutDef, type RecordDef } from '../layouts';
 
-const NOTE_TONE: Record<string, string> = { CORRECAO: 'warn', DIVERGENCIA_ARQUIVO_REAL: 'origin', LIMITACAO: 'bad', INFORMACAO: 'info' };
+const NOTE_TONE: Record<string, string> = { CORRECAO: 'warn', DIVERGENCIA_ARQUIVO_REAL: 'warn', LIMITACAO: 'wait', INFORMACAO: 'info' };
 const NOTE_LABEL: Record<string, string> = { CORRECAO: 'Correção aplicada', DIVERGENCIA_ARQUIVO_REAL: 'Arquivo real x layout', LIMITACAO: 'Limitação', INFORMACAO: 'Informação' };
 
 function FieldTable({ rec, title }: { rec: RecordDef; title: string }) {

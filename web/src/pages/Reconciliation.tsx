@@ -45,7 +45,7 @@ export function ReconciliationPage() {
     <div className="stack">
       <div className="page-head">
         <div>
-          <h1>{titulo('Batimentos')}</h1>
+          <h1>{titulo('Central de batimentos')}</h1>
           <p>Resultado individual por registro, com origem, destino, chave utilizada e motivo. Os fluxos são recalculados automaticamente a cada confirmação de arquivo.</p>
         </div>
         {can('OPERADOR') && <button className="btn primary" disabled={!!running} onClick={() => runFlow()}>{running === 'ALL' ? 'Executando…' : 'Executar todos os batimentos'}</button>}

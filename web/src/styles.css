@@ -99,7 +99,8 @@ a { color: var(--primary); }
 }
 
 /* ------------------------------------------------------------------ Shell */
-.shell { display: grid; grid-template-columns: 232px 1fr; min-height: 100%; }
+.shell { display: grid; grid-template-columns: 256px 1fr; min-height: 100%; }
+.workspace { min-width: 0; display: flex; flex-direction: column; }
 .sidebar {
   background: var(--sidebar);
   color: var(--sidebar-ink);
@@ -131,17 +132,19 @@ a { color: var(--primary); }
 .nav .count { font-family: var(--font-num); font-size: var(--t-xs); background: var(--cor-vermelho); color: #fff; padding: 0 6px; border-radius: var(--r-chip); }
 .userbox { padding: var(--s3) var(--s4); border-top: 1px solid rgba(255, 255, 255, 0.08); font-size: var(--t-sm); }
 .userbox button { background: none; border: 0; color: #fff; text-decoration: underline; padding: 0; cursor: pointer; font: inherit; }
-.main { min-width: 0; padding: var(--s5) var(--s6) var(--s7); }
+.main { min-width: 0; padding: var(--s5) var(--s6) var(--s7); flex: 1; }
 .page-head { display: flex; align-items: flex-end; justify-content: space-between; gap: var(--s4); margin-bottom: var(--s5); flex-wrap: wrap; }
 .page-head p { color: var(--ink-2); margin-top: var(--s1); max-width: 70ch; }
-.btn.menu-toggle { display: none; }
-
 @media (max-width: 900px) {
   .shell { grid-template-columns: 1fr; }
-  .sidebar { position: fixed; inset: 0 auto 0 0; width: 260px; z-index: 30; transform: translateX(-100%); transition: transform 0.2s; }
+  .sidebar { position: fixed; inset: 0 auto 0 0; width: 280px; z-index: 30; transform: translateX(-100%); transition: transform 0.2s; }
   .sidebar.open { transform: none; }
   .main { padding: var(--s4); }
-  .btn.menu-toggle { display: inline-flex; margin-bottom: var(--s3); }
+  .icon-btn.menu-toggle, .icon-btn.sidebar-close { display: inline-flex; }
+  .crumb span { display: none; }
+  .topsearch { flex: 1; min-width: 0; }
+  .topsearch input { width: 100%; }
+  .userchip .who, .access-flag { display: none; }
   .filters .field { flex: 1 1 140px; }
   .filters .field input, .filters .field select { width: 100%; }
 }
@@ -373,3 +376,71 @@ details summary { cursor: pointer; color: var(--primary); font-size: var(--t-sm)
 
 /* Textos de apoio sobre o azul da lateral */
 .sidebar .muted { color: rgba(255, 255, 255, 0.75); }
+
+
+/* ------------------------------------------------------------------ Plataforma: topo, menu e estados */
+.topbar {
+  position: sticky; top: 0; z-index: 20;
+  display: flex; align-items: center; gap: var(--s4);
+  height: 60px; padding: 0 var(--s6);
+  background: var(--cor-branco); border-bottom: 1px solid var(--rule);
+}
+.crumb { display: flex; align-items: center; gap: var(--s2); font-size: var(--t-sm); color: var(--ink-3); white-space: nowrap; min-width: 0; }
+.crumb b { color: var(--cor-azul-70); font-weight: var(--peso-medio); overflow: hidden; text-overflow: ellipsis; }
+.topsearch {
+  margin-left: auto; display: flex; align-items: center; gap: var(--s2);
+  height: 36px; padding: 0 var(--s3); border: 1px solid var(--rule); border-radius: var(--r-chip); background: var(--cor-cinza-10); color: var(--ink-3);
+}
+.topsearch input { border: 0; background: transparent; height: 32px; width: 220px; padding: 0; }
+.topsearch input:focus { box-shadow: none; }
+.topsearch:focus-within { border-color: var(--primary); box-shadow: var(--focus); }
+.access-flag {
+  display: inline-flex; align-items: center; gap: 6px; height: 28px; padding: 0 10px; border-radius: var(--r-chip);
+  background: var(--warn-tint); color: var(--warn); font-size: var(--t-xs); font-weight: var(--peso-medio); white-space: nowrap;
+}
+.userchip { display: flex; align-items: center; gap: var(--s2); }
+.userchip .who { display: flex; flex-direction: column; line-height: 1.2; font-size: var(--t-sm); }
+.userchip .who small { color: var(--ink-3); font-size: var(--t-xs); }
+.avatar { width: 32px; height: 32px; border-radius: 50%; display: grid; place-items: center; background: var(--cor-azul-10); color: var(--cor-azul-70); font-weight: var(--peso-negrito); }
+.icon-btn { display: inline-flex; align-items: center; justify-content: center; width: 34px; height: 34px; border: 0; border-radius: var(--r-chip); background: transparent; color: var(--cor-azul-70); cursor: pointer; }
+.icon-btn:hover { background: var(--cor-azul-10); }
+.icon-btn.menu-toggle, .icon-btn.sidebar-close { display: none; }
+.sidebar .icon-btn { color: #fff; }
+.sidebar .icon-btn:hover { background: rgba(255, 255, 255, 0.12); }
+.sidebar-close { position: absolute; top: 14px; right: 10px; }
+.brand { position: relative; }
+.nav-section { display: flex; flex-direction: column; gap: 2px; }
+.nav-section + .nav-section { margin-top: var(--s2); }
+.nav-label { display: inline-flex; align-items: center; gap: 10px; min-width: 0; }
+.nav-label svg { flex: none; opacity: 0.9; }
+.scrim { position: fixed; inset: 0; background: rgba(0, 56, 123, 0.35); z-index: 25; }
+
+/* Tabelas longas: cabeçalho fixo dentro da área de rolagem */
+.panel > .table-wrap { max-height: 72vh; overflow: auto; }
+
+/* Cabeçalho de página padronizado */
+.page-head .actions { display: flex; gap: var(--s2); flex-wrap: wrap; }
+
+/* Estados (cores fixas em todas as telas; o texto sempre acompanha a cor) */
+.badge.ok { background: var(--ok-tint); color: var(--ok); }
+.badge.bad { background: var(--bad-tint); color: var(--bad); }
+.badge.warn { background: var(--warn-tint); color: var(--warn); }
+.badge.wait { background: var(--wait-tint); color: var(--wait); }
+.badge.info { background: var(--info-tint); color: var(--info); }
+.c-origin { background: #d9534f; }
+.c-dest { background: #8e1c16; }
+.c-dup { background: #eba39e; }
+
+@media (max-width: 600px) {
+  .topbar { padding: 0 var(--s3); gap: var(--s2); }
+}
+/* Celular: botões do menu visíveis (declarado por último para prevalecer sobre a regra base) */
+@media (max-width: 900px) {
+  .icon-btn.menu-toggle, .icon-btn.sidebar-close { display: inline-flex; }
+  .topbar { padding: 0 var(--s3); gap: var(--s2); }
+  .crumb { flex: none; }
+  .crumb span { display: none; }
+  .topsearch { flex: 1; min-width: 0; margin-left: 0; }
+  .topsearch input { width: 100%; }
+  .userchip .who, .access-flag { display: none; }
+}

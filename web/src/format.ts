@@ -1,3 +1,8 @@
+/**
+ * Mapa ÚNICO de estados da plataforma (mesma cor para o mesmo estado em todas as telas):
+ * ok = concluído/conciliado · bad = divergência/erro · warn = atenção/pendência ·
+ * wait = aguardando/sem informação · info = informação/processamento.
+ */
 export const fmtInt = (n: number | string | null | undefined) => (n === null || n === undefined ? '—' : Number(n).toLocaleString('pt-BR'));
 export const fmtMoney = (n: number | string | null | undefined) =>
   n === null || n === undefined || n === '' ? '—' : Number(n).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
@@ -29,9 +34,9 @@ export const FILE_TYPE_LABELS: Record<string, string> = {
 export const RESULT_LABELS: Record<string, { label: string; tone: string }> = {
   CONCILIADO: { label: 'Conciliado', tone: 'ok' },
   DIVERGENTE: { label: 'Divergente', tone: 'bad' },
-  SOMENTE_ORIGEM: { label: 'Somente na origem', tone: 'origin' },
-  SOMENTE_DESTINO: { label: 'Somente no destino', tone: 'dest' },
-  DUPLICADO: { label: 'Duplicado', tone: 'warn' },
+  SOMENTE_ORIGEM: { label: 'Somente na origem', tone: 'bad' },
+  SOMENTE_DESTINO: { label: 'Somente no destino', tone: 'bad' },
+  DUPLICADO: { label: 'Duplicado', tone: 'bad' },
   INFORMATIVO: { label: 'Informativo', tone: 'info' },
   PENDENTE_CONFIGURACAO: { label: 'Requer configuração', tone: 'warn' },
   AGUARDANDO_ARQUIVO: { label: 'Aguardando arquivo', tone: 'wait' },
@@ -42,22 +47,22 @@ export const IMPORT_STATUS: Record<string, { label: string; tone: string }> = {
   CONFIRMADO: { label: 'Confirmado', tone: 'ok' },
   DESCARTADO: { label: 'Descartado', tone: 'wait' },
   CANCELADO: { label: 'Cancelado', tone: 'wait' },
-  VAZIO: { label: 'Arquivo vazio', tone: 'bad' },
+  VAZIO: { label: 'Arquivo vazio', tone: 'wait' },
   SEM_LAYOUT: { label: 'Sem layout oficial', tone: 'info' },
   INVALIDO: { label: 'Fora do padrão', tone: 'bad' },
 };
 
 export const DIV_STATUS: Record<string, { label: string; tone: string }> = {
-  ABERTA: { label: 'Aberta', tone: 'bad' },
-  EM_ANALISE: { label: 'Em análise', tone: 'warn' },
+  ABERTA: { label: 'Aberta', tone: 'warn' },
+  EM_ANALISE: { label: 'Em análise', tone: 'info' },
   RESOLVIDA: { label: 'Resolvida', tone: 'ok' },
-  JUSTIFICADA: { label: 'Justificada', tone: 'info' },
+  JUSTIFICADA: { label: 'Justificada', tone: 'ok' },
   RESOLVIDA_AUTOMATICAMENTE: { label: 'Resolvida automaticamente', tone: 'ok' },
 };
 
 export const CONTRACT_STATUS: Record<string, { label: string; tone: string }> = {
   ATIVO: { label: 'Ativo na carteira', tone: 'ok' },
-  RETIRADO: { label: 'Retirado', tone: 'bad' },
+  RETIRADO: { label: 'Retirado', tone: 'wait' },
   SEM_DISTRIBUICAO: { label: 'Sem distribuição registrada', tone: 'wait' },
 };
 

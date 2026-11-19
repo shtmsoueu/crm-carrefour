@@ -12,8 +12,8 @@ interface Profile { pillar?: string; keyColumn: string; key: { stripLeadingZeros
 const SITUACAO: Record<string, { label: string; tone: string }> = {
   CONFORME: { label: 'Conforme', tone: 'ok' },
   NAO_IMPORTADO: { label: 'Não importado', tone: 'bad' },
-  DIVERGENTE: { label: 'Divergente', tone: 'warn' },
-  NAO_CONSTA_NA_BASE: { label: 'Não consta na base', tone: 'dest' },
+  DIVERGENTE: { label: 'Divergente', tone: 'bad' },
+  NAO_CONSTA_NA_BASE: { label: 'Não consta na base', tone: 'warn' },
 };
 
 const eqToText = (e?: { crm: string; base: string }[]) => (e ?? []).map((x) => `${x.crm} = ${x.base}`).join('\n');
@@ -270,7 +270,7 @@ export function CrmPage() {
     <div className="stack">
       <div className="page-head">
         <div>
-          <h1>{titulo('Conciliação com o CRM')}</h1>
+          <h1>{titulo('Conciliação com o CRM oficial')}</h1>
           <p>Confronta 100% das contas da base original (arquivos do banco) com a exportação do CRM oficial. O CRM nunca é alterado: o sistema apenas lê a exportação.</p>
         </div>
       </div>

@@ -79,7 +79,7 @@ export function DashboardPage() {
     <div className="stack">
       <div className="page-head">
         <div>
-          <h1>{titulo('Painel da carteira')}</h1>
+          <h1>{titulo('Dashboard executivo')}</h1>
           <p>Indicadores calculados exclusivamente a partir dos arquivos importados e confirmados.</p>
         </div>
       </div>

@@ -54,7 +54,7 @@ export function DivergencesPage() {
     <div className="stack">
       <div className="page-head">
         <div>
-          <h1>{titulo('Pendências de batimento')}</h1>
+          <h1>{titulo('Pendências e divergências')}</h1>
           <p>Ocorrências identificadas na importação e nos batimentos. Uma pendência que deixa de ser detectada é encerrada automaticamente; se voltar a ocorrer, é reaberta.</p>
         </div>
         <ExportButtons href={(fmt) => exportUrl('/divergences', params, fmt)} />
