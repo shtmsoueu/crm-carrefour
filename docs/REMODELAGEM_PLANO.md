@@ -68,6 +68,9 @@ Referência: `Remodelagem_Profissional_CRM_Carrefour.md`. Princípio: evoluir se
 ### Fase 6 — Homologação
 - Regressão completa, testes de volume, validação dos indicadores com as cargas reais e conferência das exportações.
 
+## Diretriz de nomenclatura (definida pelo usuário)
+Nomes curtos e diretos, sem termos redundantes ("executivo", "central de", "consulta de", "e permissões"), e sem textos que explicam o óbvio sob os títulos. Critérios de cálculo ficam disponíveis sob demanda (ícone ⓘ). Menu: Painel; Operação (Importação, Histórico, Batimentos, Pendências); Dados (Contratos, Carteira, Conciliação CRM, Layouts); Governança (Auditoria, Usuários, Configurações).
+
 ## 3. Decisões necessárias
 - **D1. Competência:** pode ser o mês da data de geração do arquivo, ou existe outra definição operacional?
 - **D2. Login:** a Fase 5 tornará o login obrigatório em produção, como pede o documento. Confirmar.

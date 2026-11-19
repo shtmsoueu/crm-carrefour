@@ -2,7 +2,7 @@ import { useRef, useState, type DragEvent } from 'react';
 import { Link } from 'react-router-dom';
 import { api, ApiError } from '../api';
 import { useAuth } from '../auth';
-import { MapBadge, Notice, useLoad, titulo } from '../components/ui';
+import { MapBadge, Notice, useLoad, titulo, Hint } from '../components/ui';
 import { FILE_TYPE_LABELS, fmtBytes, fmtDateTime, fmtInt, IMPORT_STATUS } from '../format';
 
 interface Item { file: File; type: string; state: 'fila' | 'enviando' | 'ok' | 'erro'; message?: string; importId?: number; status?: string; records?: number; rejected?: number }
@@ -60,8 +60,7 @@ export function ImportPage() {
     <div className="stack">
       <div className="page-head">
         <div>
-          <h1>{titulo('Importação de arquivos')}</h1>
-          <p>Cada arquivo é identificado pela nomenclatura oficial do De-Para e interpretado com o seu próprio layout. Nada é gravado na base até você conferir a pré-visualização e confirmar.</p>
+          <h1>{titulo('Importação')}</h1>
         </div>
       </div>
 
@@ -80,8 +79,8 @@ export function ImportPage() {
               role="button"
               tabIndex={0}
             >
-              <strong>Arraste os arquivos do banco para cá</strong>
-              <span className="muted">ou clique para selecionar. Você pode enviar vários de uma vez; cada um é processado individualmente.</span>
+              <strong>Arraste os arquivos ou clique para selecionar</strong>
+              <span className="muted">TXT, CSV ou XLSX, um ou vários</span>
               <input ref={input} type="file" multiple hidden onChange={(e) => { add(e.target.files); e.target.value = ''; }} />
             </div>
           </div>
@@ -131,7 +130,7 @@ export function ImportPage() {
       )}
 
       <section className="panel">
-        <div className="panel-head"><div><h2>Aguardando confirmação</h2><p>Arquivos interpretados que ainda não compõem a base.</p></div></div>
+        <div className="panel-head"><div><h2>Aguardando confirmação <Hint text="Arquivos interpretados que ainda não compõem a base." /></h2></div></div>
         {pending.data?.rows.length ? (
           <div className="table-wrap">
             <table className="data">

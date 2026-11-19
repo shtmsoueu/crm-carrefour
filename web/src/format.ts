@@ -71,3 +71,14 @@ export const AGREEMENT_STATUS: Record<string, { label: string; tone: string }> =
   QUEBRADO: { label: 'Quebrado', tone: 'bad' },
   NAO_IDENTIFICADO: { label: 'Não identificado no ACORDO_ASSESSORIA', tone: 'wait' },
 };
+
+/** Aviso de fluxo em forma curta: "X não importado: ..." -> "Aguardando X". */
+export function shortNote(text: string): string {
+  const m = /^([A-Z_]+(?: ou [A-Z_]+)*) não importado/.exec(text);
+  if (m) return `Aguardando ${m[1]}`;
+  if (/^Nenhum(a)? ([A-Z_]+)/.test(text)) return text.replace(/^Nenhum(a)? ([A-Z_]+).*$/, 'Aguardando $2');
+  if (/sem registros/i.test(text)) return 'Sem registros no arquivo';
+  return text.split(':')[0];
+}
+
+export const SCOPE_SHORT: Record<string, string> = { ATIVOS: 'Ativos', COM_CADASTRO: 'Com cadastro', TODOS: 'Todos' };

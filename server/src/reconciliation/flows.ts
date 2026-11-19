@@ -806,7 +806,7 @@ registerFlow({
 // ===========================================================================
 registerFlow({
   code: 'I_INTEGRIDADE',
-  title: 'I. Integridade das chaves (três pilares)',
+  title: 'I. Integridade das chaves',
   description: 'Prova que cada acordo aponta para um único contrato e cada contrato para um único CPF/CNPJ, em todos os arquivos.',
   sources: ['REM_CONTRATOS', 'BAT_CONTRATOS', 'RET_DISTRIBUICAO', 'RET_CARTEIRA', 'ACORDO_ASSESSORIA', 'BAT_ACORDO', 'BAT_ACORDO_PGTO', 'REPASSE', 'REM_BOLETOS', 'QUEBRA_ACORDO', 'COMISSAO', 'CCAM'],
   rules: [

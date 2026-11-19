@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { api } from '../api';
 import { useAuth } from '../auth';
-import { Notice, useToast, titulo } from '../components/ui';
+import { Notice, useToast, titulo, Hint } from '../components/ui';
 
 export function SettingsPage() {
   const { can } = useAuth();
@@ -26,8 +26,7 @@ export function SettingsPage() {
     <div className="stack">
       <div className="page-head"><div><h1>{titulo('Configurações')}</h1></div></div>
       <section className="panel">
-        <div className="panel-head"><div><h2>Arquivos de rejeição de campanha</h2>
-          <p>O De-Para informa que estes arquivos não possuem layout e contêm somente o contrato e o motivo da rejeição. Defina como extrair esses dados quando a estrutura for confirmada com o banco. Até lá, as linhas são armazenadas integralmente e o batimento de campanhas fica pendente de configuração.</p></div></div>
+        <div className="panel-head"><div><h2>Arquivos de rejeição de campanha <Hint text="O De-Para informa que estes arquivos não possuem layout e contêm somente o contrato e o motivo da rejeição. Defina como extrair esses dados quando a estrutura for confirmada com o banco. Até lá, as linhas são armazenadas integralmente e o batimento de campanhas fica pendente de configuração." /></h2></div></div>
         <div className="panel-body stack" style={{ gap: 12 }}>
           <label className="row small"><input type="checkbox" style={{ height: 'auto' }} checked={enabled} onChange={(e) => setEnabled(e.target.checked)} /> Extrair contrato e motivo das linhas</label>
           {enabled && (

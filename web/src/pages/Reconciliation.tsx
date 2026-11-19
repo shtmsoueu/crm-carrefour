@@ -3,7 +3,7 @@ import { Link, useSearchParams } from 'react-router-dom';
 import { api, exportUrl, qs } from '../api';
 import { useAuth } from '../auth';
 import { ExportButtons, Loading, MapBadge, Notice, Pager, useLoad, useToast, titulo } from '../components/ui';
-import { FILE_TYPE_LABELS, fmtDate, fmtDateTime, fmtInt, RESULT_LABELS } from '../format';
+import { FILE_TYPE_LABELS, fmtDate, fmtDateTime, fmtInt, RESULT_LABELS, shortNote } from '../format';
 
 export function ReconciliationPage() {
   const { can } = useAuth();
@@ -45,10 +45,9 @@ export function ReconciliationPage() {
     <div className="stack">
       <div className="page-head">
         <div>
-          <h1>{titulo('Central de batimentos')}</h1>
-          <p>Resultado individual por registro, com origem, destino, chave utilizada e motivo. Os fluxos são recalculados automaticamente a cada confirmação de arquivo.</p>
+          <h1>{titulo('Batimentos')}</h1>
         </div>
-        {can('OPERADOR') && <button className="btn primary" disabled={!!running} onClick={() => runFlow()}>{running === 'ALL' ? 'Executando…' : 'Executar todos os batimentos'}</button>}
+        {can('OPERADOR') && <button className="btn primary" disabled={!!running} onClick={() => runFlow()}>{running === 'ALL' ? 'Executando…' : 'Executar todos'}</button>}
       </div>
 
       <section className="panel">
@@ -60,10 +59,10 @@ export function ReconciliationPage() {
                 const s = f.lastRun?.summary;
                 return (
                   <tr key={f.code} className="clickable" onClick={() => pick(f.code)} style={flow === f.code ? { background: 'var(--primary-tint)' } : undefined}>
-                    <td><b>{f.title}</b><div className="small muted">{f.description}</div>
-                      {s?.notes?.filter((n: any) => n.level === 'AGUARDANDO').map((n: any, i: number) => <div key={i} className="small" style={{ color: 'var(--warn)' }}>{n.text}</div>)}
+                    <td><b title={f.description}>{f.title}</b>
+                      {s?.notes?.filter((n: any) => n.level === 'AGUARDANDO').map((n: any, i: number) => <div key={i} className="small" style={{ color: 'var(--warn)' }} title={n.text}>{shortNote(n.text)}</div>)}
                     </td>
-                    <td className="small">{f.sources.map((x: string) => FILE_TYPE_LABELS[x] ?? x).join(', ')}</td>
+                    <td className="small code" title={f.sources.map((x: string) => FILE_TYPE_LABELS[x] ?? x).join(', ')}>{f.sources.join(', ')}</td>
                     <td className="small nowrap">{f.lastRun ? fmtDateTime(f.lastRun.finished_at ?? f.lastRun.started_at) : 'Nunca'}{f.lastRun?.status === 'ERRO' && <div style={{ color: 'var(--bad)' }}>{f.lastRun.message}</div>}</td>
                     <td className="num">{fmtInt(s?.total ?? 0)}</td>
                     <td className="num">{fmtInt(s?.byStatus?.CONCILIADO ?? 0)}</td>

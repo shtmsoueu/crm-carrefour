@@ -27,7 +27,6 @@ export function LoginPage() {
       <section className="login-side">
         <div>
           <h1>{titulo('CRM Carteira Carrefour')}</h1>
-          <p>Importe os arquivos recebidos do banco, acompanhe a conciliação de contratos, acordos e pagamentos e trate as pendências em um só lugar.</p>
         </div>
         <p className="small">Acesso restrito. Todas as operações são registradas em auditoria.</p>
       </section>

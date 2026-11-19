@@ -14,8 +14,7 @@ export function HistoryPage() {
     <div className="stack">
       <div className="page-head">
         <div>
-          <h1>{titulo('Histórico de importações')}</h1>
-          <p>Todos os arquivos recebidos, com o resultado do processamento e a rastreabilidade até o arquivo original.</p>
+          <h1>{titulo('Histórico')}</h1>
         </div>
         <ExportButtons href={(fmt) => exportUrl('/imports', f, fmt)} />
       </div>

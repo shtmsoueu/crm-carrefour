@@ -2,7 +2,7 @@ import { Fragment, useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { api, exportUrl, fileForm, qs } from '../api';
 import { useAuth } from '../auth';
-import { Badge, Empty, ExportButtons, Loading, Notice, Pager, useLoad, useToast, titulo } from '../components/ui';
+import { Badge, Empty, ExportButtons, Loading, Notice, Pager, useLoad, useToast, titulo, Hint } from '../components/ui';
 import { fmtDateTime, fmtInt, fmtMoney } from '../format';
 
 interface Attr { key: string; label: string; kind: string; source: string }
@@ -146,7 +146,7 @@ function Results({ runId }: { runId: number }) {
           </div>
         </section>
         <section className="panel">
-          <div className="panel-head"><div><h2>Comissão x CRM</h2><p>Contas com comissão no escopo e sua situação no CRM.</p></div></div>
+          <div className="panel-head"><div><h2>Comissão x CRM <Hint text="Contas com comissão no escopo e sua situação no CRM." /></h2></div></div>
           <div className="panel-body">
             <ul className="kpi-list">
               <li>Contas com comissão <b>{fmtInt(s.comissao.contas)}</b></li>
@@ -270,13 +270,12 @@ export function CrmPage() {
     <div className="stack">
       <div className="page-head">
         <div>
-          <h1>{titulo('Conciliação com o CRM oficial')}</h1>
-          <p>Confronta 100% das contas da base original (arquivos do banco) com a exportação do CRM oficial. O CRM nunca é alterado: o sistema apenas lê a exportação.</p>
+          <h1>{titulo('Conciliação CRM')}</h1>
         </div>
       </div>
 
       <section className="panel">
-        <div className="panel-head"><div><h2>1. Exportação do CRM</h2><p>Envie a extração do CRM oficial em CSV (recomendado) ou XLSX, com uma linha por conta e cabeçalho na primeira linha.</p></div>
+        <div className="panel-head"><div><h2>1. Exportação do CRM <Hint text="Envie a extração do CRM oficial em CSV (recomendado) ou XLSX, com uma linha por conta e cabeçalho na primeira linha." /></h2></div>
           {can('OPERADOR') && <button className="btn primary" disabled={busy} onClick={() => input.current?.click()}>{busy ? 'Processando…' : 'Carregar exportação do CRM'}</button>}
           <input ref={input} type="file" accept=".csv,.txt,.xlsx" hidden onChange={(e) => { upload(e.target.files?.[0]); e.target.value = ''; }} />
         </div>
@@ -311,7 +310,7 @@ export function CrmPage() {
       {snap.data && initial && perfil.data && (
         <section className="panel">
           <div className="panel-head"><div><h2>2. Mapeamento das colunas</h2>
-            <p>Defina qual coluna do CRM corresponde a cada campo da base original. {profile && !missing.length ? 'Mapeamento salvo carregado.' : 'Sugestão automática pelo nome das colunas: revise antes de salvar.'}</p></div></div>
+            <p>{profile && !missing.length ? 'Mapeamento salvo' : 'Sugestão automática: revise antes de salvar'}</p></div></div>
           {missing.length > 0 && profile && <div className="panel-body"><Notice tone="warn">O mapeamento salvo usa colunas que não existem nesta exportação: {missing.join(', ')}. Revise e salve novamente.</Notice></div>}
           <div className="panel-body">
             {can('OPERADOR') ? <MappingEditor headers={headers} attrsByPillar={perfil.data.atributosPorPilar} pillars={perfil.data.pilares} initial={initial} onSaved={perfil.reload} /> : <p className="muted">Somente operadores alteram o mapeamento.</p>}
@@ -322,7 +321,7 @@ export function CrmPage() {
       {snap.data && (
         <section className="panel">
           <div className="panel-head">
-            <div><h2>3. Executar conciliação</h2><p>Cada execução fica registrada com o mapeamento e as regras usadas, para auditoria.</p></div>
+            <div><h2>3. Executar conciliação <Hint text="Cada execução fica registrada com o mapeamento e as regras usadas, para auditoria." /></h2></div>
             <div className="row" style={{ alignItems: 'flex-end' }}>
               <label className="field">Escopo da base original
                 <select value={scope} onChange={(e) => setScope(e.target.value)} style={{ width: 300 }}>

@@ -26,7 +26,7 @@ export function UsersPage() {
   return (
     <div className="stack">
       <div className="page-head">
-        <div><h1>{titulo('Usuários e permissões')}</h1><p>Administrador: tudo, inclusive cancelar e reprocessar importações. Operador: importa, confirma, executa batimentos e trata pendências. Consulta: somente leitura.</p></div>
+        <div><h1>{titulo('Usuários')}</h1></div>
         <button className="btn primary" onClick={() => setForm({ username: '', name: '', role: 'OPERADOR', password: '' })}>Novo usuário</button>
       </div>
       {error && <Notice tone="bad">{error}</Notice>}

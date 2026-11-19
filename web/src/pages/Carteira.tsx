@@ -2,8 +2,8 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { api, exportUrl, qs } from '../api';
 import { useAuth } from '../auth';
-import { Badge, ExportButtons, Loading, Notice, Pager, useLoad, useToast, titulo } from '../components/ui';
-import { CONTRACT_STATUS, fmtInt, fmtMoney } from '../format';
+import { Badge, ExportButtons, Loading, Notice, Pager, useLoad, useToast, titulo, Hint } from '../components/ui';
+import { CONTRACT_STATUS, fmtInt, fmtMoney, SCOPE_SHORT } from '../format';
 import { MapBadge } from '../components/ui';
 
 const RANKINGS = ['G1 – MAIOR MIL', 'G1 – MENOR MIL', 'G2 – MAIOR MIL', 'G2 – MENOR MIL'];
@@ -40,16 +40,15 @@ export function CarteiraPage() {
     <div className="stack">
       <div className="page-head">
         <div>
-          <h1>{titulo('Carteira classificada')}</h1>
-          <p>Cada conta com produto, origem, grupo, ranking e faixa de atraso, calculados a partir dos arquivos importados. Situações que as regras não cobrem ficam sinalizadas, sem classificação presumida.</p>
+          <h1>{titulo('Carteira')}</h1>
         </div>
         <ExportButtons href={(fmt) => exportUrl('/carteira', f, fmt)} />
       </div>
 
       <div className="filters">
         <label className="field">Escopo
-          <select value={f.scope} onChange={(e) => set({ scope: e.target.value })} style={{ width: 260 }}>
-            {Object.entries((regras.data?.escopos ?? {}) as Record<string, string>).map(([k, l]) => <option key={k} value={k}>{l}</option>)}
+          <select value={f.scope} onChange={(e) => set({ scope: e.target.value })}>
+            {Object.keys((regras.data?.escopos ?? {}) as Record<string, string>).map((k) => <option key={k} value={k}>{SCOPE_SHORT[k] ?? k}</option>)}
           </select>
         </label>
         <label className="field">Produto
@@ -83,20 +82,17 @@ export function CarteiraPage() {
       </div>
 
       {regras.data && (
-        <Notice tone="info">
-          <div>
-            Saldo de risco calculado com <b className="code">{regras.data.settings.saldoCampo}</b>
-            {regras.data.settings.saldoCampo === 'DMAMTDLQ' ? ' ("Valor Risco Salvo (Saldo Principal)", conforme o layout do REPASSE)' : ' (Saldo Devedor Contábil)'}.
-            {' '}Dias de atraso: <b className="code">U1DAYSGER02</b>. Produto pelo código <b className="code">U1PRODUTO</b>. Origem (complementar) pelo <b className="code">AHCOLLID</b> do acordo da conta, localizado pelo AHID em qualquer arquivo que traga a coluna.
-            {can('ADMIN') && (
-              <span> Alterar saldo para{' '}
-                <button className="btn sm" onClick={() => changeSaldo(regras.data.settings.saldoCampo === 'DMAMTDLQ' ? 'DMCURBAL' : 'DMAMTDLQ')}>
-                  {regras.data.settings.saldoCampo === 'DMAMTDLQ' ? 'DMCURBAL (saldo devedor)' : 'DMAMTDLQ (risco/principal)'}
-                </button>
-              </span>
-            )}
-          </div>
-        </Notice>
+        <div className="rulebar" aria-label="Campos usados na classificação">
+          <span>Saldo de risco <b className="code">{regras.data.settings.saldoCampo}</b></span>
+          <span>Atraso <b className="code">U1DAYSGER02</b></span>
+          <span>Produto <b className="code">U1PRODUTO</b></span>
+          <span>Origem <b className="code">AHCOLLID</b></span>
+          {can('ADMIN') && (
+            <button className="btn sm" onClick={() => changeSaldo(regras.data.settings.saldoCampo === 'DMAMTDLQ' ? 'DMCURBAL' : 'DMAMTDLQ')}>
+              Usar {regras.data.settings.saldoCampo === 'DMAMTDLQ' ? 'DMCURBAL' : 'DMAMTDLQ'}
+            </button>
+          )}
+        </div>
       )}
       {error && <Notice tone="bad">{error}</Notice>}
       {loading && !data && <Loading />}
@@ -105,7 +101,7 @@ export function CarteiraPage() {
         <>
           <section className="kpi-band" aria-label="Resumo da carteira">
             <div className="kpi-group">
-              <h2>Contas no escopo</h2>
+              <h2>Contas</h2>
               <div className="kpi-lead">{fmtInt(s.contas)}</div>
               <div className="kpi-lead-label">saldo de risco {fmtMoney(s.saldo_risco)}</div>
             </div>
@@ -128,37 +124,37 @@ export function CarteiraPage() {
             <div className={`kpi-group ${Object.keys(s.flags).length ? 'alert' : ''}`}>
               <h2>Inconsistências</h2>
               <div className="kpi-lead">{fmtInt(Object.values(s.flags as Record<string, { contas: number }>).reduce((a, b) => a + b.contas, 0))}</div>
-              <div className="kpi-lead-label">contas com dados fora das regras</div>
+              <div className="kpi-lead-label">fora das regras</div>
             </div>
           </section>
 
           {pilares.data && (
             <section className="panel">
               <div className="panel-head">
-                <div><h2>Três pilares de identificação</h2><p>Totais independentes por visão: acordos, contratos e clientes não se misturam.</p></div>
+                <div><h2>Três pilares de identificação <Hint text="Totais independentes por visão: acordos, contratos e clientes não se misturam." /></h2></div>
                 {pilares.data.fechamento_ok ? <Badge tone="ok">Totais fecham</Badge> : <Badge tone="bad">Totais não fecham</Badge>}
               </div>
               <div className="panel-body grid-2" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))' }}>
                 <div>
-                  <h3>Pilar 1: Número do acordo (visão conta)</h3>
+                  <h3>Acordo</h3>
                   <ul className="kpi-list" style={{ marginTop: 8 }}>
                     <li>Acordos no escopo <b>{fmtInt(pilares.data.pilar1_acordo.acordos_distintos_no_escopo)}</b></li>
                     {Object.entries(pilares.data.pilar1_acordo.por_origem as Record<string, number>).map(([k, n]) => <li key={k}>{k} <b>{fmtInt(n)}</b></li>)}
-                    <li className={pilares.data.pilar1_acordo.acordos_com_mais_de_um_contrato ? 'alert' : ''}>Acordos com mais de um contrato (todos os arquivos) <b>{fmtInt(pilares.data.pilar1_acordo.acordos_com_mais_de_um_contrato)}</b></li>
+                    <li className={pilares.data.pilar1_acordo.acordos_com_mais_de_um_contrato ? 'alert' : ''}>Com mais de um contrato <b>{fmtInt(pilares.data.pilar1_acordo.acordos_com_mais_de_um_contrato)}</b></li>
                   </ul>
                 </div>
                 <div>
-                  <h3>Pilar 2: Nº conta / contrato (visão contrato)</h3>
+                  <h3>Contrato</h3>
                   <ul className="kpi-list" style={{ marginTop: 8 }}>
                     <li>Contratos no escopo <b>{fmtInt(pilares.data.pilar2_contrato.contratos_no_escopo)}</b></li>
                     <li>Com acordo <b>{fmtInt(pilares.data.pilar2_contrato.contratos_com_acordo)}</b></li>
                     <li>Com mais de um acordo <b>{fmtInt(pilares.data.pilar2_contrato.contratos_com_mais_de_um_acordo)}</b></li>
-                    {Object.entries(pilares.data.pilar2_contrato.tamanhos_da_chave as Record<string, number>).map(([k, n]) => <li key={k}>Chave com {k} <b>{fmtInt(n)}</b></li>)}
-                    <li className={pilares.data.pilar2_contrato.contratos_com_mais_de_um_cpf ? 'alert' : ''}>Contratos com mais de um CPF (todos os arquivos) <b>{fmtInt(pilares.data.pilar2_contrato.contratos_com_mais_de_um_cpf)}</b></li>
+                    {Object.entries(pilares.data.pilar2_contrato.tamanhos_da_chave as Record<string, number>).map(([k, n]) => <li key={k}>Chave de {k} <b>{fmtInt(n)}</b></li>)}
+                    <li className={pilares.data.pilar2_contrato.contratos_com_mais_de_um_cpf ? 'alert' : ''}>Com mais de um CPF <b>{fmtInt(pilares.data.pilar2_contrato.contratos_com_mais_de_um_cpf)}</b></li>
                   </ul>
                 </div>
                 <div>
-                  <h3>Pilar 3: CPF/CNPJ (visão unique)</h3>
+                  <h3>CPF/CNPJ</h3>
                   <ul className="kpi-list" style={{ marginTop: 8 }}>
                     <li>Clientes únicos <b>{fmtInt(pilares.data.pilar3_cpf.clientes_unicos)}</b></li>
                     <li>Com mais de um contrato <b>{fmtInt(pilares.data.pilar3_cpf.clientes_com_mais_de_um_contrato)}</b></li>
@@ -172,7 +168,7 @@ export function CarteiraPage() {
 
           <section className="panel">
             <div className="panel-head">
-              <div><h2>Distribuição por ranking e faixa de atraso</h2><p>Quantidade de contas (e saldo de risco) por ranking e faixa. Clique em um número para listar as contas.</p></div>
+              <div><h2>Distribuição por ranking e faixa de atraso <Hint text="Quantidade de contas (e saldo de risco) por ranking e faixa. Clique em um número para listar as contas." /></h2></div>
             </div>
             <div className="table-wrap">
               <table className="data">
@@ -213,7 +209,7 @@ export function CarteiraPage() {
 
           <div className="grid-2">
             <section className="panel">
-              <div className="panel-head"><div><h2>Inconsistências com as regras</h2><p>Somente contas cujos dados efetivamente contrariam ou não se enquadram nas regras.</p></div></div>
+              <div className="panel-head"><div><h2>Inconsistências com as regras <Hint text="Somente contas cujos dados efetivamente contrariam ou não se enquadram nas regras." /></h2></div></div>
               <div className="panel-body">
                 {Object.keys(s.flags).length === 0 ? <p className="muted">Nenhuma inconsistência com as regras neste escopo. Categorias sem registros no dia aparecem com zero na distribuição.</p> : (
                   <ul className="hbars">
@@ -228,7 +224,7 @@ export function CarteiraPage() {
               </div>
             </section>
             <section className="panel">
-              <div className="panel-head"><div><h2>Códigos de produto encontrados</h2><p>Confira a identificação automática (regra 4).</p></div></div>
+              <div className="panel-head"><div><h2>Códigos de produto encontrados <Hint text="Confira a identificação automática (regra 4)." /></h2></div></div>
               <div className="table-wrap" style={{ maxHeight: 320 }}>
                 <table className="data">
                   <thead><tr><th>U1PRODUTO</th><th>Produto</th><th className="num">Contas</th></tr></thead>
@@ -241,7 +237,7 @@ export function CarteiraPage() {
           </div>
 
           <section className="panel">
-            <div className="panel-head"><div><h2>Comissão por origem</h2><p>Arquivo de comissão preservado integralmente. O arquivo traz linhas idênticas: veja o total com todas as linhas e com as linhas distintas. A regra de contagem aguarda definição. A remuneração é exibida em valor bruto, pois o layout não define casas decimais.</p></div></div>
+            <div className="panel-head"><div><h2>Comissão por origem <Hint text="Arquivo de comissão preservado integralmente. O arquivo traz linhas idênticas: veja o total com todas as linhas e com as linhas distintas. A regra de contagem aguarda definição. A remuneração é exibida em valor bruto, pois o layout não define casas decimais." /></h2></div></div>
             <div className="table-wrap">
               <table className="data">
                 <thead><tr><th>Origem</th><th className="num">Contas</th><th className="num">Linhas de comissão</th><th className="num">Valor recebido (todas as linhas)</th><th className="num">Linhas distintas</th><th className="num">Valor (linhas distintas)</th><th className="num">Remuneração devida (bruto)</th></tr></thead>

@@ -68,8 +68,7 @@ export function ContractPage() {
     <div className="stack">
       <div className="page-head">
         <div>
-          <h1>{titulo('Consulta de contratos')}</h1>
-          <p>Linha do tempo completa do contrato a partir de todos os arquivos importados, com o resultado dos batimentos de cada evento.</p>
+          <h1>{titulo('Contratos')}</h1>
         </div>
       </div>
       <Search initial={key ?? ''} key={key} />

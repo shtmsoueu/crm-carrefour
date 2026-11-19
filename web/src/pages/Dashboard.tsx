@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { api, qs } from '../api';
-import { Empty, Loading, Notice, useLoad, titulo } from '../components/ui';
-import { FILE_TYPE_LABELS, fmtDate, fmtInt, fmtMoney, RESULT_LABELS } from '../format';
+import { Empty, Loading, Notice, useLoad, titulo, Hint } from '../components/ui';
+import { FILE_TYPE_LABELS, fmtDate, fmtInt, fmtMoney, RESULT_LABELS, shortNote } from '../format';
 
 interface Etapa {
   flow: string;
@@ -34,7 +34,7 @@ function Belt({ etapas }: { etapas: Etapa[] }) {
             <div>
               <div className="flow-name"><Link to={`/batimentos?flow=${e.flow}`}>{e.title}</Link></div>
               {!e.lastRun && <div className="flow-note">Ainda não executado</div>}
-              {waiting.map((w, i) => <div className="flow-note" key={i}>{w.text}</div>)}
+              {waiting.map((w, i) => <div className="flow-note" key={i} title={w.text}>{shortNote(w.text)}</div>)}
             </div>
             <div>
               {e.compared > 0 ? (
@@ -52,12 +52,12 @@ function Belt({ etapas }: { etapas: Etapa[] }) {
               ) : (
                 <div className="small muted">
                   {e.counts.INFORMATIVO || e.counts.PENDENTE_CONFIGURACAO
-                    ? `Sem registros comparáveis. ${fmtInt(e.counts.INFORMATIVO ?? 0)} resultado(s) informativo(s)${e.counts.PENDENTE_CONFIGURACAO ? ', regra pendente de configuração' : ''}.`
-                    : 'Sem registros comparáveis.'}
+                    ? `${fmtInt(e.counts.INFORMATIVO ?? 0)} informativos${e.counts.PENDENTE_CONFIGURACAO ? ' · regra pendente' : ''}`
+                    : 'Sem comparação'}
                 </div>
               )}
             </div>
-            <div className={`pct ${e.percent === null ? 'none' : ''}`}>{e.percent === null ? 'sem base' : `${e.percent.toLocaleString('pt-BR')}%`}</div>
+            <div className={`pct ${e.percent === null ? 'none' : ''}`}>{e.percent === null ? '—' : `${e.percent.toLocaleString('pt-BR')}%`}</div>
           </li>
         );
       })}
@@ -68,9 +68,11 @@ function Belt({ etapas }: { etapas: Etapa[] }) {
 export function DashboardPage() {
   const [draft, setDraft] = useState(EMPTY_FILTERS);
   const [filters, setFilters] = useState(EMPTY_FILTERS);
+  const [showFilters, setShowFilters] = useState(false);
   const { data, error, loading } = useLoad(() => api(`/dashboard${qs(filters)}`), [filters]);
   const set = (k: keyof typeof EMPTY_FILTERS) => (e: { target: { value: string } }) => setDraft({ ...draft, [k]: e.target.value });
   const active = Object.values(filters).some(Boolean);
+  const activeCount = Object.values(filters).filter(Boolean).length;
   const k = data?.kpis;
   const maxPend = Math.max(1, ...(data?.pendenciasPorCategoria ?? []).map((p: { n: number }) => p.n));
   const maxDay = Math.max(1, ...(data?.evolucaoRecebimentos ?? []).map((d: { v: string }) => Number(d.v)));
@@ -79,12 +81,17 @@ export function DashboardPage() {
     <div className="stack">
       <div className="page-head">
         <div>
-          <h1>{titulo('Dashboard executivo')}</h1>
-          <p>Indicadores calculados exclusivamente a partir dos arquivos importados e confirmados.</p>
+          <h1>{titulo('Painel')}</h1>
+        </div>
+        <div className="actions">
+          <button className="btn" onClick={() => setShowFilters(!showFilters)} aria-expanded={showFilters}>
+            Filtros {activeCount > 0 && <span className="pill">{activeCount}</span>}
+          </button>
+          {active && <button className="btn ghost" onClick={() => { setDraft(EMPTY_FILTERS); setFilters(EMPTY_FILTERS); }}>Limpar</button>}
         </div>
       </div>
 
-      <form className="filters" onSubmit={(e) => { e.preventDefault(); setFilters(draft); }} aria-label="Filtros do painel">
+      {showFilters && <form className="filters" onSubmit={(e) => { e.preventDefault(); setFilters(draft); setShowFilters(false); }} aria-label="Filtros do painel">
         <label className="field">Período de<input type="date" value={draft.from} onChange={set('from')} /></label>
         <label className="field">até<input type="date" value={draft.to} onChange={set('to')} /></label>
         <label className="field">Processado de<input type="date" value={draft.procFrom} onChange={set('procFrom')} /></label>
@@ -104,8 +111,7 @@ export function DashboardPage() {
           </select>
         </label>
         <button className="btn primary">Aplicar</button>
-        {active && <button type="button" className="btn ghost" onClick={() => { setDraft(EMPTY_FILTERS); setFilters(EMPTY_FILTERS); }}>Limpar filtros</button>}
-      </form>
+      </form>}
 
       {error && <Notice tone="bad">{error}</Notice>}
       {loading && !data && <Loading />}
@@ -120,10 +126,10 @@ export function DashboardPage() {
               <div className="kpi-lead">{fmtInt(k.contratos_ativos)}</div>
               <div className="kpi-lead-label">ativos na carteira</div>
               <ul className="kpi-list">
-                <li title="Contratos distintos presentes em qualquer arquivo importado">Recebidos (todos os arquivos) <b>{fmtInt(k.contratos_recebidos)}</b></li>
+                <li title="Contratos distintos presentes em qualquer arquivo importado">Recebidos <b>{fmtInt(k.contratos_recebidos)}</b></li>
                 <li title="Contratos distintos em REM_CONTRATOS">Distribuídos <b>{fmtInt(k.contratos_distribuidos)}</b></li>
                 <li title="Contratos distintos em RET_DISTRIBUICAO ou RET_CARTEIRA">Retirados <b>{fmtInt(k.contratos_retirados)}</b></li>
-                <li title="CPF/CNPJ distintos (visão unique): uma pessoa pode ter vários contratos">Clientes únicos (CPF/CNPJ) <b>{fmtInt(k.clientes_unicos)}</b></li>
+                <li title="CPF/CNPJ distintos (visão unique): uma pessoa pode ter vários contratos">Clientes únicos <b>{fmtInt(k.clientes_unicos)}</b></li>
               </ul>
             </div>
             <div className="kpi-group destaque">
@@ -141,11 +147,11 @@ export function DashboardPage() {
               <div className="kpi-lead">{fmtMoney(k.valor_recebido)}</div>
               <div className="kpi-lead-label">recebidos em {fmtInt(k.pagamentos_identificados)} pagamentos</div>
               <ul className="kpi-list">
-                <li title="Pagamentos distintos do REPASSE (linhas idênticas contam uma vez)">Identificados no repasse <b>{fmtInt(k.pagamentos_identificados)}</b></li>
+                <li title="Pagamentos distintos do REPASSE (linhas idênticas contam uma vez)">No repasse <b>{fmtInt(k.pagamentos_identificados)}</b></li>
                 {k.pagamentos_linhas > k.pagamentos_identificados && (
                   <li className="alert" title="Linhas idênticas desconsideradas no total (ver pendências de duplicidade)">Linhas idênticas desconsideradas <b>{fmtInt(k.pagamentos_linhas - k.pagamentos_identificados)} ({fmtMoney(Number(k.pagamentos_valor_linhas) - Number(k.valor_recebido))})</b></li>
                 )}
-                <li title="Acordos (AHID) distintos em qualquer arquivo — visão conta">Acordos em todos os arquivos <b>{fmtInt(k.acordos_todos_arquivos)}</b></li>
+                <li title="Acordos (AHID) distintos em qualquer arquivo — visão conta">Acordos (todos) <b>{fmtInt(k.acordos_todos_arquivos)}</b></li>
               </ul>
             </div>
             <div className={`kpi-group ${k.pendentes ? 'alert' : ''}`}>
@@ -159,8 +165,7 @@ export function DashboardPage() {
           <section className="panel">
             <div className="panel-head">
               <div>
-                <h2>Conciliação por etapa</h2>
-                <p>Percentual de registros conciliados sobre os comparados em cada fluxo. Informativos não entram no cálculo.</p>
+                <h2>Conciliação por etapa <Hint text="Percentual de registros conciliados sobre os comparados em cada fluxo. Informativos não entram no cálculo." /></h2>
               </div>
               <Link className="btn sm" to="/batimentos">Ver batimentos</Link>
             </div>
@@ -188,7 +193,7 @@ export function DashboardPage() {
             </section>
             <section className="panel">
               <div className="panel-head">
-                <div><h2>Recebimentos por data de pagamento</h2><p>Valores do REPASSE, últimas datas com movimento.</p></div>
+                <div><h2>Recebimentos por data de pagamento <Hint text="Valores do REPASSE, últimas datas com movimento." /></h2></div>
               </div>
               <div className="panel-body">
                 {data.evolucaoRecebimentos.length === 0 ? (

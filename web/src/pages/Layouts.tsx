@@ -37,8 +37,7 @@ export function LayoutsPage() {
     <div className="stack">
       <div className="page-head">
         <div>
-          <h1>{titulo('Dicionário de layouts')}</h1>
-          <p>Especificação técnica usada por cada importador, construída a partir das planilhas oficiais. Correções e divergências observadas nas cargas reais estão registradas em cada layout.</p>
+          <h1>{titulo('Layouts')}</h1>
         </div>
         <label className="field">Layout
           <select value={sel} onChange={(e) => setSel(e.target.value)}>{list.map((x) => <option key={x.code} value={x.code}>{x.title}</option>)}</select>

@@ -17,30 +17,30 @@ interface Group { label: string; items: Item[] }
  * o grupo Financeiro e as visões por perfil são adicionados nas próximas fases.
  */
 export const NAV: Group[] = [
-  { label: 'Visão geral', items: [{ to: '/', label: 'Dashboard executivo', icon: LayoutDashboard, end: true }] },
+  { label: '', items: [{ to: '/', label: 'Painel', icon: LayoutDashboard, end: true }] },
   {
     label: 'Operação',
     items: [
-      { to: '/importacao', label: 'Importação de arquivos', icon: Upload, badge: 'imports' },
-      { to: '/historico', label: 'Histórico de importações', icon: FolderClock },
-      { to: '/batimentos', label: 'Central de batimentos', icon: GitCompareArrows },
-      { to: '/pendencias', label: 'Pendências e divergências', icon: TriangleAlert, badge: 'divergences' },
+      { to: '/importacao', label: 'Importação', icon: Upload, badge: 'imports' },
+      { to: '/historico', label: 'Histórico', icon: FolderClock },
+      { to: '/batimentos', label: 'Batimentos', icon: GitCompareArrows },
+      { to: '/pendencias', label: 'Pendências', icon: TriangleAlert, badge: 'divergences' },
     ],
   },
   {
-    label: 'Dados e carteira',
+    label: 'Dados',
     items: [
-      { to: '/contratos', label: 'Consulta de contratos', icon: FileSearch },
-      { to: '/carteira', label: 'Carteira classificada', icon: Wallet },
-      { to: '/conciliacao-crm', label: 'Conciliação com CRM', icon: ClipboardList },
-      { to: '/layouts', label: 'Dicionário de layouts', icon: BookOpen },
+      { to: '/contratos', label: 'Contratos', icon: FileSearch },
+      { to: '/carteira', label: 'Carteira', icon: Wallet },
+      { to: '/conciliacao-crm', label: 'Conciliação CRM', icon: ClipboardList },
+      { to: '/layouts', label: 'Layouts', icon: BookOpen },
     ],
   },
   {
     label: 'Governança',
     items: [
       { to: '/auditoria', label: 'Auditoria', icon: Activity, min: 'OPERADOR' },
-      { to: '/usuarios', label: 'Usuários e permissões', icon: Users, min: 'ADMIN' },
+      { to: '/usuarios', label: 'Usuários', icon: Users, min: 'ADMIN' },
       { to: '/configuracoes', label: 'Configurações', icon: Settings, min: 'ADMIN' },
     ],
   },
@@ -83,7 +83,6 @@ export function Layout() {
       <aside className={`sidebar ${open ? 'open' : ''}`} aria-label="Menu principal">
         <div className="brand">
           <strong><span className="t-leve">CRM</span> Carrefour</strong>
-          <span>Carteira, conciliação e financeiro</span>
           <button className="icon-btn sidebar-close" onClick={() => setOpen(false)} aria-label="Fechar menu"><X size={18} /></button>
         </div>
         <nav className="nav">
@@ -92,7 +91,7 @@ export function Layout() {
             if (!items.length) return null;
             return (
               <div key={g.label} className="nav-section">
-                <div className="nav-group">{g.label}</div>
+                {g.label && <div className="nav-group">{g.label}</div>}
                 {items.map((i) => {
                   const n = i.badge && pending ? pending[i.badge] : 0;
                   return (
@@ -112,11 +111,11 @@ export function Layout() {
         <header className="topbar">
           <button className="icon-btn menu-toggle" onClick={() => setOpen(true)} aria-label="Abrir menu" aria-expanded={open}><Menu size={20} /></button>
           <div className="crumb" aria-label="Localização">
-            {page ? <><span>{page.group}</span><span aria-hidden="true">›</span><b>{page.label}</b></> : <b>CRM Carrefour</b>}
+            {page ? <>{page.group && <><span>{page.group}</span><span aria-hidden="true">›</span></>}<b>{page.label}</b></> : <b>CRM Carrefour</b>}
           </div>
           <form className="topsearch" role="search" onSubmit={search}>
             <Search size={16} aria-hidden="true" />
-            <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Contrato ou CPF/CNPJ" aria-label="Buscar contrato ou CPF/CNPJ" />
+            <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Buscar contrato ou CPF" aria-label="Buscar contrato ou CPF/CNPJ" />
           </form>
           {!authEnabled ? (
             <span className="access-flag" title="Login desativado: qualquer pessoa com o endereço acessa os dados"><ShieldCheck size={15} aria-hidden="true" />Acesso sem login</span>

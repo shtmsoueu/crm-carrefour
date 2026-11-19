@@ -444,3 +444,45 @@ details summary { cursor: pointer; color: var(--primary); font-size: var(--t-sm)
   .topsearch input { width: 100%; }
   .userchip .who, .access-flag { display: none; }
 }
+
+/* ------------------------------------------------------------------ Densidade profissional (telas de trabalho)
+   Raios menores que os do quadro Daily (32/24 px), pensados para apresentação; aqui priorizamos leitura de dados. */
+:root {
+  --r-md: var(--raio-pequeno);   /* 16 px: painéis, faixa de indicadores */
+  --r-sm: 8px;                   /* controles */
+  --r-chip: 8px;
+  --t-2xl: 1.5rem;
+}
+.main { padding: var(--s5) var(--s6) var(--s7); }
+.stack { gap: var(--s4); }
+.page-head { margin-bottom: 0; align-items: center; min-height: 40px; }
+h1 { font-size: var(--t-2xl); line-height: 1.2; }
+.panel-head { padding: var(--s3) var(--s4); }
+.panel-head h2 { font-size: var(--t-md); display: inline-flex; align-items: center; gap: 6px; }
+.btn { height: 32px; border-radius: var(--r-sm); }
+.btn.sm { height: 28px; }
+input, select, textarea { border-radius: var(--r-sm); height: 32px; }
+.filters { padding: var(--s3) var(--s4); gap: var(--s3); background: var(--cor-branco); }
+.kpi-group { padding: var(--s4) var(--s5); }
+.kpi-lead { font-size: 1.875rem; }
+.badge { border-radius: var(--r-chip); }
+.drop { padding: var(--s5); border-radius: var(--r-md); }
+.drop strong { font-size: var(--t-md); }
+
+/* Critério sob demanda */
+.hint { position: relative; display: inline-flex; color: var(--ink-3); cursor: help; outline: none; }
+.hint:hover, .hint:focus-visible { color: var(--cor-azul-60); }
+.hint:hover::after, .hint:focus-visible::after {
+  content: attr(data-tip); position: absolute; left: 50%; top: calc(100% + 8px); transform: translateX(-50%); z-index: 40;
+  width: max-content; max-width: 320px; padding: 8px 10px; border-radius: 8px;
+  background: var(--cor-azul-70); color: #fff; font-size: var(--t-xs); font-weight: var(--peso-regular); line-height: 1.4; white-space: normal;
+  box-shadow: 0 6px 20px rgba(0, 56, 123, 0.25);
+}
+
+/* Barra compacta de regras aplicadas */
+.rulebar { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s2) var(--s5); padding: var(--s2) var(--s4); border: 1px solid var(--rule); border-radius: var(--r-md); font-size: var(--t-sm); color: var(--ink-2); }
+.rulebar b { color: var(--cor-azul-70); }
+.rulebar .btn { margin-left: auto; }
+
+/* Botão de filtros com contagem */
+.btn .pill { display: inline-grid; place-items: center; min-width: 18px; height: 18px; padding: 0 5px; border-radius: 9px; background: var(--cor-azul-60); color: #fff; font-size: 11px; }
