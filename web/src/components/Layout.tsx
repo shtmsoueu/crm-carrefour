@@ -38,6 +38,8 @@ export function Layout() {
           <NavLink to="/layouts">Dicionário de layouts</NavLink>
           <div className="nav-group">Conciliação</div>
           <NavLink to="/batimentos">Batimentos</NavLink>
+          <NavLink to="/carteira">Carteira classificada</NavLink>
+          <NavLink to="/conciliacao-crm">Conciliação com o CRM</NavLink>
           <NavLink to="/pendencias">
             Pendências de batimento {pending && pending.divergences > 0 && <span className="count">{pending.divergences.toLocaleString('pt-BR')}</span>}
           </NavLink>

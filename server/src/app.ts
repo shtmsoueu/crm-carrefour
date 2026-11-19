@@ -15,6 +15,7 @@ import { cancelImport, confirmImport, createImport, discardImport, getImport, Im
 import { gunzipToTemp, readOriginal, removeTemp } from './imports/storage.js';
 import { flowsForFileType, listFlows, runAllFlows, runFlow } from './reconciliation/index.js';
 import { audit } from './services/audit.js';
+import { carteiraCrmRouter } from './routes/carteira-crm.js';
 import { getDashboard } from './services/dashboard.js';
 import { contractDetail, searchContracts } from './services/contracts.js';
 import { CATEGORY_LABELS } from './services/divergences.js';
@@ -388,6 +389,9 @@ export function createApp() {
     await audit(actorOf(req), 'CONFIGURACAO_ALTERADA', 'settings', SETTING_REJEICAO, v);
     res.json({ value: v });
   }));
+
+  // Carteira classificada e conciliação com o CRM externo
+  api.use(carteiraCrmRouter());
 
   app.use('/api', api);
   app.use('/api', (_req, res) => res.status(404).json({ error: 'Rota não encontrada.' }));

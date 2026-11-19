@@ -205,3 +205,83 @@ describe('importação, batimento e auditoria', () => {
     }
   });
 });
+
+describe('carteira classificada e conciliação com o CRM externo', () => {
+  const csv = [
+    'Contrato;CPF;Parcelas;Canal;Obs',
+    `00${ACC[0]};${CPF[0]};1;Assessoria;ok`,
+    `${ACC[1]};${CPF[1]};5;Assessoria;parcela errada`,
+    `${ACC[1]};${CPF[1]};1;Assessoria;linha duplicada`,
+    '99999999999;12345678909;1;Assessoria;conta inexistente na base',
+  ].join('\r\n');
+  let snapId: number;
+  let runId: number;
+
+  it('carteira classifica origem pelo AHCOLLID do acordo', async () => {
+    const r = await admin.get('/api/carteira?scope=TODOS&pageSize=10').expect(200);
+    const acc0 = r.body.rows.find((x: any) => x.contrato === ACC[0]);
+    expect(acc0.origem).toBe('ASSESSORIA (DIRETO)');
+    expect(acc0.canal_acordo).toBe('LEALCO');
+    expect(acc0.parcelas).toBe(1);
+    expect(acc0.flags).toContain('RANKING_SEM_DADOS'); // sem REM_CONTRATOS: dias/saldo indisponíveis
+  });
+
+  it('carrega a exportação do CRM e sugere o mapeamento pelas colunas', async () => {
+    const r = await admin.post('/api/crm/snapshots').attach('file', Buffer.from(csv, 'utf8'), 'crm_export.csv').expect(201);
+    snapId = r.body.id;
+    expect(r.body.rows_count).toBe(4);
+    expect(r.body.headers).toEqual(['Contrato', 'CPF', 'Parcelas', 'Canal', 'Obs']);
+    expect(r.body.suggestion.keyColumn).toBe('Contrato');
+    await admin.post('/api/crm/snapshots').attach('file', Buffer.from(csv, 'utf8'), 'crm_export.csv').expect(409);
+  });
+
+  it('exige mapeamento antes de conciliar', async () => {
+    await admin.post(`/api/crm/snapshots/${snapId}/conciliar`).send({ scope: 'TODOS' }).expect(409);
+  });
+
+  it('confronta 100% das contas: CONFORME, NÃO IMPORTADO, DIVERGENTE e fora da base', async () => {
+    await admin.put('/api/crm/perfil').send({
+      profile: {
+        keyColumn: 'Contrato', key: { stripLeadingZeros: true, digitsOnly: false },
+        comparisons: [
+          { crmColumn: 'CPF', baseAttribute: 'cpf' },
+          { crmColumn: 'Parcelas', baseAttribute: 'parcelas', kind: 'number' },
+          { crmColumn: 'Canal', baseAttribute: 'canal_acordo', equivalences: [{ crm: 'Assessoria', base: 'LEALCO' }] },
+        ],
+      },
+    }).expect(200);
+    const r = await admin.post(`/api/crm/snapshots/${snapId}/conciliar`).send({ scope: 'TODOS' }).expect(200);
+    runId = r.body.runId;
+    expect(r.body.base_contas).toBe(3);
+    expect(r.body.conforme).toBe(1);
+    expect(r.body.divergente).toBe(1);
+    expect(r.body.nao_importado).toBe(1);
+    expect(r.body.nao_consta_na_base).toBe(1);
+    expect(r.body.duplicados_no_crm).toBe(1);
+
+    const items = await admin.get(`/api/crm/execucoes/${runId}/itens?pageSize=50`).expect(200);
+    const by = Object.fromEntries(items.body.rows.map((x: any) => [x.contrato, x]));
+    expect(by[ACC[0]].situacao).toBe('CONFORME');
+    expect(by[ACC[2]].situacao).toBe('NAO_IMPORTADO');
+    const div = by[ACC[1]];
+    expect(div.situacao).toBe('DIVERGENTE');
+    expect(div.duplicado).toBe(true);
+    const parc = div.divergencias.find((d: any) => d.atributo === 'parcelas');
+    expect(parc).toMatchObject({ coluna_crm: 'Parcelas', base: 1, crm: '5' });
+    expect(div.divergencias.some((d: any) => d.campo === 'REGISTRO DUPLICADO NO CRM')).toBe(true);
+  });
+
+  it('exporta uma linha por campo divergente, sem alterar a exportação do CRM', async () => {
+    const csvOut = await admin.get(`/api/crm/execucoes/${runId}/itens?format=csv&situacao=DIVERGENTE`).expect(200);
+    expect(csvOut.text).toMatch(/Campo inconsistente;Coluna no CRM;Valor na base original;Valor no CRM/);
+    expect(csvOut.text).toMatch(/Quantidade de parcelas;Parcelas;1;5/);
+    const rows = await pool.query(`SELECT count(*)::int n FROM crm_snapshot_rows WHERE snapshot_id = $1`, [snapId]);
+    expect(rows.rows[0].n).toBe(4);
+    const orig = await admin.get(`/api/crm/snapshots/${snapId}/download`).buffer(true).parse((res, cb) => {
+      const chunks: Buffer[] = [];
+      res.on('data', (c: Buffer) => chunks.push(c));
+      res.on('end', () => cb(null, Buffer.concat(chunks)));
+    }).expect(200);
+    expect((orig.body as Buffer).toString('utf8')).toBe(csv);
+  });
+});

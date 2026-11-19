@@ -37,3 +37,15 @@ export function qs(params: Record<string, unknown>): string {
 }
 
 export const exportUrl = (path: string, params: Record<string, unknown>, format: 'csv' | 'xlsx') => `/api${path}${qs({ ...params, format })}`;
+
+/** Monta o FormData compactando o arquivo (gzip) no navegador quando suportado. */
+export async function fileForm(file: File, extra: Record<string, string> = {}): Promise<FormData> {
+  const fd = new FormData();
+  if (typeof CompressionStream !== 'undefined' && file.size > 0) {
+    const gz = await new Response(file.stream().pipeThrough(new CompressionStream('gzip'))).blob();
+    fd.append('encoding', 'gzip');
+    fd.append('file', new File([gz], file.name, { type: 'application/gzip' }));
+  } else fd.append('file', file);
+  for (const [k, v] of Object.entries(extra)) if (v) fd.append(k, v);
+  return fd;
+}

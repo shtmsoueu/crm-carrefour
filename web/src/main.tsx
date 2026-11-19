@@ -16,6 +16,8 @@ import { LayoutsPage } from './pages/Layouts';
 import { AuditPage } from './pages/Audit';
 import { UsersPage } from './pages/Users';
 import { SettingsPage } from './pages/Settings';
+import { CarteiraPage } from './pages/Carteira';
+import { CrmPage } from './pages/Crm';
 
 function App() {
   const { user } = useAuth();
@@ -35,6 +37,8 @@ function App() {
         <Route path="auditoria" element={<AuditPage />} />
         <Route path="usuarios" element={<UsersPage />} />
         <Route path="configuracoes" element={<SettingsPage />} />
+        <Route path="carteira" element={<CarteiraPage />} />
+        <Route path="conciliacao-crm" element={<CrmPage />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Route>
     </Routes>
