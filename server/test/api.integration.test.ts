@@ -206,6 +206,25 @@ describe('importação, batimento e auditoria', () => {
     expect(pay.results.some((x: any) => x.status === 'CONCILIADO')).toBe(true);
   });
 
+  it('virada do dia: a atualização leve de prazos dá o mesmo resultado do recálculo completo', async () => {
+    const { refreshDueDates, refreshStatuses } = await import('../src/status/refresh.js');
+    const { withTransaction } = await import('../src/db/pool.js');
+    const snap = async () => (await pool.query(
+      `SELECT a.ahid::text, a.status, a.status_reason, a.days_late, a.beyond_tolerance, a.status_source, a.status_record_id::text,
+         (SELECT json_agg(json_build_array(p.numero, p.status, p.days_late) ORDER BY p.numero) FROM agreement_installments p WHERE p.ahid = a.ahid) AS grade
+       FROM agreements a ORDER BY a.ahid`)).rows;
+    await refreshStatuses('2026-11-19');
+    for (const day of ['2026-11-25', '2026-11-28', '2027-01-20']) {
+      await withTransaction((db) => refreshDueDates(db, day));
+      const light = await snap();
+      await refreshStatuses(day);
+      expect(light).toEqual(await snap());
+    }
+    const a = await admin.get('/api/acordos/5002').expect(200);
+    expect(a.body.acordo).toMatchObject({ status: 'PROMESSA_EM_ATRASO', beyond_tolerance: true }); // entrada 20/11/2026, referência 20/01/2027
+    await refreshStatuses('2026-11-19');
+  });
+
   it('confirma vários arquivos de uma vez e roda os batimentos uma única vez', async () => {
     const a = await upload(admin, 'BAT_ACORDO_LEALCO_20261118_000041.txt', acordoFile('BAT_ACORDO', 6001, 41)).expect(201);
     const b = await upload(admin, 'BAT_ACORDO_LEALCO_20261118_000042.txt', acordoFile('BAT_ACORDO', 6002, 42)).expect(201);

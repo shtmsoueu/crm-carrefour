@@ -27,7 +27,15 @@ export async function hasBatimento(): Promise<boolean> {
  *   - arquivos BAT (mensais): atualizam o status e executam o batimento oficial.
  */
 export async function afterDataChange(fileTypes: string[], actor: Actor) {
-  const status = await refreshStatuses();
+  // A importação já está gravada: falha no recálculo não desfaz a confirmação; o status é refeito no botão
+  // "Atualizar status" ou na próxima importação.
+  let status: Awaited<ReturnType<typeof refreshStatuses>> | { erro: string };
+  try {
+    status = await refreshStatuses();
+  } catch (e) {
+    console.error('Recálculo de status não concluído:', (e as Error).message);
+    status = { erro: `Status não recalculado: ${(e as Error).message}. Use "Atualizar status" em Batimentos.` };
+  }
   const bat = fileTypes.some((t) => BAT_TYPES.includes(t));
   const flows = bat ? (await runAllFlows(actor)).map((r) => ({ flow: r.flow, total: r.total, divergences: r.divergences })) : [];
   return { status, flows, batimento: bat ? 'EXECUTADO' : 'SOMENTE_STATUS' };

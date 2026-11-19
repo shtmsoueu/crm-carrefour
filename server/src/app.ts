@@ -247,7 +247,8 @@ export function createApp() {
       `SELECT DISTINCT ON (file_type) file_type, id, original_name, COALESCE(generation_date, file_name_date) AS file_date, confirmed_at
        FROM imports WHERE file_type = ANY($1::text[]) AND status = 'CONFIRMADO'
        ORDER BY file_type, COALESCE(generation_date, file_name_date) DESC NULLS LAST, id DESC`, [BAT_TYPES]);
-    res.json({ tipos: BAT_TYPES, ultimos: r.rows, disponivel: r.rows.length > 0 });
+    const st = await pool.query(`SELECT max(status_ref_date)::text AS referencia, count(*) FILTER (WHERE status_ref_date IS NULL)::int AS pendentes, count(*)::int AS acordos FROM agreements`);
+    res.json({ tipos: BAT_TYPES, ultimos: r.rows, disponivel: r.rows.length > 0, status: st.rows[0] });
   }));
   api.post('/status/atualizar', requireRole('OPERADOR'), h(async (req, res) => {
     const r = await refreshStatuses();

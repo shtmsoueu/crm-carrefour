@@ -5,7 +5,7 @@
 import type pg from 'pg';
 import { withTransaction } from '../db/pool.js';
 import { loadAll, loadLatestPerAhid, loadLatestPerContract, type Rec } from '../reconciliation/data.js';
-import { agreementStatus, contractStatus, type Ev, type PaymentIn } from './rules.js';
+import { agreementStatus, buildParcels, contractStatus, type Ev, type PaymentIn } from './rules.js';
 
 /** Tipos de arquivo que alteram o status operacional. */
 export const STATUS_SOURCES = ['REM_CONTRATOS', 'RET_CARTEIRA', 'RET_DISTRIBUICAO', 'ACORDO_ASSESSORIA', 'QUEBRA_ACORDO', 'REPASSE'];
@@ -113,11 +113,53 @@ export async function refreshAgreementStatus(db: pg.PoolClient, ref = todaySP())
   return { acordos: known.length, parcelas: parcelRows.length, por_status: tally, referencia: ref };
 }
 
-/** Recalcula contratos e acordos numa única transação. */
+/**
+ * Atualização leve de prazos (virada do dia): recalcula o status das parcelas e dos acordos
+ * a partir da grade já gravada, com as mesmas regras, sem reler os arquivos importados.
+ * Quebra e origem externa não dependem da data: mantêm o status e a origem gravados.
+ */
+export async function refreshDueDates(db: pg.PoolClient, ref = todaySP()) {
+  const ags = await db.query<{ ahid: string; status: string; agreement_date: string | null; broken_at: string | null; status_import_id: number | null; status_record_id: string | null }>(
+    `SELECT ahid::text, status, agreement_date::text, broken_at::text, status_import_id, status_record_id::text FROM agreements
+     WHERE ahid IN (SELECT DISTINCT ahid FROM agreement_installments)`);
+  const inst = await db.query<{ ahid: string; numero: number; due_date: string | null; amount: string | null; paid_at: string | null; paid_amount: string | null;
+    agreement_record_id: string; agreement_import_id: number; payment_record_id: string | null; payment_import_id: number | null }>(
+    `SELECT ahid::text, numero, due_date::text, amount::text, paid_at::text, paid_amount::text, agreement_record_id::text, agreement_import_id,
+       payment_record_id::text, payment_import_id FROM agreement_installments ORDER BY ahid, numero`);
+  const by = new Map<string, typeof inst.rows>();
+  for (const r of inst.rows) by.set(r.ahid, [...(by.get(r.ahid) ?? []), r]);
+  const DATED = new Set(['PROMESSA_ATIVA', 'PROMESSA_EM_ATRASO', 'ACORDO']);
+  const agRows: Record<string, unknown>[] = [];
+  const parcelRows: Record<string, unknown>[] = [];
+  for (const a of ags.rows) {
+    const list = by.get(a.ahid) ?? [];
+    const parcels = list.map((p) => ({ dueDate: p.due_date, amount: num(p.amount), recordId: p.agreement_record_id, importId: p.agreement_import_id }));
+    const payments: PaymentIn[] = list.filter((p) => p.payment_record_id).map((p) => ({ date: p.paid_at, amount: num(p.paid_amount), parcel: p.numero, recordId: p.payment_record_id!, importId: p.payment_import_id! }));
+    const broken = a.status === 'QUEBRA_DE_ACORDO';
+    for (const p of buildParcels(parcels, payments, ref, broken)) parcelRows.push({ ahid: a.ahid, n: p.numero, s: p.status, late: p.daysLate });
+    if (!DATED.has(a.status) || !list.length) continue;
+    const res = agreementStatus({ ahid: a.ahid, agreementDate: a.agreement_date, parcels, payments, ahcollid: null, quebra: null, head: { importId: list[0].agreement_import_id, recordId: list[0].agreement_record_id } }, ref);
+    agRows.push({ ahid: a.ahid, s: res.status, d: res.date, src: res.source, imp: res.importId, rec: res.recordId, reason: res.reason, late: res.daysLate, beyond: res.beyondTolerance });
+  }
+  await batched(db, parcelRows,
+    `UPDATE agreement_installments p SET status = x.s, days_late = x.late FROM jsonb_to_recordset($1::jsonb) AS x(ahid bigint, n int, s text, late int)
+     WHERE p.ahid = x.ahid AND p.numero = x.n AND (p.status IS DISTINCT FROM x.s OR p.days_late IS DISTINCT FROM x.late)`);
+  await batched(db, agRows,
+    `UPDATE agreements a SET status = x.s, status_date = x.d, status_source = x.src, status_import_id = x.imp, status_record_id = x.rec,
+       status_reason = x.reason, days_late = x.late, beyond_tolerance = x.beyond, updated_at = now()
+     FROM jsonb_to_recordset($1::jsonb) AS x(ahid bigint, s text, d date, src text, imp int, rec bigint, reason text, late int, beyond boolean)
+     WHERE a.ahid = x.ahid AND (a.status, a.status_reason) IS DISTINCT FROM (x.s, x.reason)`);
+  await db.query(`UPDATE agreements SET status_ref_date = $1::date WHERE status_ref_date IS DISTINCT FROM $1::date`, [ref]);
+  return { acordos: ags.rows.length, alterados: agRows.length, referencia: ref };
+}
+
+/** Recalcula contratos e acordos numa única transação (após mudança nos arquivos importados). */
 export async function refreshStatuses(ref?: string) {
   const t0 = Date.now();
   return withTransaction(async (db) => {
-    // Serializa atualizações simultâneas (ex.: várias telas abertas na virada do dia).
+    // Falha de forma controlada antes do limite da hospedagem (60 s), sem deixar a requisição pendurada.
+    await db.query(`SET LOCAL statement_timeout = '45s'`);
+    // Serializa atualizações simultâneas.
     await db.query(`SELECT pg_advisory_xact_lock(hashtext('status-operacional'))`);
     const contratos = await refreshContractStatus(db);
     const acordos = await refreshAgreementStatus(db, ref);

@@ -1,10 +1,35 @@
-import { pool } from '../db/pool.js';
-import { refreshStatuses, todaySP } from './refresh.js';
+import { pool, withTransaction } from '../db/pool.js';
+import { refreshDueDates, todaySP } from './refresh.js';
 
-/** Os prazos dependem da data de hoje: recalcula os status se a última atualização foi em outro dia. */
+let currentDay: string | null = null;
+
+/**
+ * Os prazos dependem da data de hoje. Na virada do dia, aplica a atualização leve de prazos
+ * (grade já gravada, sem reler arquivos). Nunca bloqueia a consulta: se outra atualização estiver
+ * em andamento, segue com os dados gravados.
+ */
 export async function ensureStatusesCurrent() {
+  const today = todaySP();
+  if (currentDay === today) return;
   const r = await pool.query<{ d: string | null; n: number }>(`SELECT max(status_ref_date)::text AS d, count(*)::int AS n FROM agreements`);
-  if (r.rows[0].n > 0 && r.rows[0].d !== todaySP()) await refreshStatuses();
+  if (!r.rows[0].n || r.rows[0].d === today) {
+    currentDay = today;
+    return;
+  }
+  // Sem nenhum cálculo ainda (logo após a migração): o recálculo completo é feito na próxima importação
+  // ou pelo botão "Atualizar status"; a consulta não espera por ele.
+  if (r.rows[0].d === null) return;
+  try {
+    await withTransaction(async (db) => {
+      await db.query(`SET LOCAL statement_timeout = '20s'`);
+      const got = await db.query<{ ok: boolean }>(`SELECT pg_try_advisory_xact_lock(hashtext('status-operacional')) AS ok`);
+      if (!got.rows[0].ok) return;
+      await refreshDueDates(db, today);
+    });
+    currentDay = today;
+  } catch (e) {
+    console.error('Atualização de prazos não concluída; a consulta segue com os dados gravados:', (e as Error).message);
+  }
 }
 
 /** Acordo com a grade completa de parcelas e a origem (arquivo e linha) de cada informação. */

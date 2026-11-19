@@ -36,6 +36,18 @@ export function ReconciliationPage() {
       setRunning(null);
     }
   };
+  const refreshStatus = async () => {
+    setRunning('STATUS');
+    try {
+      const r = await api('/status/atualizar', { method: 'POST' });
+      toast.show('ok', `Status atualizado: ${fmtInt(r.contratos.contratos)} contratos e ${fmtInt(r.acordos.acordos)} acordos em ${(r.duracao_ms / 1000).toLocaleString('pt-BR')} s.`);
+      estado.reload();
+    } catch (e) {
+      toast.show('bad', (e as Error).message);
+    } finally {
+      setRunning(null);
+    }
+  };
   const pick = (code: string) => {
     setPage(1);
     setRule('');
@@ -56,6 +68,10 @@ export function ReconciliationPage() {
         <section className="panel">
           <div className="panel-head">
             <div><h2>Batimento mensal <Hint text="O batimento oficial usa somente BAT_CONTRATOS, BAT_ACORDO e BAT_ACORDO_PGTO (1 vez por mês) e roda ao confirmar um deles. Os arquivos diários atualizam apenas o status de contratos e acordos." /></h2></div>
+            <span className="row small">
+              <span className="muted">Status calculado em {estado.data.status?.referencia ? fmtDate(estado.data.status.referencia) : 'nunca'}</span>
+              {can('OPERADOR') && <button className="btn sm" disabled={!!running} onClick={refreshStatus}>{running === 'STATUS' ? 'Atualizando…' : 'Atualizar status'}</button>}
+            </span>
           </div>
           <div className="panel-body">
             <dl className="facts">
