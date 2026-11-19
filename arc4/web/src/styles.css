@@ -1,0 +1,66 @@
+*,
+*::before,
+*::after { box-sizing: border-box; }
+
+html, body { margin: 0; }
+body {
+  font-family: var(--fonte);
+  color: var(--cor-texto);
+  background: var(--cor-fundo);
+  font-size: 15px;
+  line-height: 1.5;
+}
+::selection { background: var(--cor-selecao); }
+:focus-visible { outline: 2px solid var(--cor-foco); outline-offset: 2px; }
+a { color: var(--cor-primaria); }
+a:hover { color: var(--cor-primaria-hover); }
+
+.barra {
+  background: var(--cor-barra);
+  color: var(--branco);
+  padding: var(--esp-3) var(--esp-6);
+  display: flex;
+  align-items: center;
+  gap: var(--esp-3);
+}
+.barra h1 { font-size: 16px; font-weight: 600; margin: 0; letter-spacing: 0.01em; }
+
+main { max-width: 1120px; margin: 0 auto; padding: var(--esp-8) var(--esp-6); }
+.titulo { font-size: 22px; font-weight: 600; margin: 0 0 var(--esp-6); }
+
+.cartao {
+  background: var(--cor-superficie);
+  border: 1px solid var(--cor-borda);
+  border-radius: var(--raio);
+  padding: var(--esp-6);
+  margin-bottom: var(--esp-6);
+}
+.cartao h3 { margin: 0 0 var(--esp-4); font-size: 15px; font-weight: 600; }
+
+.lista-def { display: grid; grid-template-columns: max-content 1fr; gap: var(--esp-2) var(--esp-6); margin: 0; }
+.lista-def dt { color: var(--cor-texto-suave); }
+.lista-def dd { margin: 0; font-weight: 500; }
+
+.estado { display: inline-flex; align-items: center; gap: var(--esp-2); font-weight: 600; }
+.estado::before { content: ''; width: 8px; height: 8px; border-radius: 50%; background: currentColor; }
+.estado--ok { color: var(--cor-ok); }
+.estado--alerta { color: var(--cor-alerta); }
+.estado--erro { color: var(--cor-erro); }
+.estado--neutro { color: var(--cor-texto-suave); }
+
+.chips { display: flex; flex-wrap: wrap; gap: var(--esp-2); list-style: none; padding: 0; margin: 0; }
+.chip {
+  border: 1px solid var(--azul-200);
+  background: var(--azul-100);
+  color: var(--azul-900);
+  border-radius: 999px;
+  padding: var(--esp-1) var(--esp-3);
+  font-size: 13px;
+  font-weight: 500;
+}
+
+@media (max-width: 600px) {
+  main { padding: var(--esp-6) var(--esp-4); }
+  .lista-def { grid-template-columns: 1fr; gap: var(--esp-1); }
+  .lista-def dd { margin-bottom: var(--esp-2); }
+}

@@ -1,0 +1,43 @@
+/* Tokens da identidade visual (docs: CLAUDE.md › Identidade visual).
+   A família tipográfica fica isolada em --fonte para a troca por BTG Pactual Sans quando houver licença. */
+:root {
+  --fonte: 'Figtree', system-ui, -apple-system, 'Segoe UI', sans-serif;
+
+  --azul-950: #05132a;
+  --azul-900: #0b2859;
+  --azul-800: #10408d;
+  --azul-700: #195ab4;
+  --azul-600: #307ae0;
+  --azul-500: #549cff;
+  --azul-400: #6baaff;
+  --azul-300: #87baff;
+  --azul-200: #b1d2ff;
+  --azul-100: #d2e5ff;
+  --branco: #ffffff;
+
+  /* Papéis */
+  --cor-barra: var(--azul-950);
+  --cor-texto: var(--azul-950);
+  --cor-texto-suave: #3d4a60; /* 8.9:1 sobre branco */
+  --cor-primaria: var(--azul-700);
+  --cor-primaria-hover: var(--azul-800);
+  --cor-foco: var(--azul-600);
+  --cor-selecao: var(--azul-100);
+  --cor-borda: #d6dde8;
+  --cor-fundo: #f5f8fc;
+  --cor-superficie: var(--branco);
+  /* Estados críticos: sempre acompanhados de texto */
+  --cor-alerta: #8a5300; /* âmbar escuro, 5.6:1 sobre branco */
+  --cor-alerta-fundo: #fff4e0;
+  --cor-erro: #b3261e; /* 6.5:1 sobre branco */
+  --cor-erro-fundo: #fdecea;
+  --cor-ok: #1b6b3a;
+
+  --raio: 6px;
+  --esp-1: 4px;
+  --esp-2: 8px;
+  --esp-3: 12px;
+  --esp-4: 16px;
+  --esp-6: 24px;
+  --esp-8: 32px;
+}

@@ -1,0 +1,35 @@
+# Ambiente local do CRM ARC4: postgres + api + web.
+#   docker compose up -d --build   →  web em http://localhost:8080, API em http://localhost:8000/health
+# Credenciais abaixo são só para desenvolvimento local; produção usa segredos do ambiente.
+name: arc4
+
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: arc4
+      POSTGRES_USER: arc4
+      POSTGRES_PASSWORD: ${ARC4_DB_PASSWORD:-arc4}
+    ports: ["${ARC4_DB_PORT:-5432}:5432"]
+    volumes: [db-data:/var/lib/postgresql/data]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U arc4 -d arc4"]
+      interval: 3s
+      retries: 20
+
+  api:
+    build: { context: ., dockerfile: api/Dockerfile }
+    depends_on:
+      db: { condition: service_healthy }
+    environment:
+      DATABASE_URL: postgresql://arc4:${ARC4_DB_PASSWORD:-arc4}@db:5432/arc4
+    ports: ["${ARC4_API_PORT:-8000}:8000"]
+
+  web:
+    build: { context: ./web }
+    depends_on:
+      api: { condition: service_started }
+    ports: ["${ARC4_WEB_PORT:-8080}:8080"]
+
+volumes:
+  db-data:
