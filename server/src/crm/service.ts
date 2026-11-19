@@ -258,7 +258,15 @@ export async function runReconciliation(snapshotId: number, scope: Scope, actor:
         continue;
       }
       const div: { campo: string; atributo: string; coluna_crm: string; base: unknown; crm: unknown }[] = [];
-      if (found.length > 1) div.push({ campo: 'REGISTRO DUPLICADO NO CRM', atributo: 'chave', coluna_crm: profile.keyColumn, base: 1, crm: found.length });
+      if (pillar === 'CPF') {
+        // Visão unique: uma pessoa pode ter vários contratos, então várias linhas do CRM para o mesmo
+        // CPF são esperadas (multiplicidade natural). Só diverge se o número de linhas não corresponder
+        // à quantidade de contratos do CPF na base.
+        const qtd = Number(p.attrs.contratos_qtde ?? 1);
+        if (found.length > 1 && found.length !== qtd) {
+          div.push({ campo: 'LINHAS DO CPF NO CRM x CONTRATOS NA BASE', atributo: 'contratos_qtde', coluna_crm: profile.keyColumn, base: qtd, crm: found.length });
+        }
+      } else if (found.length > 1) div.push({ campo: 'REGISTRO DUPLICADO NO CRM', atributo: 'chave', coluna_crm: profile.keyColumn, base: 1, crm: found.length });
       let compared = 0;
       const skipped: string[] = [];
       profile.comparisons.forEach((c, i) => {
@@ -292,7 +300,7 @@ export async function runReconciliation(snapshotId: number, scope: Scope, actor:
         contrato: p.key,
         situacao: div.length ? 'DIVERGENTE' : 'CONFORME',
         motivo,
-        duplicado: found.length > 1,
+        duplicado: pillar === 'CPF' ? found.length > Number(p.attrs.contratos_qtde ?? 1) : found.length > 1,
         crm_rows: found.map((r) => r.row_number),
         divergencias: div.length ? div : null,
         base: p.snap,
@@ -361,7 +369,8 @@ export async function runReconciliation(snapshotId: number, scope: Scope, actor:
       nao_consta_na_base: count('NAO_CONSTA_NA_BASE'),
       nao_consta_fora_do_escopo: foraEscopo,
       nao_consta_sem_base: semBase,
-      duplicados_no_crm: [...crmBy.values()].filter((l) => l.length > 1).length,
+      // Na visão CPF, várias linhas por pessoa não são duplicidade: conta apenas as que excedem os contratos da base.
+      duplicados_no_crm: pillar === 'CPF' ? items.filter((i) => i.duplicado).length : [...crmBy.values()].filter((l) => l.length > 1).length,
       divergencias_por_campo: fieldCounts,
       nao_comparados_por_campo: notCompared,
       duplicados_itens: items.filter((i) => i.duplicado).length,

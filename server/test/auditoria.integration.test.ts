@@ -206,3 +206,23 @@ describe('CRM: três pilares e rastreabilidade de 100% das linhas', () => {
     expect(it.motivo).toMatch(/somente existência/);
   });
 });
+
+describe('CRM visão CPF: cliente com vários contratos não é duplicidade', () => {
+  it('2 linhas no CRM para um CPF com 2 contratos = conforme; 3 linhas = divergente', async () => {
+    // Base: CPF 55555555555 tem 2 contratos (50000000001 e 50000000002).
+    await api.put('/api/crm/perfil').send({ profile: { pillar: 'CPF', keyColumn: 'CPF', comparisons: [] } }).expect(200);
+    const ok = ['CPF;Contrato', '55555555555;50000000001', '55555555555;50000000002'].join('\r\n');
+    const s1 = await api.post('/api/crm/snapshots').attach('file', Buffer.from(ok, 'utf8'), 'crm_cpf_multi_ok.csv').expect(201);
+    const r1 = (await api.post(`/api/crm/snapshots/${s1.body.id}/conciliar`).send({ scope: 'TODOS' }).expect(200)).body;
+    const it1 = (await api.get(`/api/crm/execucoes/${r1.runId}/itens?q=55555555555`).expect(200)).body.rows[0];
+    expect(it1.situacao).toBe('CONFORME');
+    expect(it1.duplicado).toBe(false);
+    expect(r1.duplicados_no_crm).toBe(0);
+    const mais = ok + '\r\n55555555555;50000000002';
+    const s2 = await api.post('/api/crm/snapshots').attach('file', Buffer.from(mais, 'utf8'), 'crm_cpf_multi_mais.csv').expect(201);
+    const r2 = (await api.post(`/api/crm/snapshots/${s2.body.id}/conciliar`).send({ scope: 'TODOS' }).expect(200)).body;
+    const it2 = (await api.get(`/api/crm/execucoes/${r2.runId}/itens?q=55555555555`).expect(200)).body.rows[0];
+    expect(it2.situacao).toBe('DIVERGENTE');
+    expect(it2.divergencias[0]).toMatchObject({ campo: 'LINHAS DO CPF NO CRM x CONTRATOS NA BASE', base: 2, crm: 3 });
+  });
+});
