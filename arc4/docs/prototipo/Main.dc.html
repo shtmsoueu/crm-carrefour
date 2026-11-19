@@ -1,0 +1,782 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Consulta 360º do devedor</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#F4F8FE;font-family:Figtree,system-ui,sans-serif;color:#05132A}
+a{color:#195AB4}a:hover{color:#10408D}
+button,input,select,textarea{font-family:inherit}
+button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:2px solid #307AE0;outline-offset:2px}
+.top{background:#05132A;display:flex;align-items:center;gap:20px;padding:0 24px;min-height:60px;flex-wrap:wrap}
+.mark{width:28px;height:28px;border-radius:6px;background:#195AB4;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px}
+.avatar{width:32px;height:32px;border-radius:50%;background:#10408D;color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600}
+.nav{color:#B1D2FF;text-decoration:none;font-size:14px;font-weight:500;padding:8px 12px;border-radius:6px}
+.nav:hover{color:#fff;background:#0B2859}
+.nav-on{color:#fff;background:#10408D}
+.wrap{width:100%;max-width:1400px;margin:0 auto;padding:24px 28px 48px;box-sizing:border-box;display:flex;flex-direction:column;gap:20px}
+.card{background:#fff;border:1px solid #DCE6F5;border-radius:12px}
+.lbl{font-size:12px;color:#4A5B78;font-weight:500}
+.mono{font-variant-numeric:tabular-nums}
+.h1{margin:0;font-size:24px;font-weight:700}
+.h2{margin:0;font-size:17px;font-weight:600}
+.btn{display:inline-flex;align-items:center;gap:8px;height:40px;padding:0 16px;border-radius:8px;border:1px solid #B1D2FF;background:#fff;color:#0B2859;font-size:14px;font-weight:600;cursor:pointer;text-decoration:none;box-sizing:border-box;white-space:nowrap}
+.btn:hover{background:#EAF2FF;color:#0B2859}
+.btn-primary{background:#195AB4;border-color:#195AB4;color:#fff}
+.btn-primary:hover{background:#10408D;border-color:#10408D;color:#fff}
+.btn-off{background:#E6EDF7;border-color:#E6EDF7;color:#7B8BA6;cursor:not-allowed}
+.btn-off:hover{background:#E6EDF7;color:#7B8BA6}
+.btn-danger{color:#A1231A;border-color:#F1C9C5}
+.btn-danger:hover{background:#FDECEC;color:#A1231A}
+.btn-sm{height:32px;padding:0 12px;font-size:13px}
+.btn-link{border:0;background:none;color:#195AB4;font-size:13px;font-weight:600;cursor:pointer;padding:4px 6px;border-radius:6px}
+.btn-link:hover{background:#EAF2FF}
+.chip{display:inline-flex;align-items:center;gap:6px;height:24px;padding:0 8px;border-radius:6px;font-size:12px;font-weight:600;background:#EAF2FF;color:#0B2859;white-space:nowrap}
+.chip-warn{background:#FFF4E0;color:#8A4B06}
+.chip-crit{background:#FDECEC;color:#A1231A}
+.chip-ok{background:#D2E5FF;color:#0B2859}
+.chip-dark{background:#05132A;color:#fff}
+.chip-line{background:#fff;border:1px solid #B1D2FF}
+.chip-sim{background:#fff;border:1px dashed #87BAFF;color:#10408D}
+.seg{display:inline-flex;border:1px solid #B1D2FF;border-radius:8px;overflow:hidden;background:#fff;flex-wrap:wrap}
+.seg-b{border:0;background:#fff;height:36px;padding:0 14px;font-size:13px;font-weight:600;color:#0B2859;cursor:pointer;border-right:1px solid #DCE6F5}
+.seg-b:last-child{border-right:0}
+.seg-b:hover{background:#EAF2FF}
+.seg-on{background:#195AB4;color:#fff}
+.seg-on:hover{background:#10408D}
+.tabs{display:flex;gap:4px;border-bottom:1px solid #DCE6F5;flex-wrap:wrap}
+.tab{border:0;background:none;height:42px;padding:0 14px;font-size:14px;font-weight:600;color:#4A5B78;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px}
+.tab:hover{color:#0B2859}
+.tab-on{color:#195AB4;border-bottom-color:#195AB4}
+.inp,.sel{height:38px;border:1px solid #B1D2FF;border-radius:8px;padding:0 10px;font-size:14px;box-sizing:border-box;background:#fff;color:#05132A}
+.inp:focus,.sel:focus{border-color:#195AB4}
+.txa{border:1px solid #B1D2FF;border-radius:8px;padding:8px 10px;font-size:14px;box-sizing:border-box;width:100%;min-height:72px;resize:vertical;color:#05132A}
+.fld{display:flex;flex-direction:column;gap:4px}
+.pill{height:30px;padding:0 12px;border-radius:15px;border:1px solid #B1D2FF;background:#fff;font-size:12px;font-weight:500;cursor:pointer;color:#0B2859}
+.pill:hover{border-color:#549CFF}
+.pill-on{background:#195AB4;border-color:#195AB4;color:#fff}
+.tbl{width:100%;border-collapse:collapse;font-size:13px}
+.tbl th{text-align:left;font-weight:600;color:#4A5B78;font-size:12px;padding:10px 12px;border-bottom:1px solid #DCE6F5;white-space:nowrap}
+.tbl td{padding:10px 12px;border-bottom:1px solid #EEF3FA;vertical-align:middle}
+.tbl tr.clk:hover td{background:#F7FAFF;cursor:pointer}
+.num{text-align:right}
+.kpi{background:#fff;border:1px solid #DCE6F5;border-radius:12px;padding:14px 16px;display:flex;flex-direction:column;gap:4px}
+.kv{font-size:24px;font-weight:700;font-variant-numeric:tabular-nums}
+.delta{font-size:12px;font-weight:600;color:#10408D}
+.tip{position:relative;display:inline-flex;vertical-align:middle}
+.tip-btn{all:unset;cursor:help;width:22px;height:22px;display:inline-flex;align-items:center;justify-content:center;border-radius:50%;color:#4A5B78}
+.tip-btn:hover,.tip-btn:focus-visible{color:#195AB4;background:#EAF2FF}
+.tip-btn:focus-visible{outline:2px solid #307AE0}
+.bubble{position:absolute;z-index:40;top:calc(100% + 6px);left:50%;transform:translateX(-50%);width:max-content;max-width:280px;background:#05132A;color:#fff;font-size:12px;line-height:17px;font-weight:400;padding:8px 10px;border-radius:6px;opacity:0;visibility:hidden;pointer-events:none;transition:opacity .12s;text-align:left;white-space:normal}
+.bubble-r{left:auto;right:0;transform:none}
+.bubble-l{left:0;transform:none}
+.tip:hover .bubble,.tip:focus-within .bubble{opacity:1;visibility:visible}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:#05132A;color:#fff;border-radius:10px;padding:10px 16px;display:flex;gap:14px;align-items:center;font-size:13px;z-index:60}
+.sq{width:8px;height:8px;border-radius:2px;display:inline-block}
+.e0140{background:#195AB4}.e0144{background:#87BAFF}.e0900{background:#0B2859}
+.overlay{position:fixed;inset:0;background:rgba(5,19,42,.45);display:flex;align-items:flex-start;justify-content:center;padding:60px 16px;z-index:50;overflow:auto}
+.modal{background:#fff;border-radius:12px;width:100%;max-width:560px;padding:22px 24px;display:flex;flex-direction:column;gap:14px;box-sizing:border-box}
+.drawer{position:fixed;top:0;right:0;bottom:0;width:min(440px,100%);background:#fff;border-left:1px solid #DCE6F5;z-index:55;padding:22px 24px;box-sizing:border-box;overflow:auto;display:flex;flex-direction:column;gap:14px}
+.x{all:unset;cursor:pointer;width:32px;height:32px;display:inline-flex;align-items:center;justify-content:center;border-radius:6px;color:#4A5B78}
+.x:hover{background:#EAF2FF}
+.x:focus-visible{outline:2px solid #307AE0}
+
+.sq{width:8px;height:8px;border-radius:2px;display:inline-block}
+.g-G1{background:#87BAFF}.g-G2{background:#549CFF}.g-G3{background:#195AB4}.g-G4{background:#0B2859}.g-C2{background:#6BAAFF}
+.chip-info{background:#D2E5FF;color:#10408D}
+.dot{width:8px;height:8px;border-radius:50%;display:inline-block;flex:none}
+.dot-banco{background:#87BAFF}.dot-operacao{background:#195AB4}.dot-conflito{background:#D97706;box-shadow:0 0 0 3px #FDE7C2}
+.field{display:flex;align-items:flex-start;gap:12px;padding:10px 12px;border-radius:8px;border:1px solid transparent}
+.field:hover{background:#F7FAFF;border-color:#E3EBF6}
+.field-edit{background:#F2F7FF;border-color:#87BAFF}
+.valbtn{all:unset;cursor:text;font-size:14px;color:#05132A;line-height:20px;border-radius:4px;padding:0 2px}
+.valbtn:hover{background:#EAF2FF}
+.valbtn:focus-visible{outline:2px solid #307AE0}
+.ro{font-size:14px;color:#05132A;line-height:20px}
+.inp{width:100%}
+.ctr{border:1px solid #DCE6F5;border-radius:10px;background:#fff}
+.ctr-head{all:unset;box-sizing:border-box;display:flex;flex-wrap:wrap;align-items:center;gap:16px;padding:16px 18px;width:100%;cursor:pointer;border-radius:10px}
+.ctr-head:hover{background:#F7FAFF}
+.ctr-head:focus-visible{outline:2px solid #307AE0}
+.ph{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:8px;border:1px solid #E3EBF6}
+.ph-off{background:#F7F9FC}
+.star{all:unset;cursor:pointer;width:30px;height:30px;display:inline-flex;align-items:center;justify-content:center;border-radius:6px;color:#87BAFF}
+.star:hover{background:#EAF2FF}
+.star:focus-visible{outline:2px solid #307AE0}
+.star-on{color:#195AB4;background:#EAF2FF}
+.star-dis{cursor:not-allowed;opacity:.4}
+.copy{all:unset;cursor:copy;display:inline-flex;align-items:center;gap:6px;border-radius:6px;padding:2px 4px;margin-left:-4px;font-size:14px;font-weight:600;font-variant-numeric:tabular-nums;color:#05132A}
+.copy:hover{background:#EAF2FF;color:#10408D}
+.copy:focus-visible{outline:2px solid #307AE0}
+.copy svg{opacity:.45}
+.copy:hover svg{opacity:1}
+.ev{display:flex;gap:12px;padding:10px 0;border-bottom:1px solid #EEF3FA}
+.k-carga{background:#87BAFF}.k-edicao{background:#195AB4}.k-contato{background:#549CFF}.k-financeiro{background:#0B2859}.k-conflito{background:#D97706}.k-acionamento{background:#10408D}
+.kpi2{background:#F4F8FE;border-radius:10px;padding:12px 14px}
+.search{display:flex;gap:8px;align-items:center}
+
+</style>
+</helmet>
+<div style="min-height: 100vh; display: flex; flex-direction: column">
+  <header class="top">
+    <div style="display: flex; align-items: center; gap: 10px">
+      <div class="mark">A4</div>
+      <span style="color: #fff; font-weight: 600; font-size: 16px">ARC4 Cobrança</span>
+    </div>
+    <nav aria-label="Principal" style="display: flex; gap: 2px; flex-wrap: wrap"><a class="nav nav-on" href="Main.dc.html" aria-current="page">Consulta</a><a class="nav" href="Carteira.dc.html">Carteira</a><a class="nav" href="Movimentacoes.dc.html">Movimentações</a><a class="nav" href="Importacao.dc.html">Importação</a><a class="nav" href="Usuarios.dc.html">Administração</a></nav>
+    
+    <div style="margin-left: auto; display: flex; align-items: center; gap: 12px">
+      <div style="display: flex; flex-direction: column; align-items: flex-end; line-height: 1.2">
+        <span style="color: #fff; font-size: 13px; font-weight: 600">{{userName}}</span>
+        <span style="color: #87BAFF; font-size: 12px">{{userPerfil}}</span>
+      </div>
+      <div class="avatar" aria-hidden="true">{{userIni}}</div>
+      <a class="nav" href="Login.dc.html" style="display: inline-flex; align-items: center; gap: 6px"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M15 4h3a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-3"></path><path d="M10 17l-5-5 5-5"></path><path d="M5 12h11"></path></svg>Sair</a>
+    </div>
+  </header>
+
+
+  <main class="wrap">
+    <div class="search">
+      <label for="busca" class="sr">Buscar devedor</label>
+      <input id="busca" class="inp" type="search" placeholder="Buscar por CPF, contrato, telefone ou nome" style="max-width: 560px">
+      <button type="button" class="btn">Buscar</button>
+      <span class="chip chip-line" style="margin-left: auto">Carga 19/11/2026 publicada</span>
+    </div>
+
+    <section class="card" aria-labelledby="dev-nome" style="padding: 20px 24px; display: flex; flex-direction: column; gap: 16px">
+      <div style="display: flex; flex-wrap: wrap; align-items: flex-start; gap: 20px">
+        <div style="flex: 1 1 420px; display: flex; flex-direction: column; gap: 8px">
+          <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap">
+            <h1 id="dev-nome" style="margin: 0; font-size: 24px; font-weight: 700">{{nomeAtual}}</h1>
+            <span class="chip">Pessoa física</span>
+            <span class="chip chip-crit">Risco alto · banco</span>
+          </div>
+          <div style="display: flex; align-items: center; gap: 14px; flex-wrap: wrap; font-size: 13px; color: #4A5B78">
+            <span class="mono">CPF {{cpfShown}}</span>
+            <span style="display: inline-flex; align-items: center"><button type="button" class="btn-link" onClick="{{toggleCpf}}">{{cpfAction}}</button><span class="tip"><button type="button" class="tip-btn" aria-label="Sobre a exibição do CPF" aria-describedby="t-cpf"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M19.4 7.6A9 9 0 1 1 16.4 4.1"></path><path d="M12 11v6"></path><path d="M12 7.6v.01"></path></svg></button><span role="tooltip" id="t-cpf" class="bubble bubble-l">Exibir o CPF completo fica registrado em log de acesso.</span></span></span>
+            <span>47 anos</span>
+            <span>Recife/PE</span>
+          </div>
+        </div>
+        <div style="display: flex; gap: 8px; flex-wrap: wrap">
+          <button type="button" class="btn btn-primary" onClick="{{openAcion}}">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14"></path><path d="M5 12h14"></path></svg>
+            Registrar acionamento
+          </button>
+        </div>
+      </div>
+
+      <div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px">
+        <div class="kpi2">
+          <div class="lbl">Curva total</div>
+          <div class="mono" style="font-size: 20px; font-weight: 700; margin-top: 4px">R$ 13.342,67</div>
+          <div class="lbl" style="margin-top: 2px">principal R$ 7.035,75</div>
+        </div>
+        <div class="kpi2">
+          <div class="lbl">Contratos</div>
+          <div class="mono" style="font-size: 20px; font-weight: 700; margin-top: 4px">3</div>
+          <div class="lbl" style="margin-top: 2px">CLEAN, CAÍDOS e DESAFIANTE</div>
+        </div>
+        <div class="kpi2">
+          <div class="lbl">Maior atraso</div>
+          <div class="mono" style="font-size: 20px; font-weight: 700; margin-top: 4px">1.354 dias</div>
+          <div class="lbl" style="margin-top: 2px">NPL007-091266318</div>
+        </div>
+        <div class="kpi2">
+          <div class="lbl">Acordo</div>
+          <div style="font-size: 15px; font-weight: 700; margin-top: 6px; color: #8A4B06">1 em atraso</div>
+          <div class="lbl" style="margin-top: 4px">parcela 8 de 36 · R$ 190,36</div>
+        </div>
+      </div>
+
+      <div style="display: flex; flex-wrap: wrap; gap: 8px; align-items: center">
+                <span class="chip chip-warn">1 contrato em duas EPS</span>
+        <sc-if value="{{hasFieldConflict}}" hint-placeholder-val="{{ true }}">
+          <span class="chip chip-warn">1 conflito com a carga de hoje</span>
+        </sc-if>
+        <span class="chip chip-crit">{{blockedLabel}}</span>
+        <span class="chip chip-info">G2 → G3 nesta carga</span>
+      </div>
+    </section>
+
+    <div style="display: flex; flex-wrap: wrap; gap: 20px; align-items: flex-start">
+
+      <div style="flex: 999 1 640px; min-width: 0; display: flex; flex-direction: column; gap: 20px">
+
+        <section class="card" aria-labelledby="h-contratos" style="padding: 20px 24px">
+          <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-bottom: 14px">
+            <div style="display: flex; align-items: center; gap: 2px"><h2 id="h-contratos" style="margin: 0; font-size: 17px; font-weight: 600">Contratos</h2><span class="tip"><button type="button" class="tip-btn" aria-label="Sobre os contratos" aria-describedby="t-ctr"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M19.4 7.6A9 9 0 1 1 16.4 4.1"></path><path d="M12 11v6"></path><path d="M12 7.6v.01"></path></svg></button><span role="tooltip" id="t-ctr" class="bubble bubble-l">Grupo ARC4, EPS, curva e atraso vêm do banco e não são editáveis. Clique no contrato para ver parcelas e origem.</span></span></div>
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 10px">
+            <sc-for list="{{contracts}}" as="c" hint-placeholder-count="3">
+              <div class="ctr">
+                <button type="button" class="ctr-head" onClick="{{c.toggle}}" aria-expanded="{{c.open}}">
+                  <div style="display: flex; flex-direction: column; gap: 6px; flex: 1 1 260px; min-width: 0">
+                    <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap">
+                      <span class="chip"><span class="{{c.sqCls}}"></span>{{c.grupo}}</span>
+                      <span class="chip chip-line">{{c.epsNome}}</span>
+                      <sc-if value="{{c.multiEps}}" hint-placeholder-val="{{ false }}"><span class="chip chip-warn">também em 0900 · DESAFIANTE</span></sc-if>
+                      <sc-if value="{{c.mudou}}" hint-placeholder-val="{{ false }}"><span class="chip chip-info">antes G2</span></sc-if>
+                      <sc-if value="{{c.temAcordo}}" hint-placeholder-val="{{ false }}"><span class="chip chip-warn">acordo em atraso</span></sc-if>
+                    </div>
+                    <div class="mono" style="font-size: 14px; font-weight: 600">{{c.id}}</div>
+                    <div style="font-size: 12px; color: #4A5B78"><strong style="color: #0B2859">{{c.inst}}</strong> · {{c.produto}} · {{c.estrategia}}</div>
+                  </div>
+                  <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; flex: 1 1 340px">
+                    <div><div class="lbl">Curva</div><div class="mono" style="font-size: 14px; font-weight: 600">{{c.curva}}</div></div>
+                    <div><div class="lbl">Principal</div><div class="mono" style="font-size: 14px">{{c.principal}}</div></div>
+                    <div><div class="lbl">Atraso</div><div class="mono" style="font-size: 14px">{{c.atraso}}</div></div>
+                  </div>
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#4A5B78" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="{{c.chev}}"></path></svg>
+                </button>
+                <sc-if value="{{c.open}}" hint-placeholder-val="{{ false }}">
+                  <div style="border-top: 1px solid #EEF3FA; padding: 14px 18px 16px; display: flex; flex-direction: column; gap: 12px">
+                    <sc-if value="{{c.multiEps}}" hint-placeholder-val="{{ false }}">
+                      <div style="background: #FFF9EF; border: 1px solid #F3D3A0; border-radius: 8px; padding: 8px 12px; font-size: 13px; display: flex; gap: 8px; align-items: center; flex-wrap: wrap">
+                        <span style="display: inline-flex; align-items: center; gap: 2px; flex: 1 1 260px">Recebido em 0140 · CLEAN e 0900 · DESAFIANTE<span class="tip"><button type="button" class="tip-btn" aria-label="Sobre a duplicidade de EPS" aria-describedby="t-multi-{{c.key}}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M19.4 7.6A9 9 0 1 1 16.4 4.1"></path><path d="M12 11v6"></path><path d="M12 7.6v.01"></path></svg></button><span role="tooltip" id="t-multi-{{c.key}}" class="bubble bubble-l">Mesmo grupo (G2) e mesma curva nas duas remessas. A EPS primária segue a tabela de precedência.</span></span></span>
+                        <a class="btn btn-sm" href="Importacao.dc.html">Ver na fila de conflitos</a>
+                      </div>
+                    </sc-if>
+                    <sc-if value="{{c.temAcordo}}" hint-placeholder-val="{{ false }}">
+                      <div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; background: #F4F8FE; border-radius: 8px; padding: 10px 12px">
+                        <div><div class="lbl">Acordo atual</div><div style="font-size: 13px; font-weight: 600; color: #8A4B06">Em atraso</div></div>
+                        <div><div class="lbl">Canal do acordo</div><div style="font-size: 13px">Serasa Limpa Nome</div></div>
+                        <div><div class="lbl">Parcela atual</div><div class="mono" style="font-size: 13px">8 de 36 · R$ 190,36</div></div>
+                        <div><div class="lbl">Contrato atual</div><div class="mono" style="font-size: 13px">CP-48291736A-REN02</div></div>
+                      </div>
+                      <div style="display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 12px; border: 1px solid #E3EBF6; border-radius: 8px; padding: 10px 12px">
+                        <div><div class="lbl">Entrada</div><div style="font-size: 13px">Paga</div></div>
+                        <div><div class="lbl">Parcelas pagas</div><div class="mono" style="font-size: 13px">7 · última em 30/10/2026</div></div>
+                        <div><div class="lbl">Em atraso</div><div class="mono" style="font-size: 13px; color: #8A4B06">1 · venc. 06/11/2026</div></div>
+                        <div><div class="lbl">Futuras</div><div class="mono" style="font-size: 13px">28</div></div>
+                        <div style="display: flex; align-items: flex-start; gap: 2px"><div><div class="lbl">Fonte</div><div style="font-size: 13px">ACORDO_ATUAL + PAGAMENTO</div></div><span class="tip"><button type="button" class="tip-btn" aria-label="Sobre os dados do acordo" aria-describedby="t-ac-src"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M19.4 7.6A9 9 0 1 1 16.4 4.1"></path><path d="M12 11v6"></path><path d="M12 7.6v.01"></path></svg></button><span role="tooltip" id="t-ac-src" class="bubble bubble-r">Entrada vem de status_primeira_parcela; pagas, do arquivo PAGAMENTO. Nada é inferido: sem informação na fonte, o campo fica vazio.</span></span></div>
+                      </div>
+                    </sc-if>
+                    <div style="overflow-x: auto">
+                      <table class="tbl">
+                        <thead><tr><th scope="col">Parcela</th><th scope="col">Vencimento</th><th scope="col">Curva</th><th scope="col">Situação</th></tr></thead>
+                        <tbody>
+                          <sc-for list="{{c.parcelas}}" as="p" hint-placeholder-count="2">
+                            <tr><td class="mono">{{p.n}}</td><td class="mono">{{p.venc}}</td><td class="mono">{{p.valor}}</td><td><span class="{{p.cls}}">{{p.sit}}</span></td></tr>
+                          </sc-for>
+                        </tbody>
+                      </table>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 4px; font-size: 12px; color: #4A5B78">
+                      <span class="dot dot-banco"></span><span>Origem: banco</span><span class="tip"><button type="button" class="tip-btn" aria-label="Origem do contrato" aria-describedby="t-orig-{{c.key}}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M19.4 7.6A9 9 0 1 1 16.4 4.1"></path><path d="M12 11v6"></path><path d="M12 7.6v.01"></path></svg></button><span role="tooltip" id="t-orig-{{c.key}}" class="bubble bubble-l">{{c.origem}}</span></span>
+                    </div>
+                  </div>
+                </sc-if>
+              </div>
+            </sc-for>
+          </div>
+        </section>
+
+        <section class="card" aria-labelledby="h-linha" style="padding: 20px 24px">
+          <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-bottom: 8px">
+            <h2 id="h-linha" style="margin: 0; font-size: 17px; font-weight: 600">Linha do tempo</h2>
+            <div role="group" aria-label="Filtrar eventos" style="display: flex; gap: 6px; flex-wrap: wrap">
+              <sc-for list="{{filters}}" as="f" hint-placeholder-count="5">
+                <button type="button" class="{{f.cls}}" onClick="{{f.pick}}" aria-pressed="{{f.on}}">{{f.label}}</button>
+              </sc-for>
+            </div>
+          </div>
+          <div>
+            <sc-for list="{{eventsShown}}" as="e" hint-placeholder-count="6">
+              <div class="ev">
+                <div class="mono" style="font-size: 12px; color: #4A5B78; width: 76px; flex: none; padding-top: 2px">{{e.date}}</div>
+                <span class="{{e.dotCls}}" style="margin-top: 6px"></span>
+                <div style="display: flex; flex-direction: column; gap: 2px; min-width: 0">
+                  <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap"><span style="font-size: 13px; font-weight: 600">{{e.title}}</span><sc-if value="{{e.oper}}" hint-placeholder-val="{{ false }}"><span class="chip chip-line">Registro operacional</span></sc-if></div>
+                  <div style="font-size: 12px; color: #4A5B78">{{e.detail}}</div>
+                  <sc-if value="{{e.hasQuem}}" hint-placeholder-val="{{ false }}"><div style="font-size: 12px; color: #0B2859; font-weight: 500">{{e.quem}}</div></sc-if>
+                </div>
+              </div>
+            </sc-for>
+          </div>
+        </section>
+      </div>
+
+      <aside style="flex: 1 1 400px; min-width: 0; display: flex; flex-direction: column; gap: 20px">
+
+        <section class="card" aria-labelledby="h-dados" style="padding: 18px 16px">
+          <div style="padding: 0 8px; display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap">
+            <div style="display: flex; align-items: center; gap: 2px"><h2 id="h-dados" style="margin: 0; font-size: 17px; font-weight: 600">Dados do devedor</h2><span class="tip"><button type="button" class="tip-btn" aria-label="Como editar" aria-describedby="t-dados"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M19.4 7.6A9 9 0 1 1 16.4 4.1"></path><path d="M12 11v6"></path><path d="M12 7.6v.01"></path></svg></button><span role="tooltip" id="t-dados" class="bubble bubble-l">Clique no valor para editar. Enter salva, Esc cancela. Dados do banco pedem motivo e o valor original fica guardado.</span></span></div>
+          </div>
+          <div style="display: flex; gap: 14px; padding: 8px 8px 10px; flex-wrap: wrap">
+            <span class="lbl" style="display: inline-flex; gap: 6px; align-items: center"><span class="dot dot-banco"></span>Banco</span>
+            <span class="lbl" style="display: inline-flex; gap: 6px; align-items: center"><span class="dot dot-operacao"></span>Operação</span>
+            <span class="lbl" style="display: inline-flex; gap: 6px; align-items: center"><span class="dot dot-conflito"></span>Conflito</span>
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 2px">
+            <sc-for list="{{fields}}" as="f" hint-placeholder-count="7">
+              <div class="{{f.rowCls}}">
+                <span class="{{f.dotCls}}" style="margin-top: 22px" title="{{f.originLabel}}"></span>
+                <div style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px">
+                  <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px">
+                    <span class="lbl">{{f.label}}</span>
+                    <span class="tip"><button type="button" class="tip-btn" aria-label="Origem de {{f.label}}" aria-describedby="t-f-{{f.key}}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M19.4 7.6A9 9 0 1 1 16.4 4.1"></path><path d="M12 11v6"></path><path d="M12 7.6v.01"></path></svg></button><span role="tooltip" id="t-f-{{f.key}}" class="bubble bubble-r"><span style="display: block">{{f.info1}}</span><span style="display: block; color: #B1D2FF; margin-top: 4px">{{f.info2}}</span></span></span>
+                  </div>
+                  <sc-if value="{{f.isEditing}}" hint-placeholder-val="{{ false }}">
+                    <div style="display: flex; flex-direction: column; gap: 8px">
+                      <label for="{{f.inputId}}" class="sr">{{f.label}}</label>
+                      <input id="{{f.inputId}}" class="inp" value="{{draft}}" onChange="{{onDraft}}" onKeyDown="{{onKey}}" autoFocus="{{ true }}">
+                      <sc-if value="{{f.needsMotivo}}" hint-placeholder-val="{{ false }}">
+                        <div style="display: flex; flex-direction: column; gap: 6px">
+                          <span class="lbl">Motivo</span>
+                          <div style="display: flex; gap: 6px; flex-wrap: wrap">
+                            <sc-for list="{{motivos}}" as="m" hint-placeholder-count="4">
+                              <button type="button" class="{{m.cls}}" onClick="{{m.pick}}" aria-pressed="{{m.on}}">{{m.label}}</button>
+                            </sc-for>
+                          </div>
+                        </div>
+                      </sc-if>
+                      <sc-if value="{{showErr}}" hint-placeholder-val="{{ false }}">
+                        <span role="alert" style="font-size: 12px; color: #A1231A">{{errMsg}}</span>
+                      </sc-if>
+                      <div style="display: flex; gap: 8px">
+                        <button type="button" class="btn btn-primary btn-sm" onClick="{{save}}">Salvar</button>
+                        <button type="button" class="btn btn-sm" onClick="{{cancel}}">Cancelar</button>
+                                              </div>
+                    </div>
+                  </sc-if>
+                  <sc-if value="{{f.showValue}}" hint-placeholder-val="{{ true }}">
+                    <sc-if value="{{f.canEdit}}" hint-placeholder-val="{{ true }}">
+                      <button type="button" class="valbtn" onClick="{{f.startEdit}}" aria-label="Editar {{f.label}}: {{f.value}}">{{f.value}}</button>
+                    </sc-if>
+                    <sc-if value="{{f.readonly}}" hint-placeholder-val="{{ false }}">
+                      <span class="ro">{{f.value}} <span class="lbl">· somente banco</span></span>
+                    </sc-if>
+                  </sc-if>
+                  <sc-if value="{{f.isConflict}}" hint-placeholder-val="{{ false }}">
+                    <div style="background: #FFF9EF; border: 1px solid #F3D3A0; border-radius: 8px; padding: 10px 12px; display: flex; flex-direction: column; gap: 8px">
+                      <span style="font-size: 13px"><strong>{{f.value}}</strong> (edição) · banco enviou <strong>{{f.bank}}</strong></span>
+                      <div style="display: flex; gap: 8px; flex-wrap: wrap">
+                        <button type="button" class="btn btn-sm" onClick="{{keepEdit}}">Manter edição</button>
+                        <button type="button" class="btn btn-sm" onClick="{{useBank}}">Usar valor do banco</button>
+                      </div>
+                    </div>
+                  </sc-if>
+                                  </div>
+              </div>
+            </sc-for>
+          </div>
+        </section>
+
+        <section class="card" aria-labelledby="h-tel" style="padding: 18px 16px">
+          <div style="padding: 0 8px 12px; display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap">
+            <h2 id="h-tel" style="margin: 0; font-size: 17px; font-weight: 600">Telefones</h2>
+            <span style="display: inline-flex; align-items: center; gap: 2px"><span class="chip">{{ativos}} ativos</span><span class="tip"><button type="button" class="tip-btn" aria-label="Sobre os telefones" aria-describedby="t-tel"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M19.4 7.6A9 9 0 1 1 16.4 4.1"></path><path d="M12 11v6"></path><path d="M12 7.6v.01"></path></svg></button><span role="tooltip" id="t-tel" class="bubble bubble-r">Clique no número para copiar. Válido, terceiro, bloqueado pelo banco ou inválido. O número recebido nunca é alterado: as marcações são operacionais e ficam no histórico.</span></span></span>
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 8px">
+            <sc-for list="{{phones}}" as="p" hint-placeholder-count="5">
+              <div style="display: flex; flex-direction: column; gap: 8px">
+                <div class="{{p.rowCls}}">
+                  <button type="button" class="{{p.starCls}}" onClick="{{p.star}}" aria-pressed="{{p.isBest}}" aria-label="{{p.starLabel}}" title="{{p.starLabel}}">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="{{p.starW}}" stroke-linejoin="round" aria-hidden="true"><path d="M12 3.5l2.6 5.4 5.9.8-4.3 4.1 1 5.8L12 16.9l-5.2 2.7 1-5.8L3.5 9.7l5.9-.8z"></path></svg>
+                  </button>
+                  <div style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px">
+                    <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap">
+                      <button type="button" class="copy" onClick="{{p.copy}}" aria-label="Copiar {{p.num}}" title="Copiar">{{p.num}}<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><rect x="8" y="8" width="12" height="12" rx="2"></rect><path d="M16 5.5V5a1 1 0 0 0-1-1H5a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h.5"></path></svg></button>
+                      <sc-if value="{{p.copied}}" hint-placeholder-val="{{ false }}"><span class="chip chip-ok" role="status">Copiado</span></sc-if>
+                      <span class="{{p.statusCls}}">{{p.statusLabel}}</span>
+                    </div>
+                    <div style="font-size: 12px; color: #4A5B78">{{p.fonte}} · {{p.result}}</div>
+                  </div>
+                  <sc-if value="{{p.canInvalidate}}" hint-placeholder-val="{{ true }}">
+                    <button type="button" class="btn-link" onClick="{{p.openInv}}">Invalidar</button>
+                  </sc-if>
+                </div>
+                <sc-if value="{{p.menuOpen}}" hint-placeholder-val="{{ false }}">
+                  <div style="margin-left: 40px; background: #F4F8FE; border-radius: 8px; padding: 10px 12px; display: flex; flex-direction: column; gap: 8px">
+                    <span class="lbl">Motivo</span>
+                    <div style="display: flex; gap: 6px; flex-wrap: wrap">
+                      <sc-for list="{{invMotivos}}" as="m" hint-placeholder-count="3">
+                        <button type="button" class="{{m.cls}}" onClick="{{m.pick}}" aria-pressed="{{m.on}}">{{m.label}}</button>
+                      </sc-for>
+                    </div>
+                    <div style="display: flex; gap: 8px">
+                      <button type="button" class="btn btn-primary btn-sm" onClick="{{confirmInv}}">Invalidar número</button>
+                      <button type="button" class="btn btn-sm" onClick="{{closeInv}}">Cancelar</button>
+                    </div>
+                  </div>
+                </sc-if>
+              </div>
+            </sc-for>
+          </div>
+          <div style="padding: 12px 0 0">
+            <sc-if value="{{adding}}" hint-placeholder-val="{{ false }}">
+              <div style="display: flex; gap: 8px; align-items: flex-start; flex-wrap: wrap">
+                <div style="flex: 1 1 180px; display: flex; flex-direction: column; gap: 4px">
+                  <label for="novo-tel" class="lbl">Novo telefone com DDD</label>
+                  <input id="novo-tel" class="inp" placeholder="(81) 99999-0000" value="{{newPhone}}" onChange="{{onNewPhone}}" autoFocus="{{ true }}">
+                  <sc-if value="{{phoneErr}}" hint-placeholder-val="{{ false }}"><span role="alert" style="font-size: 12px; color: #A1231A">Número inválido</span></sc-if>
+                </div>
+                <button type="button" class="btn btn-primary btn-sm" style="margin-top: 20px" onClick="{{addPhone}}">Adicionar</button>
+                <button type="button" class="btn btn-sm" style="margin-top: 20px" onClick="{{cancelAdd}}">Cancelar</button>
+              </div>
+            </sc-if>
+            <sc-if value="{{notAdding}}" hint-placeholder-val="{{ true }}">
+              <button type="button" class="btn btn-sm" onClick="{{startAdd}}">+ Adicionar telefone</button>
+            </sc-if>
+          </div>
+        </section>
+
+      </aside>
+    </div>
+  </main>
+
+  <sc-if value="{{acionOpen}}" hint-placeholder-val="{{ false }}">
+    <div class="overlay">
+      <div class="modal" role="dialog" aria-modal="true" aria-labelledby="ac-t">
+        <div style="display: flex; justify-content: space-between; align-items: center">
+          <div style="display: flex; align-items: center; gap: 4px"><h2 id="ac-t" class="h2" style="font-size: 20px">Registrar acionamento</h2><span class="tip"><button type="button" class="tip-btn" aria-label="Sobre o registro" aria-describedby="t-ac"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M19.4 7.6A9 9 0 1 1 16.4 4.1"></path><path d="M12 11v6"></path><path d="M12 7.6v.01"></path></svg></button><span role="tooltip" id="t-ac" class="bubble bubble-l">Registro manual, sem envio para sistemas externos. Fica na linha do tempo com seu usuário, data e hora.</span></span></div>
+          <button type="button" class="x" onClick="{{closeAcion}}" aria-label="Fechar"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12"></path><path d="M18 6L6 18"></path></svg></button>
+        </div>
+        <div style="display: flex; gap: 16px; flex-wrap: wrap; font-size: 13px; background: #F4F8FE; border-radius: 8px; padding: 10px 12px">
+          <span><span class="lbl">Operador</span><br><strong>Juliana Prado</strong> <span class="mono lbl">(juliana.prado)</span></span>
+          <span><span class="lbl">Data e hora</span><br><strong class="mono">{{acNow}}</strong></span>
+        </div>
+        <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px">
+          <div class="fld">
+            <label for="ac-tipo" class="lbl">Tipo</label>
+            <select id="ac-tipo" class="sel" value="{{acTipo}}" onChange="{{onAcTipo}}">
+              <sc-for list="{{acTipos}}" as="o" hint-placeholder-count="5"><option value="{{o.v}}">{{o.v}}</option></sc-for>
+            </select>
+          </div>
+          <div class="fld">
+            <label for="ac-tel" class="lbl">Telefone utilizado</label>
+            <select id="ac-tel" class="sel" value="{{acTel}}" onChange="{{onAcTel}}">
+              <sc-for list="{{acTels}}" as="o" hint-placeholder-count="4"><option value="{{o.v}}">{{o.label}}</option></sc-for>
+            </select>
+          </div>
+        </div>
+        <div class="fld">
+          <span class="lbl">Resultado</span>
+          <div style="display: flex; gap: 6px; flex-wrap: wrap">
+            <sc-for list="{{acRes}}" as="o" hint-placeholder-count="8"><button type="button" class="{{o.cls}}" onClick="{{o.pick}}" aria-pressed="{{o.on}}">{{o.v}}</button></sc-for>
+          </div>
+        </div>
+        <div class="fld">
+          <label for="ac-obs" class="lbl">Observações</label>
+          <textarea id="ac-obs" class="txa" value="{{acObs}}" onChange="{{onAcObs}}" maxLength="500"></textarea>
+        </div>
+        <div style="display: grid; grid-template-columns: 180px minmax(0, 1fr); gap: 12px">
+          <div class="fld"><label for="ac-ret" class="lbl">Retorno em</label><input id="ac-ret" class="inp" type="date" value="{{acRet}}" onChange="{{onAcRet}}"></div>
+          <div class="fld"><label for="ac-nx" class="lbl">Próximo passo</label><input id="ac-nx" class="inp" placeholder="Ex.: ligar após 18h" value="{{acNext}}" onChange="{{onAcNext}}"></div>
+        </div>
+        <sc-if value="{{hasAcErr}}" hint-placeholder-val="{{ false }}"><span role="alert" style="font-size: 13px; color: #A1231A">Escolha o resultado.</span></sc-if>
+        <div style="display: flex; justify-content: flex-end; gap: 10px">
+          <button type="button" class="btn" onClick="{{closeAcion}}">Cancelar</button>
+          <button type="button" class="btn btn-primary" onClick="{{saveAcion}}">Registrar</button>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{hasToast}}" hint-placeholder-val="{{ false }}">
+    <div role="status" style="position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%); background: #05132A; color: #fff; border-radius: 10px; padding: 10px 12px 10px 16px; display: flex; gap: 14px; align-items: center; font-size: 13px">
+      <span>{{toast}}</span>
+      <button type="button" class="btn btn-sm" style="background: #10408D; color: #fff; border-color: #195AB4" onClick="{{undo}}">Desfazer</button>
+    </div>
+  </sc-if>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1800}}'>
+
+var HOJE = '19/11/2026';
+var MOTIVOS = ['Confirmado com o titular', 'Documento apresentado', 'Correção de digitação', 'Outro'];
+var INV_MOTIVOS = ['Número de terceiro', 'Não existe', 'Pediu para não ligar'];
+var INV_ST = { 'Número de terceiro': 'terceiro', 'Não existe': 'invalido', 'Pediu para não ligar': 'invalido' };
+var EPS_NOME = { '0140': '0140 · CLEAN', '0144': '0144 · CAÍDOS', '0900': '0900 · DESAFIANTE' };
+var AC_TIPOS = ['Ligação ativa', 'Ligação receptiva', 'Mensagem manual', 'E-mail', 'Outro'];
+var AC_RES = ['Contato com o titular', 'Contato com terceiro', 'Não atende', 'Caixa postal', 'Número inválido', 'Promessa de pagamento', 'Recusa', 'Retornar depois'];
+function agora() { var d = new Date(); function p(n) { return (n < 10 ? '0' : '') + n; } return '19/11/2026 ' + p(d.getHours()) + ':' + p(d.getMinutes()); }
+
+function fmtPhone(d) {
+  if (d.length === 11) return '(' + d.slice(0, 2) + ') ' + d.slice(2, 7) + '-' + d.slice(7);
+  return '(' + d.slice(0, 2) + ') ' + d.slice(2, 6) + '-' + d.slice(6);
+}
+
+function initialState() {
+  return {
+    cpfOpen: false,
+    editing: null, draft: '', motivo: null, err: null,
+    openInfo: null,
+    fieldOrder: ['nome', 'nascimento', 'genero', 'profissao', 'risco', 'endereco', 'email', 'horario'],
+    fields: {
+      nome: { label: 'Nome', value: 'MARIANA SOUZA ALBUQUERQUE', bank: 'MARIANA SOUZA ALBUQUERQUE', origin: 'banco', policy: 'sobreposicao', src: 'REMESSA_ARC4U_0144 · carga 19/11/2026 · linha 8.214' },
+      nascimento: { label: 'Data de nascimento', value: '14/03/1979', bank: '14/03/1979', raw: '03141979', origin: 'banco', policy: 'sobreposicao', src: 'REMESSA_ARC4U_0144 · carga 19/11/2026 · linha 8.214' },
+      genero: { label: 'Gênero', value: 'Feminino', bank: 'Feminino', raw: 'F', origin: 'banco', policy: 'sobreposicao', src: 'REMESSA_ARC4U_0144 · carga 19/11/2026 · linha 8.214' },
+      profissao: { label: 'Profissão', value: 'Professora', bank: 'Autônomo', origin: 'conflito', policy: 'sobreposicao', src: 'REMESSA_ARC4U_0144 · carga 19/11/2026 · linha 8.214', by: 'Juliana Prado (juliana.prado) em 12/11/2026', motivo: 'Confirmado com o titular' },
+      risco: { label: 'Risco do devedor', value: 'Alto', bank: 'Alto', raw: 'High', origin: 'banco', policy: 'banco', src: 'REMESSA_ARC4U_0144 · carga 19/11/2026 · campo risco_devedor' },
+      endereco: { label: 'Endereço principal', value: 'R. das Acácias, 120, Ap 302 · Boa Viagem · Recife/PE · 51020-140', bank: 'R. das Acácias, 120, Ap 302 · Boa Viagem · Recife/PE · 51020-140', origin: 'banco', policy: 'livre', src: 'REMESSA_ARC4U_0144 · carga 19/11/2026 · linha 8.214' },
+      email: { label: 'E-mail', value: 'mariana.albuquerque@exemplo.com.br', bank: 'mariana.albuquerque@exemplo.com.br', origin: 'banco', policy: 'livre', src: 'REMESSA_ARC4U_0144 · carga 19/11/2026 · linha 8.214' },
+      horario: { label: 'Melhor horário', value: 'Depois das 18h', bank: '', origin: 'operacao', policy: 'livre', src: '', by: 'Juliana Prado (juliana.prado) em 18/11/2026', motivo: 'Informado na ligação' }
+    },
+    expanded: { c1: true },
+    phones: [
+      { id: 'p1', num: '(81) 98123-4410', fonte: 'Banco · Enriquecimento 16/11/2026', result: 'Atendeu · CPC em 18/11', status: 'ativo', best: true },
+      { id: 'p2', num: '(81) 99654-2071', fonte: 'Banco · TakeOver 16/11/2026', result: 'Não atende (3 tentativas)', status: 'ativo', best: false },
+      { id: 'p3', num: '(81) 3326-8812', fonte: 'Banco · Cedente', result: 'Sem tentativas', status: 'ativo', best: false },
+      { id: 'p4', num: '(81) 98877-0193', fonte: 'Banco · EPS 16/11/2026', result: 'Na lista TELEFONES_BLOQUEADOS de 19/11', status: 'bloqueado', best: false },
+      { id: 'p5', num: '(81) 99102-3345', fonte: 'Operação · Juliana Prado (juliana.prado) em 12/11', result: 'Atendido por outra pessoa em 12/11', status: 'terceiro', best: false }
+    ],
+    invFor: null, invMotivo: null,
+    adding: false, newPhone: '', phoneErr: false,
+    filter: 'todos',
+    events: [
+      { date: '19/11/2026', kind: 'carga', title: 'NPL007-091266318 mudou de G2 para G3', detail: 'REMESSA_ARC4U_0900 · grupo_arc4u alterado pelo banco' },
+      { date: '19/11/2026', kind: 'conflito', title: 'Contrato NPL026-30418-7720 recebido em duas EPS', detail: 'Remessas 0140 e 0900 · enviado à fila de conflitos' },
+      { date: '19/11/2026', kind: 'conflito', title: 'Banco enviou profissão “Autônomo”', detail: 'A edição “Professora” foi mantida até decisão do operador' },
+      { date: '19/11/2026', kind: 'contato', title: '(81) 98877-0193 entrou na lista de bloqueio', detail: 'TELEFONES_BLOQUEADOS · não deve ser acionado' },
+      { date: '18/11/2026 16:42', kind: 'acionamento', title: 'Ligação ativa · Contato com o titular', detail: '(81) 98123-4410 · pediu segunda via do boleto do acordo', quem: 'Juliana Prado (juliana.prado) · Operação' },
+      { date: '16/11/2026', kind: 'contato', title: '2 telefones novos', detail: 'Enriquecimento e TakeOver de 16/11/2026' },
+      { date: '12/11/2026', kind: 'edicao', title: 'Profissão alterada para “Professora”', detail: 'Juliana Prado (juliana.prado) · motivo: confirmado com o titular' },
+      { date: '06/11/2026', kind: 'financeiro', title: 'Parcela 8/36 do acordo venceu sem pagamento', detail: 'CP-48291736A · R$ 190,36' },
+      { date: '30/10/2026', kind: 'financeiro', title: 'Pagamento de R$ 190,36', detail: 'CP-48291736A · parcela 7 · PAGAMENTO_0144' }
+    ],
+    toast: null, undoSnap: null,
+    acion: false, acTipo: 'Ligação ativa', acTel: 'p1', acRes: null, acObs: '', acErr: false, copied: null, acRet: '', acNext: ''
+  };
+}
+
+var CONTRACTS = [
+  { key: 'c1', id: 'NPL026-30418-7720', grupo: 'G2', eps: '0140', multiEps: true, mudou: false, temAcordo: false,
+    inst: 'ITAU', produto: 'NICARD · Cartão', estrategia: 'ITAU CONSUMER 11/2025', curva: 'R$ 8.412,37', principal: 'R$ 3.120,55', atraso: '1.071 dias',
+    origem: 'REMESSA_ARC4U_0140 e REMESSA_ARC4U_0900 · carga 19/11/2026 · curva confere com 3 parcelas',
+    parcelas: [ { n: '7', venc: '10/11/2023', valor: 'R$ 2.804,12', sit: 'Em aberto' }, { n: '8', venc: '10/12/2023', valor: 'R$ 2.804,12', sit: 'Em aberto' }, { n: '9', venc: '10/01/2024', valor: 'R$ 2.804,13', sit: 'Em aberto' } ] },
+  { key: 'c2', id: 'CP-48291736A', grupo: 'C2', eps: '0144', multiEps: false, mudou: false, temAcordo: true,
+    inst: 'PAN', produto: 'NARDES · não mapeado', estrategia: 'PAN DESENROLA NPL CONSUMER - 11/2024', curva: 'R$ 3.046,10', principal: 'R$ 2.410,00', atraso: '13 dias',
+    origem: 'REMESSA_ARC4U_0144 + ACORDO_ATUAL_0144 · carga 19/11/2026',
+    parcelas: [ { n: '8 de 36', venc: '06/11/2026', valor: 'R$ 190,36', sit: 'Em atraso' }, { n: '9 de 36', venc: '06/12/2026', valor: 'R$ 190,36', sit: 'A vencer' } ] },
+  { key: 'c3', id: 'NPL007-091266318', grupo: 'G3', eps: '0900', multiEps: false, mudou: true, temAcordo: false,
+    inst: 'PERNAMBUCANAS', produto: 'NSCARD · Cartão', estrategia: 'PEFISA NPL CONSUMER - 03/24', curva: 'R$ 1.884,20', principal: 'R$ 1.505,20', atraso: '1.354 dias',
+    origem: 'REMESSA_ARC4U_0900 · carga 19/11/2026 · grupo anterior na base: G2',
+    parcelas: [ { n: '4', venc: '15/08/2022', valor: 'R$ 1.884,20', sit: 'Em aberto' } ] }
+];
+
+class Component extends DCLogic {
+  constructor(props) { super(props); this.state = initialState(); }
+
+  snap() {
+    var s = this.state;
+    return { fields: s.fields, phones: s.phones, events: s.events };
+  }
+
+  commit(patch, msg) {
+    var p = Object.assign({}, patch, { toast: msg, undoSnap: this.snap() });
+    this.setState(p);
+    var self = this;
+    clearTimeout(this._t);
+    this._t = setTimeout(function () { self.setState({ toast: null }); }, 6000);
+  }
+
+  addEvent(ev) { return [Object.assign({ date: HOJE }, ev)].concat(this.state.events); }
+
+  setField(key, changes) {
+    var f = Object.assign({}, this.state.fields[key], changes);
+    var fields = Object.assign({}, this.state.fields);
+    fields[key] = f;
+    return fields;
+  }
+
+  saveEdit() {
+    var s = this.state, key = s.editing;
+    if (!key) return;
+    var f = s.fields[key];
+    var v = (s.draft || '').trim();
+    if (!v) { this.setState({ err: 'O campo não pode ficar vazio.' }); return; }
+    if (v === f.value) { this.setState({ editing: null, err: null }); return; }
+    var needs = f.policy === 'sobreposicao' && v !== f.bank;
+    if (needs && !s.motivo) { this.setState({ err: 'Escolha o motivo antes de salvar.' }); return; }
+    var origin = (f.bank && v === f.bank) ? 'banco' : 'operacao';
+    var motivo = s.motivo || 'Atualização pela operação';
+    var fields = this.setField(key, { value: v, origin: origin, by: 'Juliana Prado em ' + HOJE, motivo: motivo });
+    var events = this.addEvent({ kind: 'edicao', title: f.label + ' alterado', detail: 'De “' + f.value + '” para “' + v + '” · motivo: ' + motivo.toLowerCase() });
+    this.commit({ fields: fields, events: events, editing: null, draft: '', motivo: null, err: null }, f.label + ' salvo');
+  }
+
+  renderVals() {
+    var self = this, s = this.state;
+
+    var fields = s.fieldOrder.map(function (key) {
+      var f = s.fields[key];
+      var editing = s.editing === key;
+      var conflict = f.origin === 'conflito';
+      var info1, info2;
+      var orig = 'Original: “' + (f.raw || f.bank) + '”' + (f.raw ? ' · Tratado: “' + f.bank + '”' : '');
+      if (f.origin === 'banco') { info1 = orig + ' · ' + f.src; info2 = 'Operacional: sem ajuste. Considerado: “' + f.value + '”'; }
+      else if (conflict) { info1 = orig + ' · ' + f.src; info2 = 'Operacional: “' + f.value + '” por ' + f.by + ' · ' + f.motivo + '. Considerado até sua decisão.'; }
+      else { info1 = f.bank ? orig : 'Sem dado original do banco'; info2 = 'Operacional: “' + f.value + '” por ' + f.by + ' · ' + f.motivo + '. Considerado: “' + f.value + '”'; }
+      return {
+        key: key, label: f.label, value: f.value, bank: f.bank,
+        inputId: 'in-' + key,
+        isEditing: editing, showValue: !editing && !conflict,
+        canEdit: f.policy !== 'banco', readonly: f.policy === 'banco',
+        isConflict: conflict && !editing,
+        needsMotivo: f.policy === 'sobreposicao',
+        rowCls: editing ? 'field field-edit' : 'field',
+        dotCls: 'dot dot-' + f.origin,
+        originLabel: f.origin === 'banco' ? 'Valor do banco' : (conflict ? 'Conflito com a carga' : 'Editado pela operação'),
+        info1: info1, info2: info2,
+        startEdit: function () { self.setState({ editing: key, draft: f.value, motivo: null, err: null }); }
+      };
+    });
+
+    var motivos = MOTIVOS.map(function (m) {
+      return { label: m, on: s.motivo === m, cls: s.motivo === m ? 'pill pill-on' : 'pill', pick: function () { self.setState({ motivo: m, err: null }); } };
+    });
+
+    var contracts = CONTRACTS.map(function (c) {
+      var open = !!s.expanded[c.key];
+      return Object.assign({}, c, {
+        epsNome: EPS_NOME[c.eps], open: open, chev: open ? 'M6 15l6-6 6 6' : 'M6 9l6 6 6-6',
+        sqCls: 'sq g-' + c.grupo,
+        parcelas: c.parcelas.map(function (p) {
+          return Object.assign({}, p, { cls: p.sit === 'Em atraso' ? 'chip chip-warn' : (p.sit === 'A vencer' ? 'chip' : 'chip') });
+        }),
+        toggle: function () { var e = Object.assign({}, s.expanded); e[c.key] = !open; self.setState({ expanded: e }); }
+      });
+    });
+
+    var rank = { ativo: 0, terceiro: 1, bloqueado: 2, invalido: 3 };
+    var ordered = s.phones.slice().sort(function (a, b) {
+      if (a.best !== b.best) return a.best ? -1 : 1;
+      return rank[a.status] - rank[b.status];
+    });
+    var phones = ordered.map(function (p) {
+      var active = p.status === 'ativo';
+      return {
+        id: p.id, num: p.num, fonte: p.fonte, result: p.result, isBest: p.best,
+        rowCls: active ? 'ph' : 'ph ph-off',
+        statusLabel: p.status === 'bloqueado' ? 'Bloqueado pelo banco' : p.status === 'invalido' ? 'Inválido' : p.status === 'terceiro' ? 'Terceiro' : (p.best ? 'Válido · melhor contato' : 'Válido'),
+        statusCls: p.status === 'bloqueado' ? 'chip chip-crit' : p.status === 'invalido' ? 'chip' : p.status === 'terceiro' ? 'chip chip-warn' : (p.best ? 'chip chip-ok' : 'chip'),
+        starCls: active ? (p.best ? 'star star-on' : 'star') : 'star star-dis',
+        starW: p.best ? '2.4' : '1.6',
+        starLabel: active ? (p.best ? 'Melhor contato' : 'Marcar como melhor contato') : 'Número indisponível para contato',
+        canInvalidate: active, menuOpen: s.invFor === p.id, copied: s.copied === p.id,
+        copy: function () {
+          var d = p.num.replace(/\D/g, '');
+          function done(ok) { self.setState({ copied: ok ? p.id : null }); clearTimeout(self._ct); self._ct = setTimeout(function () { self.setState({ copied: null }); }, 2000); if (!ok) self.commit({}, 'Não foi possível copiar aqui'); }
+          try { navigator.clipboard.writeText(d).then(function () { done(true); }, function () { done(false); }); } catch (e) { done(false); }
+        },
+        star: function () {
+          if (!active || p.best) return;
+          var list = s.phones.map(function (x) { return Object.assign({}, x, { best: x.id === p.id }); });
+          var events = self.addEvent({ kind: 'contato', title: p.num + ' marcado como melhor contato', detail: 'Juliana Prado · prioridade de contato atualizada' });
+          self.commit({ phones: list, events: events }, 'Melhor contato atualizado');
+        },
+        openInv: function () { self.setState({ invFor: s.invFor === p.id ? null : p.id, invMotivo: null }); }
+      };
+    });
+
+    var invMotivos = INV_MOTIVOS.map(function (m) {
+      return { label: m, on: s.invMotivo === m, cls: s.invMotivo === m ? 'pill pill-on' : 'pill', pick: function () { self.setState({ invMotivo: m }); } };
+    });
+
+    var aptos = s.phones.filter(function (p) { return p.status === 'ativo'; }).length;
+    var blocked = s.phones.filter(function (p) { return p.status === 'bloqueado'; }).length;
+
+    var FILTERS = [['todos', 'Todos'], ['acionamento', 'Acionamentos'], ['carga', 'Cargas'], ['conflito', 'Conflitos'], ['edicao', 'Edições'], ['contato', 'Contatos'], ['financeiro', 'Financeiro']];
+    var filters = FILTERS.map(function (f) {
+      return { label: f[1], on: s.filter === f[0], cls: s.filter === f[0] ? 'pill pill-on' : 'pill', pick: function () { self.setState({ filter: f[0] }); } };
+    });
+    var eventsShown = s.events.filter(function (e) { return s.filter === 'todos' || e.kind === s.filter; })
+      .map(function (e) { return Object.assign({}, e, { dotCls: 'dot k-' + e.kind, oper: e.kind === 'acionamento', hasQuem: !!e.quem, quem: e.quem || '' }); });
+
+    return {
+      nomeAtual: s.fields.nome.value,
+      cpfShown: s.cpfOpen ? '418.736.205-91' : '418.***.***-91',
+      cpfAction: s.cpfOpen ? 'Ocultar' : 'Mostrar',
+      toggleCpf: function () { self.setState({ cpfOpen: !s.cpfOpen }); },
+      userName: 'Juliana Prado', userPerfil: 'Operação', userIni: 'JP',
+      ativos: aptos,
+      acionOpen: s.acion, acNow: agora(),
+      openAcion: function () { var best = s.phones.filter(function (p) { return p.best; })[0]; self.setState({ acion: true, acTipo: 'Ligação ativa', acTel: best ? best.id : 'na', acRes: null, acObs: '', acErr: false, acRet: '', acNext: '' }); },
+      closeAcion: function () { self.setState({ acion: false }); },
+      acTipo: s.acTipo, onAcTipo: function (e) { self.setState({ acTipo: e.target.value }); },
+      acTipos: AC_TIPOS.map(function (v) { return { v: v }; }),
+      acTel: s.acTel, onAcTel: function (e) { self.setState({ acTel: e.target.value }); },
+      acTels: s.phones.filter(function (p) { return p.status === 'ativo'; }).map(function (p) { return { v: p.id, label: p.num }; }).concat([{ v: 'na', label: 'Não se aplica' }]),
+      acRes: AC_RES.map(function (v) { return { v: v, on: s.acRes === v, cls: s.acRes === v ? 'pill pill-on' : 'pill', pick: function () { self.setState({ acRes: v, acErr: false }); } }; }),
+      acObs: s.acObs, onAcObs: function (e) { self.setState({ acObs: e.target.value }); },
+      acRet: s.acRet, onAcRet: function (e) { self.setState({ acRet: e.target.value }); },
+      acNext: s.acNext, onAcNext: function (e) { self.setState({ acNext: e.target.value }); },
+      hasAcErr: s.acErr,
+      saveAcion: function () {
+        if (!s.acRes) { self.setState({ acErr: true }); return; }
+        var tel = s.phones.filter(function (p) { return p.id === s.acTel; })[0];
+        var phones = tel ? s.phones.map(function (p) { return p.id === tel.id ? Object.assign({}, p, { result: s.acRes + ' em 19/11' }) : p; }) : s.phones;
+        var ret = s.acRet ? s.acRet.split('-').reverse().join('/') : '';
+        var ev = { date: agora(), kind: 'acionamento', title: s.acTipo + ' · ' + s.acRes, detail: (tel ? tel.num : 'Sem telefone') + (s.acObs.trim() ? ' · ' + s.acObs.trim() : '') + (ret || s.acNext.trim() ? ' · Próximo passo: ' + (s.acNext.trim() || 'retorno') + (ret ? ' em ' + ret : '') : ''), quem: 'Juliana Prado (juliana.prado) · Operação' };
+        self.commit({ phones: phones, events: [ev].concat(s.events), acion: false }, 'Acionamento registrado');
+      },
+      blockedLabel: blocked + (blocked === 1 ? ' telefone bloqueado' : ' telefones bloqueados'),
+      hasFieldConflict: s.fields.profissao.origin === 'conflito',
+      contracts: contracts,
+      fields: fields, motivos: motivos,
+      draft: s.draft,
+      onDraft: function (e) { self.setState({ draft: e.target.value, err: null }); },
+      onKey: function (e) { if (e.key === 'Enter') self.saveEdit(); if (e.key === 'Escape') self.setState({ editing: null, err: null }); },
+      save: function () { self.saveEdit(); },
+      cancel: function () { self.setState({ editing: null, err: null }); },
+      showErr: !!s.err, errMsg: s.err || '',
+      keepEdit: function () {
+        var fields = self.setField('profissao', { origin: 'operacao' });
+        var events = self.addEvent({ kind: 'edicao', title: 'Conflito resolvido: profissão “Professora” mantida', detail: 'Juliana Prado · valor do banco “Autônomo” guardado' });
+        self.commit({ fields: fields, events: events }, 'Edição mantida');
+      },
+      useBank: function () {
+        var fields = self.setField('profissao', { origin: 'banco', value: 'Autônomo', by: '', motivo: '' });
+        var events = self.addEvent({ kind: 'edicao', title: 'Conflito resolvido: profissão volta a “Autônomo”', detail: 'Juliana Prado · edição de 12/11 desativada, segue no histórico' });
+        self.commit({ fields: fields, events: events }, 'Valor do banco aplicado');
+      },
+      phones: phones, invMotivos: invMotivos,
+      confirmInv: function () {
+        if (!s.invFor || !s.invMotivo) return;
+        var target = s.phones.filter(function (p) { return p.id === s.invFor; })[0];
+        var list = s.phones.map(function (p) { return p.id === s.invFor ? Object.assign({}, p, { status: INV_ST[s.invMotivo], best: false, result: s.invMotivo + ' · marcação operacional' }) : p; });
+        if (target.best) {
+          var next = list.filter(function (p) { return p.status === 'ativo'; })[0];
+          if (next) list = list.map(function (p) { return Object.assign({}, p, { best: p.id === next.id }); });
+        }
+        var events = self.addEvent({ kind: 'contato', title: target.num + ' marcado como ' + (INV_ST[s.invMotivo] === 'terceiro' ? 'terceiro' : 'inválido'), detail: 'Juliana Prado · motivo: ' + s.invMotivo.toLowerCase() });
+        self.commit({ phones: list, events: events, invFor: null, invMotivo: null }, 'Telefone invalidado');
+      },
+      closeInv: function () { self.setState({ invFor: null, invMotivo: null }); },
+      adding: s.adding, notAdding: !s.adding, newPhone: s.newPhone, phoneErr: s.phoneErr,
+      startAdd: function () { self.setState({ adding: true, newPhone: '', phoneErr: false }); },
+      cancelAdd: function () { self.setState({ adding: false, phoneErr: false }); },
+      onNewPhone: function (e) { self.setState({ newPhone: e.target.value, phoneErr: false }); },
+      addPhone: function () {
+        var d = (s.newPhone || '').replace(/\D/g, '');
+        if (d.length !== 10 && d.length !== 11) { self.setState({ phoneErr: true }); return; }
+        var num = fmtPhone(d);
+        var list = s.phones.concat([{ id: 'n' + Date.now(), num: num, fonte: 'Operação · Juliana Prado em ' + HOJE, result: 'Sem tentativas', status: 'ativo', best: false }]);
+        var events = self.addEvent({ kind: 'contato', title: num + ' adicionado', detail: 'Juliana Prado · conferido contra a lista de bloqueio: liberado' });
+        self.commit({ phones: list, events: events, adding: false, newPhone: '' }, 'Telefone adicionado');
+      },
+      filters: filters, eventsShown: eventsShown,
+      hasToast: !!s.toast, toast: s.toast || '',
+      undo: function () {
+        if (!s.undoSnap) return;
+        self.setState(Object.assign({}, s.undoSnap, { toast: null, undoSnap: null }));
+      }
+    };
+  }
+}
+
+</script>
+</body>
+</html>

@@ -1,0 +1,19 @@
+# Dados do banco (CPF, nome, endereço, telefone, conta): nunca versionar.
+dados/*
+!dados/README.md
+*.zip
+*.csv.gz
+
+# Ambiente
+.env
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+node_modules/
+web/dist/
+storage/
+importador/tests/.fixtures/

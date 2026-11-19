@@ -1,0 +1,232 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Entrar · ARC4 Cobrança</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#F4F8FE;font-family:Figtree,system-ui,sans-serif;color:#05132A}
+a{color:#195AB4}a:hover{color:#10408D}
+button,input,select,textarea{font-family:inherit}
+button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:2px solid #307AE0;outline-offset:2px}
+.top{background:#05132A;display:flex;align-items:center;gap:20px;padding:0 24px;min-height:60px;flex-wrap:wrap}
+.mark{width:28px;height:28px;border-radius:6px;background:#195AB4;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px}
+.avatar{width:32px;height:32px;border-radius:50%;background:#10408D;color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600}
+.nav{color:#B1D2FF;text-decoration:none;font-size:14px;font-weight:500;padding:8px 12px;border-radius:6px}
+.nav:hover{color:#fff;background:#0B2859}
+.nav-on{color:#fff;background:#10408D}
+.wrap{width:100%;max-width:1400px;margin:0 auto;padding:24px 28px 48px;box-sizing:border-box;display:flex;flex-direction:column;gap:20px}
+.card{background:#fff;border:1px solid #DCE6F5;border-radius:12px}
+.lbl{font-size:12px;color:#4A5B78;font-weight:500}
+.mono{font-variant-numeric:tabular-nums}
+.h1{margin:0;font-size:24px;font-weight:700}
+.h2{margin:0;font-size:17px;font-weight:600}
+.btn{display:inline-flex;align-items:center;gap:8px;height:40px;padding:0 16px;border-radius:8px;border:1px solid #B1D2FF;background:#fff;color:#0B2859;font-size:14px;font-weight:600;cursor:pointer;text-decoration:none;box-sizing:border-box;white-space:nowrap}
+.btn:hover{background:#EAF2FF;color:#0B2859}
+.btn-primary{background:#195AB4;border-color:#195AB4;color:#fff}
+.btn-primary:hover{background:#10408D;border-color:#10408D;color:#fff}
+.btn-off{background:#E6EDF7;border-color:#E6EDF7;color:#7B8BA6;cursor:not-allowed}
+.btn-off:hover{background:#E6EDF7;color:#7B8BA6}
+.btn-danger{color:#A1231A;border-color:#F1C9C5}
+.btn-danger:hover{background:#FDECEC;color:#A1231A}
+.btn-sm{height:32px;padding:0 12px;font-size:13px}
+.btn-link{border:0;background:none;color:#195AB4;font-size:13px;font-weight:600;cursor:pointer;padding:4px 6px;border-radius:6px}
+.btn-link:hover{background:#EAF2FF}
+.chip{display:inline-flex;align-items:center;gap:6px;height:24px;padding:0 8px;border-radius:6px;font-size:12px;font-weight:600;background:#EAF2FF;color:#0B2859;white-space:nowrap}
+.chip-warn{background:#FFF4E0;color:#8A4B06}
+.chip-crit{background:#FDECEC;color:#A1231A}
+.chip-ok{background:#D2E5FF;color:#0B2859}
+.chip-dark{background:#05132A;color:#fff}
+.chip-line{background:#fff;border:1px solid #B1D2FF}
+.chip-sim{background:#fff;border:1px dashed #87BAFF;color:#10408D}
+.seg{display:inline-flex;border:1px solid #B1D2FF;border-radius:8px;overflow:hidden;background:#fff;flex-wrap:wrap}
+.seg-b{border:0;background:#fff;height:36px;padding:0 14px;font-size:13px;font-weight:600;color:#0B2859;cursor:pointer;border-right:1px solid #DCE6F5}
+.seg-b:last-child{border-right:0}
+.seg-b:hover{background:#EAF2FF}
+.seg-on{background:#195AB4;color:#fff}
+.seg-on:hover{background:#10408D}
+.tabs{display:flex;gap:4px;border-bottom:1px solid #DCE6F5;flex-wrap:wrap}
+.tab{border:0;background:none;height:42px;padding:0 14px;font-size:14px;font-weight:600;color:#4A5B78;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px}
+.tab:hover{color:#0B2859}
+.tab-on{color:#195AB4;border-bottom-color:#195AB4}
+.inp,.sel{height:38px;border:1px solid #B1D2FF;border-radius:8px;padding:0 10px;font-size:14px;box-sizing:border-box;background:#fff;color:#05132A}
+.inp:focus,.sel:focus{border-color:#195AB4}
+.txa{border:1px solid #B1D2FF;border-radius:8px;padding:8px 10px;font-size:14px;box-sizing:border-box;width:100%;min-height:72px;resize:vertical;color:#05132A}
+.fld{display:flex;flex-direction:column;gap:4px}
+.pill{height:30px;padding:0 12px;border-radius:15px;border:1px solid #B1D2FF;background:#fff;font-size:12px;font-weight:500;cursor:pointer;color:#0B2859}
+.pill:hover{border-color:#549CFF}
+.pill-on{background:#195AB4;border-color:#195AB4;color:#fff}
+.tbl{width:100%;border-collapse:collapse;font-size:13px}
+.tbl th{text-align:left;font-weight:600;color:#4A5B78;font-size:12px;padding:10px 12px;border-bottom:1px solid #DCE6F5;white-space:nowrap}
+.tbl td{padding:10px 12px;border-bottom:1px solid #EEF3FA;vertical-align:middle}
+.tbl tr.clk:hover td{background:#F7FAFF;cursor:pointer}
+.num{text-align:right}
+.kpi{background:#fff;border:1px solid #DCE6F5;border-radius:12px;padding:14px 16px;display:flex;flex-direction:column;gap:4px}
+.kv{font-size:24px;font-weight:700;font-variant-numeric:tabular-nums}
+.delta{font-size:12px;font-weight:600;color:#10408D}
+.tip{position:relative;display:inline-flex;vertical-align:middle}
+.tip-btn{all:unset;cursor:help;width:22px;height:22px;display:inline-flex;align-items:center;justify-content:center;border-radius:50%;color:#4A5B78}
+.tip-btn:hover,.tip-btn:focus-visible{color:#195AB4;background:#EAF2FF}
+.tip-btn:focus-visible{outline:2px solid #307AE0}
+.bubble{position:absolute;z-index:40;top:calc(100% + 6px);left:50%;transform:translateX(-50%);width:max-content;max-width:280px;background:#05132A;color:#fff;font-size:12px;line-height:17px;font-weight:400;padding:8px 10px;border-radius:6px;opacity:0;visibility:hidden;pointer-events:none;transition:opacity .12s;text-align:left;white-space:normal}
+.bubble-r{left:auto;right:0;transform:none}
+.bubble-l{left:0;transform:none}
+.tip:hover .bubble,.tip:focus-within .bubble{opacity:1;visibility:visible}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:#05132A;color:#fff;border-radius:10px;padding:10px 16px;display:flex;gap:14px;align-items:center;font-size:13px;z-index:60}
+.sq{width:8px;height:8px;border-radius:2px;display:inline-block}
+.e0140{background:#195AB4}.e0144{background:#87BAFF}.e0900{background:#0B2859}
+.overlay{position:fixed;inset:0;background:rgba(5,19,42,.45);display:flex;align-items:flex-start;justify-content:center;padding:60px 16px;z-index:50;overflow:auto}
+.modal{background:#fff;border-radius:12px;width:100%;max-width:560px;padding:22px 24px;display:flex;flex-direction:column;gap:14px;box-sizing:border-box}
+.drawer{position:fixed;top:0;right:0;bottom:0;width:min(440px,100%);background:#fff;border-left:1px solid #DCE6F5;z-index:55;padding:22px 24px;box-sizing:border-box;overflow:auto;display:flex;flex-direction:column;gap:14px}
+.x{all:unset;cursor:pointer;width:32px;height:32px;display:inline-flex;align-items:center;justify-content:center;border-radius:6px;color:#4A5B78}
+.x:hover{background:#EAF2FF}
+.x:focus-visible{outline:2px solid #307AE0}
+
+.panel{width:100%;max-width:420px;background:#fff;border:1px solid #DCE6F5;border-radius:14px;padding:32px 32px 28px;box-sizing:border-box;display:flex;flex-direction:column;gap:18px}
+.err{background:#FDECEC;color:#A1231A;border-radius:8px;padding:10px 12px;font-size:13px}
+.ok{background:#EAF2FF;color:#0B2859;border-radius:8px;padding:10px 12px;font-size:13px}
+.code{display:flex;gap:8px}
+.code input{width:44px;height:48px;text-align:center;font-size:20px;font-weight:600;border:1px solid #B1D2FF;border-radius:8px}
+
+</style>
+</helmet>
+<div style="min-height: 100vh; display: flex; flex-direction: column">
+  
+  <main style="flex: 1; display: flex; flex-wrap: wrap; min-height: 100vh">
+    <section style="flex: 1 1 480px; background: #05132A; color: #fff; padding: 48px 56px; box-sizing: border-box; display: flex; flex-direction: column; justify-content: space-between; gap: 40px">
+      <div style="display: flex; align-items: center; gap: 10px">
+        <div class="mark">A4</div>
+        <span style="font-weight: 600; font-size: 18px">ARC4 Cobrança</span>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 14px; max-width: 460px">
+        <h1 style="margin: 0; font-size: 36px; line-height: 1.15; font-weight: 700">Consulta, governança e inteligência da carteira ARC4</h1>
+        <p style="margin: 0; font-size: 15px; color: #B1D2FF">Acesso individual. Cada ação fica registrada com o seu usuário.</p>
+      </div>
+      <div style="display: flex; gap: 10px; flex-wrap: wrap">
+        <span class="chip" style="background: #0B2859; color: #D2E5FF">0140 · CLEAN</span>
+        <span class="chip" style="background: #0B2859; color: #D2E5FF">0144 · CAÍDOS</span>
+        <span class="chip" style="background: #0B2859; color: #D2E5FF">0900 · DESAFIANTE</span>
+      </div>
+    </section>
+
+    <section style="flex: 1 1 480px; display: flex; align-items: center; justify-content: center; padding: 40px 24px; box-sizing: border-box">
+      <div class="panel">
+
+        <sc-if value="{{isLogin}}" hint-placeholder-val="{{ true }}">
+          <div style="display: flex; flex-direction: column; gap: 4px">
+            <h2 class="h1">Entrar</h2>
+            <span class="lbl" style="font-size: 14px">Use seu login individual.</span>
+          </div>
+          <sc-if value="{{hasErr}}" hint-placeholder-val="{{ false }}"><div role="alert" class="err">{{err}}</div></sc-if>
+          <div class="fld">
+            <label for="lg-user" class="lbl">Usuário ou e-mail</label>
+            <input id="lg-user" class="inp" autocomplete="username" value="{{user}}" onChange="{{onUser}}" placeholder="nome.sobrenome">
+          </div>
+          <div class="fld">
+            <div style="display: flex; justify-content: space-between; align-items: center">
+              <label for="lg-pass" class="lbl">Senha</label>
+              <button type="button" class="btn-link" onClick="{{goForgot}}">Esqueci minha senha</button>
+            </div>
+            <div style="display: flex; gap: 6px">
+              <input id="lg-pass" class="inp" style="flex: 1" type="{{passType}}" autocomplete="current-password" value="{{pass}}" onChange="{{onPass}}" onKeyDown="{{onKey}}">
+              <button type="button" class="btn" style="width: 40px; padding: 0; justify-content: center" onClick="{{togglePass}}" aria-label="{{passToggleLabel}}" aria-pressed="{{showPass}}">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M2.5 12S6 5.5 12 5.5c2.6 0 4.7 1.2 6.3 2.6"></path><path d="M21.5 12s-3.5 6.5-9.5 6.5"></path><circle cx="12" cy="12" r="3"></circle></svg>
+              </button>
+            </div>
+          </div>
+          <button type="button" class="btn btn-primary" style="justify-content: center" onClick="{{submit}}">Continuar</button>
+          <div style="display: flex; align-items: center; gap: 4px; justify-content: center">
+            <span class="lbl">Primeiro acesso ou conta bloqueada?</span>
+            <span class="tip"><button type="button" class="tip-btn" aria-label="Como obter acesso" aria-describedby="t-acesso"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M19.4 7.6A9 9 0 1 1 16.4 4.1"></path><path d="M12 11v6"></path><path d="M12 7.6v.01"></path></svg></button><span role="tooltip" id="t-acesso" class="bubble bubble-r">O administrador cria seu usuário e você recebe um link para definir a senha. Após 5 tentativas erradas, a conta é bloqueada por 15 minutos.</span></span>
+          </div>
+          <span class="lbl" style="text-align: center; color: #7B8BA6">Demonstração: qualquer usuário e senha com 8+ caracteres. Teste "bloqueado" como usuário.</span>
+        </sc-if>
+
+        <sc-if value="{{isMfa}}" hint-placeholder-val="{{ false }}">
+          <div style="display: flex; flex-direction: column; gap: 4px">
+            <h2 class="h1">Verificação</h2>
+            <span class="lbl" style="font-size: 14px">Digite o código de 6 dígitos do seu aplicativo autenticador.</span>
+          </div>
+          <sc-if value="{{hasErr}}" hint-placeholder-val="{{ false }}"><div role="alert" class="err">{{err}}</div></sc-if>
+          <div class="fld">
+            <label for="lg-code" class="lbl">Código</label>
+            <input id="lg-code" class="inp mono" inputMode="numeric" maxLength="6" style="font-size: 20px; letter-spacing: 6px; text-align: center" value="{{code}}" onChange="{{onCode}}" autoFocus="{{ true }}">
+          </div>
+          <sc-if value="{{codeOk}}" hint-placeholder-val="{{ false }}">
+            <a class="btn btn-primary" style="justify-content: center" href="Main.dc.html">Entrar</a>
+          </sc-if>
+          <sc-if value="{{codeNotOk}}" hint-placeholder-val="{{ true }}">
+            <button type="button" class="btn btn-off" style="justify-content: center" disabled="{{ true }}">Entrar</button>
+          </sc-if>
+          <button type="button" class="btn-link" onClick="{{back}}">Voltar</button>
+        </sc-if>
+
+        <sc-if value="{{isForgot}}" hint-placeholder-val="{{ false }}">
+          <div style="display: flex; flex-direction: column; gap: 4px">
+            <h2 class="h1">Recuperar senha</h2>
+            <span class="lbl" style="font-size: 14px">Enviaremos um link de uso único, válido por 30 minutos.</span>
+          </div>
+          <sc-if value="{{sent}}" hint-placeholder-val="{{ false }}">
+            <div role="status" class="ok">Se o e-mail estiver cadastrado, o link chega em instantes.</div>
+          </sc-if>
+          <div class="fld">
+            <label for="lg-mail" class="lbl">E-mail corporativo</label>
+            <input id="lg-mail" class="inp" type="email" autocomplete="email" value="{{mail}}" onChange="{{onMail}}">
+          </div>
+          <button type="button" class="btn btn-primary" style="justify-content: center" onClick="{{sendLink}}">Enviar link</button>
+          <button type="button" class="btn-link" onClick="{{back}}">Voltar ao login</button>
+        </sc-if>
+
+      </div>
+    </section>
+  </main>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":900}}'>
+class Component extends DCLogic {
+  constructor(props) { super(props); this.state = { step: 'login', user: '', pass: '', showPass: false, code: '', mail: '', sent: false, err: null, tries: 0 }; }
+  submit() {
+    var s = this.state, u = (s.user || '').trim().toLowerCase();
+    if (!u || !s.pass) { this.setState({ err: 'Informe usuário e senha.' }); return; }
+    if (u === 'bloqueado') { this.setState({ err: 'Conta bloqueada. Procure o administrador.' }); return; }
+    if (s.pass.length < 8) {
+      var t = s.tries + 1;
+      this.setState({ tries: t, err: t >= 5 ? 'Muitas tentativas. Conta bloqueada por 15 minutos.' : 'Usuário ou senha inválidos. Tentativa ' + t + ' de 5.' });
+      return;
+    }
+    this.setState({ step: 'mfa', err: null, code: '' });
+  }
+  renderVals() {
+    var self = this, s = this.state;
+    var digits = (s.code || '').replace(/\D/g, '');
+    return {
+      isLogin: s.step === 'login', isMfa: s.step === 'mfa', isForgot: s.step === 'forgot',
+      hasErr: !!s.err, err: s.err || '',
+      user: s.user, pass: s.pass, code: s.code, mail: s.mail, sent: s.sent,
+      showPass: s.showPass, passType: s.showPass ? 'text' : 'password', passToggleLabel: s.showPass ? 'Ocultar senha' : 'Mostrar senha',
+      onUser: function (e) { self.setState({ user: e.target.value, err: null }); },
+      onPass: function (e) { self.setState({ pass: e.target.value, err: null }); },
+      onKey: function (e) { if (e.key === 'Enter') self.submit(); },
+      onCode: function (e) { self.setState({ code: e.target.value.replace(/\D/g, '').slice(0, 6), err: null }); },
+      onMail: function (e) { self.setState({ mail: e.target.value, sent: false }); },
+      togglePass: function () { self.setState({ showPass: !s.showPass }); },
+      submit: function () { self.submit(); },
+      codeOk: digits.length === 6, codeNotOk: digits.length !== 6,
+      goForgot: function () { self.setState({ step: 'forgot', err: null, sent: false }); },
+      sendLink: function () { if ((s.mail || '').indexOf('@') > 0) self.setState({ sent: true }); },
+      back: function () { self.setState({ step: 'login', err: null }); }
+    };
+  }
+}
+
+</script>
+</body>
+</html>

@@ -1,0 +1,492 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Carteira ARC4</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#F4F8FE;font-family:Figtree,system-ui,sans-serif;color:#05132A}
+a{color:#195AB4}a:hover{color:#10408D}
+button,input,select,textarea{font-family:inherit}
+button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:2px solid #307AE0;outline-offset:2px}
+.top{background:#05132A;display:flex;align-items:center;gap:20px;padding:0 24px;min-height:60px;flex-wrap:wrap}
+.mark{width:28px;height:28px;border-radius:6px;background:#195AB4;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px}
+.avatar{width:32px;height:32px;border-radius:50%;background:#10408D;color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600}
+.nav{color:#B1D2FF;text-decoration:none;font-size:14px;font-weight:500;padding:8px 12px;border-radius:6px}
+.nav:hover{color:#fff;background:#0B2859}
+.nav-on{color:#fff;background:#10408D}
+.wrap{width:100%;max-width:1400px;margin:0 auto;padding:24px 28px 48px;box-sizing:border-box;display:flex;flex-direction:column;gap:20px}
+.card{background:#fff;border:1px solid #DCE6F5;border-radius:12px}
+.lbl{font-size:12px;color:#4A5B78;font-weight:500}
+.mono{font-variant-numeric:tabular-nums}
+.h1{margin:0;font-size:24px;font-weight:700}
+.h2{margin:0;font-size:17px;font-weight:600}
+.btn{display:inline-flex;align-items:center;gap:8px;height:40px;padding:0 16px;border-radius:8px;border:1px solid #B1D2FF;background:#fff;color:#0B2859;font-size:14px;font-weight:600;cursor:pointer;text-decoration:none;box-sizing:border-box;white-space:nowrap}
+.btn:hover{background:#EAF2FF;color:#0B2859}
+.btn-primary{background:#195AB4;border-color:#195AB4;color:#fff}
+.btn-primary:hover{background:#10408D;border-color:#10408D;color:#fff}
+.btn-off{background:#E6EDF7;border-color:#E6EDF7;color:#7B8BA6;cursor:not-allowed}
+.btn-off:hover{background:#E6EDF7;color:#7B8BA6}
+.btn-danger{color:#A1231A;border-color:#F1C9C5}
+.btn-danger:hover{background:#FDECEC;color:#A1231A}
+.btn-sm{height:32px;padding:0 12px;font-size:13px}
+.btn-link{border:0;background:none;color:#195AB4;font-size:13px;font-weight:600;cursor:pointer;padding:4px 6px;border-radius:6px}
+.btn-link:hover{background:#EAF2FF}
+.chip{display:inline-flex;align-items:center;gap:6px;height:24px;padding:0 8px;border-radius:6px;font-size:12px;font-weight:600;background:#EAF2FF;color:#0B2859;white-space:nowrap}
+.chip-warn{background:#FFF4E0;color:#8A4B06}
+.chip-crit{background:#FDECEC;color:#A1231A}
+.chip-ok{background:#D2E5FF;color:#0B2859}
+.chip-dark{background:#05132A;color:#fff}
+.chip-line{background:#fff;border:1px solid #B1D2FF}
+.chip-sim{background:#fff;border:1px dashed #87BAFF;color:#10408D}
+.seg{display:inline-flex;border:1px solid #B1D2FF;border-radius:8px;overflow:hidden;background:#fff;flex-wrap:wrap}
+.seg-b{border:0;background:#fff;height:36px;padding:0 14px;font-size:13px;font-weight:600;color:#0B2859;cursor:pointer;border-right:1px solid #DCE6F5}
+.seg-b:last-child{border-right:0}
+.seg-b:hover{background:#EAF2FF}
+.seg-on{background:#195AB4;color:#fff}
+.seg-on:hover{background:#10408D}
+.tabs{display:flex;gap:4px;border-bottom:1px solid #DCE6F5;flex-wrap:wrap}
+.tab{border:0;background:none;height:42px;padding:0 14px;font-size:14px;font-weight:600;color:#4A5B78;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px}
+.tab:hover{color:#0B2859}
+.tab-on{color:#195AB4;border-bottom-color:#195AB4}
+.inp,.sel{height:38px;border:1px solid #B1D2FF;border-radius:8px;padding:0 10px;font-size:14px;box-sizing:border-box;background:#fff;color:#05132A}
+.inp:focus,.sel:focus{border-color:#195AB4}
+.txa{border:1px solid #B1D2FF;border-radius:8px;padding:8px 10px;font-size:14px;box-sizing:border-box;width:100%;min-height:72px;resize:vertical;color:#05132A}
+.fld{display:flex;flex-direction:column;gap:4px}
+.pill{height:30px;padding:0 12px;border-radius:15px;border:1px solid #B1D2FF;background:#fff;font-size:12px;font-weight:500;cursor:pointer;color:#0B2859}
+.pill:hover{border-color:#549CFF}
+.pill-on{background:#195AB4;border-color:#195AB4;color:#fff}
+.tbl{width:100%;border-collapse:collapse;font-size:13px}
+.tbl th{text-align:left;font-weight:600;color:#4A5B78;font-size:12px;padding:10px 12px;border-bottom:1px solid #DCE6F5;white-space:nowrap}
+.tbl td{padding:10px 12px;border-bottom:1px solid #EEF3FA;vertical-align:middle}
+.tbl tr.clk:hover td{background:#F7FAFF;cursor:pointer}
+.num{text-align:right}
+.kpi{background:#fff;border:1px solid #DCE6F5;border-radius:12px;padding:14px 16px;display:flex;flex-direction:column;gap:4px}
+.kv{font-size:24px;font-weight:700;font-variant-numeric:tabular-nums}
+.delta{font-size:12px;font-weight:600;color:#10408D}
+.tip{position:relative;display:inline-flex;vertical-align:middle}
+.tip-btn{all:unset;cursor:help;width:22px;height:22px;display:inline-flex;align-items:center;justify-content:center;border-radius:50%;color:#4A5B78}
+.tip-btn:hover,.tip-btn:focus-visible{color:#195AB4;background:#EAF2FF}
+.tip-btn:focus-visible{outline:2px solid #307AE0}
+.bubble{position:absolute;z-index:40;top:calc(100% + 6px);left:50%;transform:translateX(-50%);width:max-content;max-width:280px;background:#05132A;color:#fff;font-size:12px;line-height:17px;font-weight:400;padding:8px 10px;border-radius:6px;opacity:0;visibility:hidden;pointer-events:none;transition:opacity .12s;text-align:left;white-space:normal}
+.bubble-r{left:auto;right:0;transform:none}
+.bubble-l{left:0;transform:none}
+.tip:hover .bubble,.tip:focus-within .bubble{opacity:1;visibility:visible}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:#05132A;color:#fff;border-radius:10px;padding:10px 16px;display:flex;gap:14px;align-items:center;font-size:13px;z-index:60}
+.sq{width:8px;height:8px;border-radius:2px;display:inline-block}
+.e0140{background:#195AB4}.e0144{background:#87BAFF}.e0900{background:#0B2859}
+.overlay{position:fixed;inset:0;background:rgba(5,19,42,.45);display:flex;align-items:flex-start;justify-content:center;padding:60px 16px;z-index:50;overflow:auto}
+.modal{background:#fff;border-radius:12px;width:100%;max-width:560px;padding:22px 24px;display:flex;flex-direction:column;gap:14px;box-sizing:border-box}
+.drawer{position:fixed;top:0;right:0;bottom:0;width:min(440px,100%);background:#fff;border-left:1px solid #DCE6F5;z-index:55;padding:22px 24px;box-sizing:border-box;overflow:auto;display:flex;flex-direction:column;gap:14px}
+.x{all:unset;cursor:pointer;width:32px;height:32px;display:inline-flex;align-items:center;justify-content:center;border-radius:6px;color:#4A5B78}
+.x:hover{background:#EAF2FF}
+.x:focus-visible{outline:2px solid #307AE0}
+
+.sq{width:8px;height:8px;border-radius:2px;display:inline-block}
+.crumb{display:flex;align-items:center;gap:6px;font-size:13px;flex-wrap:wrap}
+.crumb button{all:unset;cursor:pointer;color:#195AB4;font-weight:600;border-radius:4px;padding:2px 4px}
+.crumb button:hover{background:#EAF2FF}
+.crumb button:focus-visible{outline:2px solid #307AE0}
+.crumb .cur{color:#05132A;font-weight:600}
+.lrow{all:unset;box-sizing:border-box;display:grid;grid-template-columns:minmax(150px,1.4fr) 90px 110px 90px minmax(120px,1fr) 84px 96px 128px 20px;gap:12px;align-items:center;padding:11px 14px;border-radius:8px;width:100%;cursor:pointer;font-size:13px}
+.lrow:hover{background:#F2F7FF}
+.lrow:focus-visible{outline:2px solid #307AE0}
+.lhead{display:grid;grid-template-columns:minmax(150px,1.4fr) 90px 110px 90px minmax(120px,1fr) 84px 96px 128px 20px;gap:12px;padding:0 14px 6px;font-size:12px;color:#4A5B78;font-weight:500}
+.lwarn{background:#FFF9EF}
+.lwarn:hover{background:#FFF4E0}
+.num{text-align:right}
+.track{height:8px;background:#EEF3FA;border-radius:4px;overflow:hidden;flex:1}
+.bar{height:8px;border-radius:4px;background:#195AB4}
+.bar2{height:8px;border-radius:4px;background:#87BAFF}
+.badge{display:inline-flex;height:20px;align-items:center;padding:0 6px;border-radius:4px;font-size:11px;font-weight:600;background:#D2E5FF;color:#0B2859;margin-left:6px}
+.pos{color:#10408D}.neg{color:#8A4B06}
+.mini{display:flex;flex-direction:column;gap:2px}
+.dist{display:grid;grid-template-columns:120px minmax(0,1fr) 80px 56px;gap:10px;align-items:center;font-size:13px;padding:5px 0}
+.empty{border:1px dashed #B1D2FF;border-radius:10px;padding:18px;text-align:center;color:#4A5B78;font-size:13px;background:#FAFCFF}
+.hdr-metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+.m{background:#F4F8FE;border-radius:10px;padding:10px 12px}
+.m .v{font-size:18px;font-weight:700;font-variant-numeric:tabular-nums}
+.ib{font-weight:600;color:#fff;display:block;margin-top:4px}
+.ib:first-child{margin-top:0}
+.ind{all:unset;box-sizing:border-box;cursor:pointer;background:#fff;border:1px solid #DCE6F5;border-radius:12px;padding:12px 14px;display:flex;flex-direction:column;gap:2px}
+.ind:hover{border-color:#87BAFF;background:#F7FAFF}
+.ind:focus-visible{outline:2px solid #307AE0}
+.ind-on{border-color:#195AB4;background:#EAF2FF}
+
+</style>
+</helmet>
+<div style="min-height: 100vh; display: flex; flex-direction: column">
+  <header class="top">
+    <div style="display: flex; align-items: center; gap: 10px">
+      <div class="mark">A4</div>
+      <span style="color: #fff; font-weight: 600; font-size: 16px">ARC4 Cobrança</span>
+    </div>
+    <nav aria-label="Principal" style="display: flex; gap: 2px; flex-wrap: wrap"><a class="nav" href="Main.dc.html">Consulta</a><a class="nav nav-on" href="Carteira.dc.html" aria-current="page">Carteira</a><a class="nav" href="Movimentacoes.dc.html">Movimentações</a><a class="nav" href="Importacao.dc.html">Importação</a><a class="nav" href="Usuarios.dc.html">Administração</a></nav>
+    
+    <div style="margin-left: auto; display: flex; align-items: center; gap: 12px">
+      <div style="display: flex; flex-direction: column; align-items: flex-end; line-height: 1.2">
+        <span style="color: #fff; font-size: 13px; font-weight: 600">{{userName}}</span>
+        <span style="color: #87BAFF; font-size: 12px">{{userPerfil}}</span>
+      </div>
+      <div class="avatar" aria-hidden="true">{{userIni}}</div>
+      <a class="nav" href="Login.dc.html" style="display: inline-flex; align-items: center; gap: 6px"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M15 4h3a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-3"></path><path d="M10 17l-5-5 5-5"></path><path d="M5 12h11"></path></svg>Sair</a>
+    </div>
+  </header>
+  <main class="wrap">
+    <div style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 14px">
+      <div style="display: flex; flex-direction: column; gap: 6px">
+        <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap">
+          <h1 class="h1">Carteira ARC4</h1>
+          <span class="chip chip-line">Carga 19/11/2026</span>
+          <span style="display: inline-flex; align-items: center; gap: 2px"><span class="chip chip-sim">comparada com 18/11 (simulada)</span><span class="tip"><button type="button" class="tip-btn" aria-label="Sobre os dados" aria-describedby="t-sim"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M19.4 7.6A9 9 0 1 1 16.4 4.1"></path><path d="M12 11v6"></path><path d="M12 7.6v.01"></path></svg></button><span role="tooltip" id="t-sim" class="bubble bubble-l">Estoque, saldo, atraso, grupos, acordos e pagamentos são reais (19/11/2026). Variações, entradas e saídas por instituição dependem de uma carga anterior e foram simuladas.</span></span></span>
+        </div>
+        <sc-if value="{{showCrumb}}" hint-placeholder-val="{{ false }}">
+          <nav aria-label="Caminho" class="crumb">
+            <button type="button" onClick="{{goHome}}">Carteira ARC4</button>
+            <sc-if value="{{crumbInst}}" hint-placeholder-val="{{ false }}"><span aria-hidden="true">›</span><sc-if value="{{instIsCur}}" hint-placeholder-val="{{ false }}"><span class="cur">{{inst}}</span></sc-if><sc-if value="{{instNotCur}}" hint-placeholder-val="{{ false }}"><button type="button" onClick="{{goInst}}">{{inst}}</button></sc-if></sc-if>
+            <sc-if value="{{crumbProd}}" hint-placeholder-val="{{ false }}"><span aria-hidden="true">›</span><sc-if value="{{prodIsCur}}" hint-placeholder-val="{{ false }}"><span class="cur">{{prodLabel}}</span></sc-if><sc-if value="{{prodNotCur}}" hint-placeholder-val="{{ false }}"><button type="button" onClick="{{goProd}}">{{prodLabel}}</button></sc-if></sc-if>
+            <sc-if value="{{crumbCtr}}" hint-placeholder-val="{{ false }}"><span aria-hidden="true">›</span><span class="cur">Contratos</span></sc-if>
+          </nav>
+        </sc-if>
+      </div>
+      <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center">
+        <div role="group" aria-label="Carteira" class="seg"><sc-for list="{{epsOpts}}" as="o" hint-placeholder-count="4"><button type="button" class="{{o.cls}}" onClick="{{o.pick}}" aria-pressed="{{o.on}}">{{o.label}}</button></sc-for></div>
+        <button type="button" class="btn btn-sm" onClick="{{exportCur}}">Exportar CSV</button>
+      </div>
+    </div>
+
+    <div class="tabs" role="tablist"><sc-for list="{{tabs}}" as="t" hint-placeholder-count="3"><button type="button" role="tab" class="{{t.cls}}" aria-selected="{{t.on}}" onClick="{{t.pick}}">{{t.label}}</button></sc-for></div>
+
+    <sc-if value="{{tInst}}" hint-placeholder-val="{{ true }}">
+
+      <sc-if value="{{lvHome}}" hint-placeholder-val="{{ true }}">
+        <div style="display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 12px">
+          <sc-for list="{{kpis}}" as="k" hint-placeholder-count="5">
+            <div class="kpi">
+              <div style="display: flex; align-items: center; gap: 2px"><span class="lbl">{{k.nome}}</span><span class="tip"><button type="button" class="tip-btn" aria-label="Definição de {{k.nome}}" aria-describedby="tk-{{k.id}}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M19.4 7.6A9 9 0 1 1 16.4 4.1"></path><path d="M12 11v6"></path><path d="M12 7.6v.01"></path></svg></button><span role="tooltip" id="tk-{{k.id}}" class="{{k.bcls}}"><span class="ib">Definição</span>{{k.def}}<span class="ib">Regra</span>{{k.regra}}<span class="ib">Período</span>{{k.per}}<span class="ib">Origem</span>{{k.orig}}</span></span></div>
+              <div class="kv">{{k.v}}</div>
+              <div class="{{k.dCls}}">{{k.d}}</div>
+            </div>
+          </sc-for>
+        </div>
+        <section class="card" aria-labelledby="h-inst" style="padding: 16px 10px">
+          <div style="display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 0 14px 10px; flex-wrap: wrap">
+            <div style="display: flex; align-items: center; gap: 2px"><h2 id="h-inst" class="h2">Carteira por instituição</h2><span class="tip"><button type="button" class="tip-btn" aria-label="Instituição" aria-describedby="t-inst"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M19.4 7.6A9 9 0 1 1 16.4 4.1"></path><path d="M12 11v6"></path><path d="M12 7.6v.01"></path></svg></button><span role="tooltip" id="t-inst" class="bubble bubble-l">Instituição/administradora normalizada a partir de nome_estrategia pelo dicionário de domínios. Clique para ver os produtos.</span></span></div>
+            <div style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap"><span class="lbl">Ordenar por</span><sc-for list="{{sortOpts}}" as="o" hint-placeholder-count="4"><button type="button" class="{{o.cls}}" onClick="{{o.pick}}" aria-pressed="{{o.on}}">{{o.label}}</button></sc-for></div>
+          </div>
+          <div class="lhead" aria-hidden="true"><span>Instituição</span><span class="num">{{colN}}</span><span class="num">Saldo</span><span class="num">Saldo médio</span><span>Participação no saldo</span><span class="num">Δ contratos</span><span class="num">Δ saldo</span><span class="num">Entr. / Saí. / Líq.</span><span></span></div>
+          <sc-for list="{{instRows}}" as="r" hint-placeholder-count="10">
+            <button type="button" class="{{r.cls}}" onClick="{{r.open}}" aria-label="Abrir {{r.nome}}">
+              <span style="font-weight: 600; font-size: 14px">{{r.nome}}<sc-if value="{{r.topShare}}" hint-placeholder-val="{{ false }}"><span class="badge">maior participação</span></sc-if><sc-if value="{{r.topVar}}" hint-placeholder-val="{{ false }}"><span class="badge">maior variação</span></sc-if><sc-if value="{{r.unmapped}}" hint-placeholder-val="{{ false }}"><span class="badge" style="background: #FFF4E0; color: #8A4B06">revisar mapeamento</span></sc-if></span>
+              <span class="mono num">{{r.n}}</span><span class="mono num" style="font-weight: 600">{{r.s}}</span><span class="mono num">{{r.avg}}</span>
+              <span style="display: flex; align-items: center; gap: 8px"><span class="track"><span class="bar" style="display: block; width: {{r.w}}%"></span></span><span class="mono" style="width: 44px; text-align: right">{{r.share}}</span></span>
+              <span class="{{r.dnCls}}">{{r.dn}}</span><span class="{{r.dsCls}}">{{r.ds}}</span><span class="mono num" style="color: #4A5B78">{{r.mov}}</span>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#4A5B78" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M9 6l6 6-6 6"></path></svg>
+            </button>
+          </sc-for>
+        </section>
+      </sc-if>
+
+      <sc-if value="{{lvInst}}" hint-placeholder-val="{{ false }}">
+        <section class="card" aria-labelledby="h-i" style="padding: 18px 20px; display: flex; flex-direction: column; gap: 14px">
+          <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap">
+            <h2 id="h-i" class="h1" style="font-size: 22px">{{inst}}</h2>
+            <button type="button" class="btn btn-sm" onClick="{{goHome}}">Voltar à carteira</button>
+          </div>
+          <div class="hdr-metrics"><sc-for list="{{instMetrics}}" as="m" hint-placeholder-count="8"><div class="m"><div class="lbl">{{m.k}}</div><div class="v">{{m.v}}</div></div></sc-for></div>
+        </section>
+        <section class="card" aria-labelledby="h-p" style="padding: 16px 10px">
+          <div style="display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 0 14px 10px; flex-wrap: wrap">
+            <div style="display: flex; align-items: center; gap: 2px"><h2 id="h-p" class="h2">Composição por produto</h2><span class="tip"><button type="button" class="tip-btn" aria-label="Produto" aria-describedby="t-prod"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M19.4 7.6A9 9 0 1 1 16.4 4.1"></path><path d="M12 11v6"></path><path d="M12 7.6v.01"></path></svg></button><span role="tooltip" id="t-prod" class="bubble bubble-l">Código produto_legado do arquivo. A categoria vem do dicionário de produtos; sem regra aprovada, aparece como não mapeado.</span></span></div>
+            <div style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap"><span class="lbl">Ordenar por</span><sc-for list="{{sortOpts}}" as="o" hint-placeholder-count="4"><button type="button" class="{{o.cls}}" onClick="{{o.pick}}" aria-pressed="{{o.on}}">{{o.label}}</button></sc-for></div>
+          </div>
+          <div class="lhead" aria-hidden="true"><span>Produto</span><span class="num">Posições</span><span class="num">Saldo</span><span class="num">Saldo médio</span><span>Participação na instituição</span><span class="num">Δ contratos</span><span class="num">Δ saldo</span><span class="num">Entr. / Saí. / Líq.</span><span></span></div>
+          <sc-for list="{{prodRows}}" as="r" hint-placeholder-count="6">
+            <button type="button" class="lrow" onClick="{{r.open}}" aria-label="Abrir produto {{r.nome}}">
+              <span style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap"><span class="mono" style="font-weight: 600; font-size: 14px">{{r.nome}}</span><span class="{{r.catCls}}">{{r.cat}}</span></span>
+              <span class="mono num">{{r.n}}</span><span class="mono num" style="font-weight: 600">{{r.s}}</span><span class="mono num">{{r.avg}}</span>
+              <span style="display: flex; align-items: center; gap: 8px"><span class="track"><span class="bar2" style="display: block; width: {{r.w}}%"></span></span><span class="mono" style="width: 44px; text-align: right">{{r.share}}</span></span>
+              <span class="{{r.dnCls}}">{{r.dn}}</span><span class="{{r.dsCls}}">{{r.ds}}</span><span class="mono num" style="color: #4A5B78">{{r.mov}}</span>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#4A5B78" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M9 6l6 6-6 6"></path></svg>
+            </button>
+          </sc-for>
+        </section>
+      </sc-if>
+
+      <sc-if value="{{lvProd}}" hint-placeholder-val="{{ false }}">
+        <section class="card" aria-labelledby="h-pd" style="padding: 18px 20px; display: flex; flex-direction: column; gap: 14px">
+          <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap">
+            <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap"><h2 id="h-pd" class="h1 mono" style="font-size: 22px">{{prod}}</h2><span class="{{prodCatCls}}">{{prodCat}}</span><span class="chip chip-line">{{inst}}</span></div>
+            <div style="display: flex; gap: 8px"><button type="button" class="btn btn-sm" onClick="{{goInst}}">Voltar à instituição</button><button type="button" class="btn btn-sm btn-primary" onClick="{{goCtr}}">Ver contratos</button></div>
+          </div>
+          <div class="hdr-metrics"><sc-for list="{{prodMetrics}}" as="m" hint-placeholder-count="4"><div class="m"><div class="lbl">{{m.k}}</div><div class="v">{{m.v}}</div></div></sc-for></div>
+        </section>
+        <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px">
+          <section class="card" style="padding: 16px 20px"><h3 class="h2" style="font-size: 15px; margin-bottom: 8px">Estoque por EPS</h3>
+            <sc-for list="{{distEps}}" as="x" hint-placeholder-count="3"><div class="dist"><span>{{x.k}}</span><span class="track"><span class="bar" style="display: block; width: {{x.w}}%"></span></span><span class="mono num">{{x.n}}</span><span class="mono num lbl">{{x.p}}</span></div></sc-for></section>
+          <section class="card" style="padding: 16px 20px"><h3 class="h2" style="font-size: 15px; margin-bottom: 8px">Faixa de atraso</h3>
+            <sc-for list="{{distAtr}}" as="x" hint-placeholder-count="7"><div class="dist"><span>{{x.k}}</span><span class="track"><span class="bar2" style="display: block; width: {{x.w}}%"></span></span><span class="mono num">{{x.n}}</span><span class="mono num lbl">{{x.p}}</span></div></sc-for></section>
+          <section class="card" style="padding: 16px 20px"><h3 class="h2" style="font-size: 15px; margin-bottom: 8px">Grupo ARC4</h3>
+            <sc-for list="{{distGrp}}" as="x" hint-placeholder-count="5"><div class="dist"><span>{{x.k}}</span><span class="track"><span class="bar" style="display: block; width: {{x.w}}%"></span></span><span class="mono num">{{x.n}}</span><span class="mono num lbl">{{x.p}}</span></div></sc-for></section>
+          <section class="card" style="padding: 16px 20px"><div style="display: flex; align-items: center; gap: 6px; margin-bottom: 8px"><h3 class="h2" style="font-size: 15px">Evolução e movimentação</h3><span class="chip chip-sim">simulado</span></div>
+            <table class="tbl"><thead><tr><th scope="col">Carga</th><th scope="col" class="num">Posições</th><th scope="col" class="num">Saldo</th></tr></thead><tbody><sc-for list="{{evol}}" as="e" hint-placeholder-count="3"><tr><td class="mono">{{e.c}}</td><td class="mono num">{{e.n}}</td><td class="mono num">{{e.s}}</td></tr></sc-for></tbody></table>
+            <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin-top: 12px"><sc-for list="{{movProd}}" as="m" hint-placeholder-count="6"><div class="m"><div class="lbl">{{m.k}}</div><div class="v" style="font-size: 15px">{{m.v}}</div></div></sc-for></div>
+          </section>
+          <section class="card" style="padding: 16px 20px"><div style="display: flex; align-items: center; gap: 2px; margin-bottom: 8px"><h3 class="h2" style="font-size: 15px">Eficiência financeira</h3><span class="tip"><button type="button" class="tip-btn" aria-label="Eficiência financeira" aria-describedby="t-ef"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M19.4 7.6A9 9 0 1 1 16.4 4.1"></path><path d="M12 11v6"></path><path d="M12 7.6v.01"></path></svg></button><span role="tooltip" id="t-ef" class="bubble bubble-l">Acordado e pago são separados. Pago vem do arquivo PAGAMENTO (novembro até 18/11). A parcela atual dos acordos é valor acordado, não pagamento.</span></span></div>
+            <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px"><sc-for list="{{efFin}}" as="m" hint-placeholder-count="6"><div class="m"><div class="lbl">{{m.k}}</div><div class="v" style="font-size: 15px">{{m.v}}</div></div></sc-for></div></section>
+          <section class="card" style="padding: 16px 20px"><div style="display: flex; align-items: center; gap: 2px; margin-bottom: 8px"><h3 class="h2" style="font-size: 15px">Eficiência operacional</h3><span class="tip"><button type="button" class="tip-btn" aria-label="Eficiência operacional" aria-describedby="t-eo"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M19.4 7.6A9 9 0 1 1 16.4 4.1"></path><path d="M12 11v6"></path><path d="M12 7.6v.01"></path></svg></button><span role="tooltip" id="t-eo" class="bubble bubble-l">Contratos trabalhados, CPC e conversões dependem dos registros de acionamento. Os arquivos do banco não trazem produção.</span></span></div>
+            <div class="empty">Sem dados de produção para esta carga.<br>Os indicadores aparecem quando houver acionamentos registrados na plataforma.</div></section>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{lvCtr}}" hint-placeholder-val="{{ false }}">
+        <section class="card" aria-labelledby="h-c" style="padding: 16px 12px">
+          <div style="display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 0 12px 10px; flex-wrap: wrap">
+            <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap"><h2 id="h-c" class="h2">Contratos · {{prodLabel}}</h2><span class="chip chip-sim">exemplo</span><span class="lbl">{{ctrInfo}}</span></div>
+            <button type="button" class="btn btn-sm" onClick="{{goProd}}">Voltar ao produto</button>
+          </div>
+          <div style="overflow-x: auto"><table class="tbl"><thead><tr><th scope="col">Contrato</th><th scope="col">Carteira</th><th scope="col">Grupo</th><th scope="col" class="num">Saldo</th><th scope="col" class="num">Atraso</th><th scope="col">Acordo</th></tr></thead>
+            <tbody><sc-for list="{{ctrRows}}" as="c" hint-placeholder-count="10"><tr class="clk"><td><a class="mono" href="Main.dc.html" style="font-weight: 600">{{c.id}}</a></td><td>{{c.eps}}</td><td>{{c.g}}</td><td class="mono num">{{c.s}}</td><td class="mono num">{{c.a}}</td><td>{{c.ac}}</td></tr></sc-for></tbody></table></div>
+        </section>
+      </sc-if>
+    </sc-if>
+
+    <sc-if value="{{tEf}}" hint-placeholder-val="{{ false }}">
+      <section class="card" aria-labelledby="h-ef" style="padding: 16px 12px">
+        <div style="display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 0 12px 10px; flex-wrap: wrap">
+          <div style="display: flex; align-items: center; gap: 2px"><h2 id="h-ef" class="h2">Comparação de eficiência por instituição</h2><span class="tip"><button type="button" class="tip-btn" aria-label="Leia com o perfil" aria-describedby="t-cmpef"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M19.4 7.6A9 9 0 1 1 16.4 4.1"></path><path d="M12 11v6"></path><path d="M12 7.6v.01"></path></svg></button><span role="tooltip" id="t-cmpef" class="bubble bubble-l">Taxas não são diretamente comparáveis: compare só instituições com saldo médio, atraso e composição parecidos. As colunas de perfil ficam ao lado de cada taxa.</span></span></div>
+          <span class="lbl">Pagamentos de 01/11 a 18/11/2026 · {{epsNome}}</span>
+        </div>
+        <div style="overflow-x: auto"><table class="tbl">
+          <thead><tr><th scope="col">Instituição</th><th scope="col" class="num">Posições</th><th scope="col" class="num">Saldo médio</th><th scope="col" class="num">Atraso médio</th><th scope="col" class="num">% acima de 3 anos</th><th scope="col" class="num">Acordos por mil</th><th scope="col" class="num">Acordos em atraso</th><th scope="col" class="num">Pago em nov.</th><th scope="col" class="num">Recuperação no mês</th></tr></thead>
+          <tbody><sc-for list="{{efRows}}" as="r" hint-placeholder-count="10"><tr class="clk" onClick="{{r.open}}"><td style="font-weight: 600">{{r.nome}}</td><td class="mono num">{{r.n}}</td><td class="mono num">{{r.avg}}</td><td class="mono num">{{r.atr}}</td><td class="mono num">{{r.old}}</td><td class="mono num">{{r.acm}}</td><td class="mono num">{{r.acat}}</td><td class="mono num">{{r.pago}}</td><td class="mono num" style="font-weight: 600">{{r.rec}}</td></tr></sc-for></tbody>
+        </table></div>
+      </section>
+    </sc-if>
+
+    <sc-if value="{{tBat}}" hint-placeholder-val="{{ false }}">
+      <section aria-label="Batimento entre cargas" style="display: flex; flex-direction: column; gap: 16px">
+        <div class="card" style="padding: 14px 20px; display: flex; gap: 14px; align-items: flex-end; flex-wrap: wrap">
+          <div class="fld"><label for="ld-a" class="lbl">Carga A (anterior)</label><select id="ld-a" class="sel" value="{{a}}" onChange="{{onA}}"><option value="17">17/11/2026 (simulada)</option><option value="18">18/11/2026 (simulada)</option></select></div>
+          <span aria-hidden="true" style="margin-bottom: 9px">→</span>
+          <div class="fld"><label class="lbl" for="ld-b">Carga B (atual)</label><select id="ld-b" class="sel" value="19" disabled="{{ true }}"><option value="19">19/11/2026</option></select></div>
+          <div class="fld"><label for="ld-i" class="lbl">Instituição</label><select id="ld-i" class="sel" value="{{batInst}}" onChange="{{onBatInst}}"><option value="">Todas</option><sc-for list="{{instOpts}}" as="o" hint-placeholder-count="10"><option value="{{o.v}}">{{o.v}}</option></sc-for></select></div>
+          <span class="chip chip-line" style="margin-bottom: 7px">{{epsNome}}</span>
+        </div>
+        <div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px">
+          <sc-for list="{{batInd}}" as="i" hint-placeholder-count="8">
+            <button type="button" class="{{i.cls}}" onClick="{{i.pick}}" aria-pressed="{{i.on}}">
+              <span class="lbl">{{i.nome}}</span><span class="kv" style="font-size: 20px">{{i.v}}</span><span class="lbl">{{i.sub}}</span>
+            </button>
+          </sc-for>
+        </div>
+        <section class="card" style="padding: 16px 12px">
+          <div style="display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 0 12px 10px; flex-wrap: wrap"><h3 class="h2" style="font-size: 15px">Diferenças por instituição</h3><span class="lbl">Clique para filtrar</span></div>
+          <div style="overflow-x: auto"><table class="tbl"><thead><tr><th scope="col">Instituição</th><th scope="col" class="num">Carga A</th><th scope="col" class="num">Carga B</th><th scope="col" class="num">Incluídos</th><th scope="col" class="num">Removidos</th><th scope="col" class="num">Δ saldo</th></tr></thead>
+            <tbody><sc-for list="{{batRows}}" as="r" hint-placeholder-count="10"><tr class="clk" onClick="{{r.pick}}"><td style="font-weight: 600">{{r.nome}}</td><td class="mono num">{{r.a}}</td><td class="mono num">{{r.b}}</td><td class="mono num">{{r.inc}}</td><td class="mono num">{{r.rem}}</td><td class="mono num">{{r.ds}}</td></tr></sc-for></tbody></table></div>
+        </section>
+        <section class="card" style="padding: 16px 12px">
+          <div style="display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 0 12px 10px; flex-wrap: wrap"><div style="display: flex; gap: 8px; align-items: center"><h3 class="h2" style="font-size: 15px">{{batSelNome}}</h3><span class="chip chip-sim">exemplo</span></div><a class="btn btn-sm" href="Movimentacoes.dc.html">Abrir em Movimentações</a></div>
+          <div style="overflow-x: auto"><table class="tbl"><thead><tr><th scope="col">Contrato</th><th scope="col">Instituição</th><th scope="col">Carteira</th><th scope="col">Grupo</th><th scope="col" class="num">Saldo A</th><th scope="col" class="num">Saldo B</th></tr></thead>
+            <tbody><sc-for list="{{batList}}" as="c" hint-placeholder-count="8"><tr><td class="mono" style="font-weight: 600">{{c.id}}</td><td>{{c.i}}</td><td>{{c.eps}}</td><td>{{c.g}}</td><td class="mono num">{{c.sa}}</td><td class="mono num">{{c.sb}}</td></tr></sc-for></tbody></table></div>
+        </section>
+      </section>
+    </sc-if>
+  </main>
+  <sc-if value="{{hasToast}}" hint-placeholder-val="{{ false }}"><div role="status" class="toast">{{toast}}</div></sc-if>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1500}}'>
+var D = {"rows":[["NÃO MAPEADO","NCPPES","0140",1041,60681259.99,1591769,{"3a+":1038,"2-3a":3},{"G2":388,"COINCIDENTES":651,"G1":2},12561,3503334.31,0,0.0,0,0,0,0.0,4,221507.0,31,1897382.34,4,0,1068,62429952.84,1065,62338324.67,4,1],["BTG","NCPPES","0140",108,3914557.36,142928,{"3a+":105,"2-3a":3},{"COINCIDENTES":73,"G2":34,"G1":1},2616,599590.48,0,0.0,0,0,0,0.0,0,0.0,3,114174.59,0,0,111,4033429.42,111,4037866.19,0,0],["BTG","NRECPP","0140",60,1376527.24,71733,{"1-2a":1,"0":3,"3a+":56},{"COINCIDENTES":37,"G1":2,"G2":21},145,26761.26,0,0.0,3,3,1,1335.85,0,0.0,1,24089.23,0,0,61,1402268.3,61,1403810.8,0,0],["NÃO MAPEADO","NRECPP","0140",100,1952078.71,138934,{"1-2a":1,"0":1,"2-3a":3,"3a+":95},{"G1":3,"COINCIDENTES":75,"G2":22},160,37873.5,1,51.28,3,3,2,443.56,0,0.0,2,40993.65,0,0,102,1995414.85,102,1997609.81,0,0],["NÃO MAPEADO","NRECP","0140",25,174585.16,33388,{"3a+":24,"0":1},{"COINCIDENTES":22,"G2":3},28,1986.29,0,0.0,1,1,0,180.11,0,0.0,0,0.0,0,0,25,174794.66,25,174986.93,0,0],["NÃO MAPEADO","NCPPAR","0140",170,2486824.13,251325,{"3a+":168,"1-90":1,"0":1},{"COINCIDENTES":160,"G2":8,"Mundo Z":2},349,26759.3,0,0.0,2,2,1,455.66,0,0.0,4,61439.18,0,0,174,2551247.5,174,2554053.87,0,0],["BTG","NRECP","0140",3,13367.87,3548,{"3a+":3},{"COINCIDENTES":2,"G2":1},20,668.53,0,0.0,0,0,0,0.0,0,0.0,0,0.0,0,0,3,13383.91,3,13398.63,0,0],["BTG","NCPPAR","0140",32,389165.05,45936,{"3a+":32},{"COINCIDENTES":25,"G2":7},103,6429.1,0,0.0,0,0,0,0.0,0,0.0,0,0.0,0,0,32,389632.05,32,390060.65,0,0],["NÃO MAPEADO","NCPPRE","0140",1,170258.94,1347,{"3a+":1},{"COINCIDENTES":1},7,2957.49,0,0.0,0,0,0,0.0,0,0.0,0,0.0,0,0,1,170463.25,1,170650.76,0,0],["BTG","NEMPAC","0140",2,25831.27,2373,{"3a+":2},{"COINCIDENTES":1,"G2":1},0,0.0,0,0.0,0,0,0,0.0,0,0.0,0,0.0,0,0,2,25862.27,2,25890.72,0,0],["NÃO MAPEADO","NRECAR","0140",209,2331073.06,262092,{"3a+":175,"0":16,"1-90":3,"1-2a":8,"2-3a":7},{"COINCIDENTES":135,"G2":58,"C1":1,"G1":13,"M":2},404,109744.59,10,3614.0,30,27,15,12253.05,0,0.0,6,70266.8,1,0,215,2404137.15,215,2406781.7,0,0],["BTG","NRECAR","0140",180,1956747.4,208507,{"3a+":170,"1-90":1,"0":6,"2-3a":3},{"COINCIDENTES":67,"G2":107,"C1":1,"G1":5},244,49963.17,3,580.13,9,9,3,2235.74,0,0.0,4,45657.44,0,0,184,2004752.94,184,2006958.17,0,0],["BTG","NCARDC","0140",796,18335799.6,957411,{"3a+":796},{"G2":285,"COINCIDENTES":511},0,0.0,0,0.0,1,1,0,164.49,1,21883.18,27,653040.1,3,0,822,18988959.48,822,19012150.83,1,1],["NÃO MAPEADO","NCARDC","0140",4125,164095362.85,5940787,{"3a+":4125},{"COINCIDENTES":2970,"G2":1152,"G1":3},0,0.0,0,0.0,2,2,0,3018.0,18,680249.87,99,4135203.14,24,0,4206,167747230.56,4197,167619474.07,16,7],["PAN","NACARD","0140",47629,479079310.94,46132310,{"3a+":15512,"2-3a":23772,"1-2a":8345},{"COINCIDENTES":20345,"G2":16076,"G1":11208},298,19195.87,0,0.0,73,73,26,33505.31,170,1624457.97,1608,16982878.26,341,0,49067,495012626.4,49024,495251862.89,148,105],["PAN","NACPES","0140",35833,802486210.52,31653868,{"3a+":6481,"2-3a":21975,"1-2a":7055,"0":257,"1-90":58,"91-180":6,"181-360":1},{"COINCIDENTES":12178,"G2":9632,"G1":14013,"C1":7,"M":2,"<500":1},436,130065.92,87,19130.33,409,375,113,136598.06,97,2063715.13,839,19729027.07,187,0,36575,821114505.91,36546,821523918.32,84,55],["PAN","NARCAR","0140",751,4189778.92,162529,{"1-2a":37,"2-3a":151,"0":474,"1-90":85,"91-180":3,"3a+":1},{"G1":387,"G2":205,"COINCIDENTES":147,"C1":6,"M":6},906,210737.57,155,28652.68,590,536,116,97819.35,3,15899.96,26,152304.88,2,0,774,4331211.57,773,4331233.81,2,1],["ITAU","NICPRC","0140",26005,136830991.84,25935485,{"3a+":10084,"2-3a":14498,"0":1078,"1-2a":96,"1-90":247,"91-180":2},{"COINCIDENTES":5782,"G2":16070,"G1":4136,"M":14,"C1":3},2193,304578.24,397,52102.41,1518,1380,374,233359.79,77,384894.71,595,3287258.69,154,0,26523,139897553.01,26495,139931999.31,67,39],["PERNAMBUCANAS","NSCARD","0140",9985,37178179.35,14395158,{"3a+":9775,"2-3a":209,"1-2a":1},{"COINCIDENTES":9793,"G2":183,"G1":9},154,16226.71,0,0.0,15,15,3,3701.37,33,116728.69,348,1360531.47,72,0,10300,38466595.95,10295,38499786.87,28,23],["PERNAMBUCANAS","NSRCAR","0140",298,878356.91,118427,{"0":97,"2-3a":60,"1-2a":123,"1-90":18},{"COINCIDENTES":55,"G2":26,"G1":215,"C1":1,"Mundo Z":1},586,64929.82,69,6562.87,237,228,142,30761.25,1,2800.13,6,18569.29,1,0,303,895180.1,302,893364.67,1,0],["ITAU","NIMICR","0140",425,2285429.09,492047,{"2-3a":18,"3a+":404,"1-90":3},{"G2":360,"COINCIDENTES":61,"G1":4},10,917.93,0,0.0,7,5,6,1740.15,1,5108.61,15,84695.31,1,0,439,2367758.3,439,2370362.83,0,0],["ITAU","NICPSC","0140",746,8124860.63,987457,{"3a+":673,"2-3a":67,"0":4,"1-2a":2},{"COINCIDENTES":419,"G2":315,"G1":12},25,9435.05,2,939.62,5,5,2,957.17,2,20693.34,16,182972.73,4,0,760,8296889.85,759,8296758.88,2,1],["ITAU","NICONS","0140",1194,12177036.68,1392198,{"3a+":922,"2-3a":261,"1-2a":3,"0":5,"1-90":3},{"G2":949,"COINCIDENTES":216,"G1":29},21,3485.21,1,88.75,17,15,9,3913.96,5,48442.99,43,460463.32,9,0,1232,12603669.45,1229,12590507.4,5,2],["ITAU","NICARD","0140",119024,1002460199.66,137388720,{"3a+":68598,"2-3a":50412,"1-2a":11,"181-360":3},{"COINCIDENTES":43766,"G2":74662,"G1":596},19,1468.32,0,0.0,152,152,47,78130.29,296,2368361.07,2557,22612710.61,601,0,121285,1023907501.44,121194,1024445499.48,257,166],["ITAU","NICPRL","0140",16426,70500245.58,17092517,{"3a+":6672,"2-3a":9505,"0":155,"1-90":42,"1-2a":50,"91-180":2},{"G2":12351,"COINCIDENTES":3116,"G1":953,"C1":2,"M":2,"Mundo Z":1,"<500":1},461,95861.53,54,11946.18,294,266,109,65310.15,72,293572.19,594,2676914.84,65,0,16948,72968188.52,16924,72967334.9,63,39],["NOVERDE","NVCPES","0140",34948,338697021.46,24471112,{"3a+":5091,"2-3a":14213,"1-2a":10403,"181-360":4718,"0":412,"1-90":111},{"G2":11101,"COINCIDENTES":6658,"G1":17187,"C1":2},740,200914.26,150,36940.55,687,622,197,229959.02,119,1095619.16,738,7509909.64,212,0,35567,345517748.37,35511,345428751.4,104,48],["SUPER SIM","NSPSIM","0140",43809,92032564.52,21103577,{"1-2a":41472,"1-90":214,"0":519,"2-3a":1603,"181-360":1},{"G1":36624,"COINCIDENTES":6851,"<500":5,"G2":329},432,65903.27,196,29122.24,944,826,262,197380.9,123,245474.79,1599,3527085.17,311,0,45285,95424613.98,45282,95545441.86,107,104],["NÃO MAPEADO","DESEMP","0140",14,54984.4,740,{"1-90":7,"0":4,"91-180":3},{"Mundo Z":14},20,3559.65,4,535.74,14,14,10,2792.9,0,0.0,0,0.0,0,0,14,55050.38,14,55110.94,0,0],["QUEROQUERO","NQEMPA","0140",963,5846859.65,876827,{"3a+":158,"2-3a":645,"1-2a":147,"181-360":9,"0":4},{"COINCIDENTES":211,"G2":620,"G1":132},2,637.74,1,264.01,4,4,0,843.55,2,11535.86,36,229502.9,3,0,997,6071842.92,997,6079736.25,2,2],["QUEROQUERO","NQCPES","0140",3364,16759135.02,2852834,{"2-3a":1990,"1-2a":917,"1-90":8,"3a+":421,"181-360":19,"0":9},{"G2":1992,"COINCIDENTES":524,"G1":848},8,716.27,4,397.26,24,21,8,3963.66,12,56793.74,70,366170.16,21,0,3422,17088622.4,3417,17086246.78,10,5],["QUEROQUERO","NQCARD","0140",3180,6898895.95,2669724,{"2-3a":1950,"3a+":360,"1-2a":804,"181-360":66},{"COINCIDENTES":746,"G2":1720,"G1":714},0,0.0,0,0.0,11,11,4,4193.71,14,28853.87,118,268796.61,23,0,3284,7147117.37,3279,7146409.82,13,8],["QUEROQUERO","NQRCAR","0140",10,9566.0,6,{"0":9,"1-90":1},{"G2":2,"G1":8},1,26.09,1,26.09,10,9,1,691.44,0,0.0,0,0.0,0,0,10,9577.48,10,9588.02,0,0],["BV","NOVEIL","0140",124,6880290.6,104997,{"2-3a":106,"1-2a":17,"3a+":1},{"COINCIDENTES":124},16,2734.56,0,0.0,1,1,1,12800.0,0,0.0,4,233042.1,0,0,128,7121589.05,128,7129422.8,0,0],["BV","NORVEI","0140",17,937652.65,11755,{"0":4,"1-2a":3,"2-3a":10},{"COINCIDENTES":17},50,53553.11,0,0.0,6,6,2,5879.16,0,0.0,0,0.0,0,0,17,938777.83,17,939810.49,0,0],["PAN","DESREN","0140",14,19079.75,135,{"0":9,"1-90":5},{"G1":14},30,4670.18,5,901.74,13,11,5,2026.86,0,0.0,0,0.0,0,0,14,19102.65,14,19123.66,0,0],["INTER","NTCARD","0140",8596,83110430.61,10063954,{"3a+":5764,"2-3a":362,"1-2a":2470},{"COINCIDENTES":6246,"G1":2336,"G2":14},7,2330.26,0,0.0,15,15,6,5627.96,39,358217.94,174,1766435.05,42,0,8731,84618380.24,8709,84520991.0,34,12],["INTER","NTRCAR","0140",96,552649.32,24693,{"0":49,"1-2a":33,"1-90":5,"2-3a":9},{"COINCIDENTES":32,"G1":58,"Prescrito":1,"M":1,"G2":4},189,30155.95,21,2356.58,87,85,38,14133.23,0,0.0,3,18133.81,0,0,99,571446.31,99,572074.9,0,0],["NUBANK","NNRDES","0140",84,177978.82,28224,{"1-2a":35,"181-360":47,"91-180":2},{"G2":11,"COINCIDENTES":66,"G1":7},0,0.0,0,0.0,0,0,0,0.0,0,0.0,1,2224.74,0,0,85,180417.13,85,180615.59,0,0],["MERCADO PAGO","NMCARD","0140",75937,502420402.32,54205538,{"1-2a":41493,"2-3a":34268,"3a+":176},{"G1":67705,"COINCIDENTES":8138,"G2":94},0,0.0,0,0.0,105,105,29,67630.1,346,2174771.01,2835,19695009.45,532,0,78426,520543545.24,78309,520502483.23,301,184],["MERCADO PAGO","NMRCAR","0140",98,471835.46,0,{"0":98},{"G1":89,"COINCIDENTES":9},2,150.67,2,150.67,98,98,0,21111.47,0,0.0,1,5055.38,0,0,99,477457.04,99,477982.24,0,0],["PAN","NAVEIL","0140",543,32750784.54,608455,{"3a+":343,"2-3a":200},{"COINCIDENTES":543},4,1859.97,0,0.0,7,7,3,16520.58,1,57298.79,20,1266604.93,2,0,562,33999391.62,562,34042822.4,1,1],["PAN","NARVEI","0140",26,677946.29,6788,{"2-3a":4,"1-2a":6,"0":13,"1-90":3},{"COINCIDENTES":15,"A1":10,"C1":1},211,181047.26,18,19421.07,21,19,6,17811.0,0,0.0,0,0.0,0,0,26,678759.83,26,679506.47,0,0],["NEON","NNCARD","0140",56637,375332035.76,64728178,{"3a+":32026,"2-3a":24611},{"COINCIDENTES":20457,"G2":36180},10,714.47,0,0.0,67,66,14,20214.31,140,881387.8,2104,14640315.23,395,0,58601,389541361.63,58617,390161376.73,121,137],["NEON","NNRCAR","0140",717,3192235.52,77143,{"0":475,"1-2a":122,"2-3a":9,"1-90":110,"181-360":1},{"COINCIDENTES":110,"G1":451,"G2":152,"C1":4},1321,156266.58,199,21864.89,669,609,199,82635.77,2,8459.2,14,65447.51,3,0,729,3253054.51,727,3248173.67,2,0],["SANTANDER","NDVEIL","0140",54,2623412.93,77314,{"3a+":54},{"COINCIDENTES":54},6,2377.64,0,0.0,2,2,0,5600.66,0,0.0,1,51010.81,0,0,55,2677571.84,55,2680517.17,0,0],["PAN","NARDES","0140",32188,95047389.59,29749335,{"2-3a":30525,"3a+":764,"1-2a":222,"0":543,"1-90":132,"181-360":1,"91-180":1},{"COINCIDENTES":3265,"G2":25444,"G1":3473,"C1":6},1409,53406.67,122,13183.03,920,851,259,121941.98,85,238445.28,664,2058749.85,207,0,32767,96981751.03,32736,97014165.96,74,43],["NÃO MAPEADO","NLMAIS","0140",1517,6603519.59,1665672,{"3a+":1517},{"G1":860,"G2":155,"COINCIDENTES":501,"Mundo Z":1},0,0.0,0,0.0,0,0,0,0.0,7,28947.53,56,255957.12,11,0,1566,6838453.4,1563,6834875.52,6,3],["ITAU","NIEMPA","0140",3361,14650427.78,3907608,{"2-3a":1122,"3a+":2198,"0":32,"1-2a":6,"1-90":3},{"G1":237,"COINCIDENTES":1296,"G2":1827,"M":1},140,16883.35,14,1731.49,51,49,17,6949.14,11,45551.02,71,324959.65,16,0,3421,14947416.92,3417,14949474.55,9,5],["ITAU","NICESP","0140",4593,10885466.08,5782985,{"3a+":3795,"2-3a":798},{"COINCIDENTES":2874,"G2":1656,"G1":63},0,0.0,0,0.0,4,4,0,173.13,15,33772.67,168,418070.15,20,0,4746,11282826.12,4744,11293341.22,13,11],["BRADESCO","NBCESP","0140",15,65470.12,24872,{"3a+":15},{"COINCIDENTES":13,"G2":1,"G1":1},0,0.0,0,0.0,0,0,0,0.0,0,0.0,0,0.0,0,0,15,65548.68,15,65620.78,0,0],["BRADESCO","NBCARD","0140",1530,12705440.44,2158891,{"3a+":1526,"2-3a":4},{"COINCIDENTES":1516,"G2":14},9,1063.14,0,0.0,5,5,4,982.16,3,23667.0,56,488287.51,11,0,1583,13185307.48,1583,13202302.58,3,3],["BRADESCO","NBRCAR","0140",23,136806.03,8202,{"2-3a":7,"1-90":1,"0":11,"1-2a":4},{"G2":2,"G1":13,"M":1,"COINCIDENTES":7},47,10936.59,3,554.19,19,18,8,3696.3,0,0.0,0,0.0,0,0,23,136970.2,23,137120.87,0,0],["BRADESCO","NBCPES","0140",66,353600.75,104743,{"3a+":62,"2-3a":2,"1-2a":2},{"G1":9,"COINCIDENTES":56,"G2":1},10,668.23,0,0.0,3,3,3,272.87,0,0.0,2,11250.93,0,0,68,365276.0,68,365677.8,0,0],["BRADESCO","NBRCES","0140",2,3033.93,567,{"1-2a":1,"0":1},{"G1":2},0,0.0,0,0.0,2,2,1,156.56,0,0.0,0,0.0,0,0,2,3037.57,2,3040.91,0,0],["BRADESCO","NBCONS","0140",19,192814.8,32480,{"3a+":19},{"COINCIDENTES":18,"G1":1},0,0.0,0,0.0,0,0,0,0.0,0,0.0,0,0.0,0,0,19,193046.18,19,193258.53,0,0],["INTER","NTRDES","0140",7001,22226489.17,6177487,{"2-3a":6746,"1-2a":67,"0":140,"1-90":48},{"G1":1182,"G2":5082,"COINCIDENTES":736,"C1":1},133,16238.39,37,4609.98,242,219,73,32486.58,25,75400.53,158,526692.55,32,0,7134,22704452.98,7123,22699743.88,22,11],["SANTANDER","NDEMPA","0140",18446,93359570.43,21584198,{"3a+":14476,"2-3a":3718,"0":192,"1-90":42,"1-2a":17,"91-180":1},{"G2":15136,"COINCIDENTES":3105,"G1":204,"M":1},570,85478.5,49,10264.33,293,267,65,66743.32,51,245216.91,641,3406465.3,79,0,19036,96632850.3,19034,96750787.28,44,42],["SANTANDER","NDCRED","0140",34538,122711310.21,40070802,{"3a+":27558,"2-3a":6818,"0":133,"1-2a":6,"1-90":22,"91-180":1},{"G2":28068,"COINCIDENTES":6323,"G1":145,"C1":2},449,66334.02,45,7254.18,220,208,50,43826.7,158,533295.72,794,2962082.9,229,0,35174,125287350.96,35089,125156742.72,137,52],["SANTANDER","NDCONS","0140",4951,50889474.6,5666427,{"3a+":3697,"2-3a":1221,"0":27,"1-90":5,"1-2a":1},{"G2":4274,"COINCIDENTES":646,"M":3,"G1":28},201,46504.84,9,2752.31,40,38,6,15451.97,15,146470.41,170,1834734.64,34,0,5106,52638806.2,5104,52688485.99,13,11],["SANTANDER","NDCANC","0140",54781,168187771.0,64272408,{"3a+":40548,"2-3a":14233},{"G2":41806,"COINCIDENTES":12924,"G1":51},155,23974.06,0,0.0,109,109,31,24219.51,180,525001.53,1290,4158564.75,242,0,55891,172023159.55,55819,172028173.96,156,84],["SANTANDER","NDRCAN","0140",301,1100461.37,6703,{"0":239,"1-90":49,"1-2a":13},{"G2":100,"COINCIDENTES":39,"G1":158,"M":4},391,50106.45,73,10219.18,298,273,59,35912.03,1,3473.22,10,38388.19,1,0,310,1136696.89,309,1134474.04,1,0],["BRADESCO","NBEMPA","0140",217,2757928.34,308045,{"3a+":208,"1-2a":5,"2-3a":4},{"COINCIDENTES":202,"G1":7,"G2":8},9,693.35,0,0.0,4,4,4,4424.63,0,0.0,5,66724.07,1,0,222,2827961.92,222,2831072.68,0,0],["BTG","NLMAIS","0140",45,95478.99,47250,{"2-3a":45},{"COINCIDENTES":20,"G1":23,"G2":1,"Mundo Z":1},0,0.0,0,0.0,0,0,0,0.0,0,0.0,1,2227.84,0,0,46,97821.4,46,97929.0,0,0],["PORTOBANK","NPCARD","0140",25,26805.52,39202,{"3a+":24,"2-3a":1},{"COINCIDENTES":24,"G2":1},2,1027.39,0,0.0,1,1,1,1027.38,0,0.0,0,0.0,0,0,25,26837.69,25,26867.21,0,0],["PORTOBANK","NPRCAR","0140",10,106742.66,7019,{"2-3a":5,"1-2a":5},{"G2":4,"G1":6},1,63.68,0,0.0,9,9,9,2953.97,0,0.0,0,0.0,0,0,10,106870.75,10,106988.31,0,0],["SANTANDER","NDHERD","0140",2339,14833822.05,1128971,{"1-2a":2334,"0":2,"181-360":2,"91-180":1},{"G1":2249,"COINCIDENTES":90},2173,169163.38,13,1088.75,15,15,8,3109.06,11,66273.38,60,399542.88,16,0,2388,15184892.14,2383,15174008.04,9,4],["NÃO MAPEADO","NRECPP","0144",40,423352.6,268,{"1-90":12,"0":28},{"C2":40},176,84458.13,18,5625.58,40,31,12,15757.53,3,30163.87,0,0.0,0,0,37,393696.75,35,374020.57,2,0],["BTG","NRECPP","0144",16,207809.22,48,{"1-90":7,"0":9},{"C2":15,"C1":1},85,31839.82,4,1623.51,16,12,7,6118.58,1,12338.67,0,0.0,0,0,15,195719.92,15,195935.21,0,0],["NÃO MAPEADO","NCPPES","0144",7,275977.13,10621,{"3a+":7},{"C2":7},79,17177.65,0,0.0,0,0,0,0.0,0,0.0,0,0.0,0,0,7,276308.3,7,276612.24,0,0],["BTG","NCPPES","0144",3,261115.4,4129,{"3a+":3},{"C2":3},60,13189.73,0,0.0,0,0,0,0.0,0,0.0,0,0.0,0,0,3,261428.74,3,261716.31,0,0],["BTG","NRECP","0144",3,27315.8,27,{"0":1,"1-90":2},{"C2":3},1,132.61,1,132.61,3,1,2,651.42,0,0.0,0,0.0,0,0,3,27348.58,3,27378.66,0,0],["NÃO MAPEADO","NRECP","0144",11,44166.12,2537,{"1-90":3,"0":6,"3a+":1,"2-3a":1},{"C2":8,"C3":3},13,860.24,3,208.56,9,8,4,1547.0,1,3814.35,0,0.0,0,0,10,40404.77,10,40449.22,0,0],["NÃO MAPEADO","NCPPAR","0144",34,83782.94,26289,{"3a+":1,"2-3a":17,"1-2a":16},{"C2":1,"C3":33},31,1956.4,0,0.0,29,29,29,2976.86,1,2340.99,0,0.0,0,0,33,81542.49,32,79291.19,1,0],["NÃO MAPEADO","NRECAR","0144",184,1856265.7,5423,{"0":121,"1-90":58,"2-3a":1,"1-2a":3,"3a+":1},{"C2":177,"C3":6,"C1":1},689,148317.98,79,19057.25,179,147,57,44688.19,18,172511.65,0,0.0,5,0,166,1685981.57,151,1544076.44,15,0],["BTG","NRECAR","0144",72,471398.52,1555,{"0":48,"1-90":23,"3a+":1},{"C2":71,"C1":1},280,94617.04,30,9248.45,70,51,23,17208.87,7,43538.89,0,0.0,2,0,65,428425.31,59,391577.53,6,0],["BTG","NCARDC","0144",4,87278.81,5217,{"3a+":4},{"C2":4},0,0.0,0,0.0,0,0,0,0.0,0,0.0,0,0.0,0,0,4,87383.54,4,87479.66,0,0],["NÃO MAPEADO","NCARDC","0144",20,1099166.54,28560,{"3a+":20},{"C2":20},0,0.0,0,0.0,0,0,0,0.0,2,104420.82,0,0.0,0,0,18,996064.72,17,944949.98,1,0],["NÃO MAPEADO","NLMAIS","0144",12,34268.56,13176,{"3a+":12},{"C3":12},0,0.0,0,0.0,0,0,0,0.0,0,0.0,0,0.0,0,0,12,34309.68,12,34347.42,0,0],["ITAU","NICPRC","0144",2233,6396426.96,94825,{"1-90":735,"0":1417,"1-2a":25,"91-180":3,"2-3a":14,"3a+":39},{"C2":2179,"C3":48,"C1":6},4606,516658.05,771,81540.25,2131,1705,719,230832.79,157,427240.07,7,21054.07,54,7,2076,5977865.18,1952,5648578.29,127,8],["ITAU","NICARD","0144",65,486414.64,87463,{"3a+":57,"2-3a":8},{"C2":61,"C3":1,"C1":3},2,98.19,0,0.0,3,3,1,665.89,7,49763.96,0,0.0,1,0,58,437234.38,52,395060.52,6,0],["ITAU","NICPRL","0144",949,4247818.16,132250,{"0":534,"1-90":289,"3a+":48,"1-2a":21,"91-180":3,"2-3a":54},{"C2":912,"C3":34,"C1":3},1705,341610.36,283,51485.49,827,654,285,135126.05,60,255137.66,3,14099.71,17,3,889,3998449.29,843,3808584.88,48,4],["ITAU","NICPSC","0144",20,104797.46,5250,{"3a+":3,"1-90":5,"0":11,"2-3a":1},{"C2":19,"C3":1},32,5258.49,5,1061.21,17,12,6,3175.64,1,4977.88,0,0.0,0,0,19,99945.34,18,95077.4,1,0],["ITAU","NIEMPA","0144",243,552933.35,19881,{"1-90":105,"3a+":9,"0":123,"2-3a":5,"1-2a":1},{"C2":232,"C3":9,"C1":2},343,38618.58,63,5116.31,228,172,102,25719.19,25,54041.84,0,0.0,6,0,218,499555.03,198,456871.07,20,0],["ITAU","NIMICR","0144",19,60684.13,1393,{"3a+":1,"1-90":3,"0":15},{"C2":18,"C3":1},38,7280.1,7,1364.53,18,15,3,3311.13,1,3034.21,0,0.0,0,0,18,57722.74,18,57786.24,0,0],["BRADESCO","NBRCAR","0144",106,589345.84,4272,{"0":67,"1-90":34,"1-2a":3,"2-3a":2},{"C2":101,"C3":4,"C1":1},261,42518.94,44,7777.66,95,78,31,18836.84,11,58100.6,0,0.0,2,0,95,531952.46,86,485000.75,9,0],["BRADESCO","NBCARD","0144",2,34380.98,2892,{"3a+":2},{"C2":2},0,0.0,0,0.0,0,0,0,0.0,0,0.0,0,0.0,0,0,2,34422.24,2,34460.1,0,0],["BRADESCO","NBCPES","0144",4,12735.23,1505,{"1-90":2,"3a+":1,"0":1},{"C2":4},6,827.36,0,0.0,3,3,2,640.9,0,0.0,0,0.0,0,0,4,12750.51,4,12764.54,0,0],["BRADESCO","NBRCES","0144",1,1689.31,0,{"0":1},{"C2":1},2,266.45,1,133.22,1,1,0,133.22,0,0.0,0,0.0,0,0,1,1691.34,1,1693.2,0,0],["BRADESCO","NBCONS","0144",7,61508.94,2431,{"0":4,"3a+":1,"2-3a":1,"1-90":1},{"C2":4,"C3":3},5,673.48,1,171.52,5,4,1,1221.79,0,0.0,0,0.0,0,0,7,61582.75,7,61650.49,0,0],["BRADESCO","NBEMPA","0144",44,373292.77,6799,{"1-90":12,"0":27,"1-2a":1,"3a+":4},{"C2":42,"C3":2},131,43799.22,17,5820.48,39,35,12,10518.85,3,24179.19,0,0.0,2,0,41,349561.53,38,325766.86,3,0],["BTG","NLMAIS","0144",7,14761.05,7350,{"2-3a":7},{"C3":7},0,0.0,0,0.0,0,0,0,0.0,0,0.0,0,0.0,0,0,7,14778.76,7,14795.02,0,0],["NOVERDE","NVCPES","0144",726,4556121.13,33730,{"0":462,"1-90":233,"3a+":11,"1-2a":6,"2-3a":12,"181-360":2},{"C2":716,"C1":3,"C3":6,"COINCIDENTES":1},2018,628280.19,296,84733.28,685,549,221,199936.56,44,262322.13,3,19768.29,11,2,683,4306483.34,649,4110399.71,36,4],["INTER","NTRCAR","0144",203,1072007.89,2180,{"0":142,"1-90":60,"2-3a":1},{"C2":201,"C3":2},456,80721.31,72,12264.31,199,165,57,32854.91,19,95318.93,0,0.0,4,0,184,977975.37,169,903799.36,15,0],["INTER","NTCARD","0144",10,106558.46,15018,{"3a+":10},{"C2":10},0,0.0,0,0.0,0,0,0,0.0,0,0.0,0,0.0,0,0,10,106686.33,10,106803.68,0,0],["PORTOBANK","NPRCAR","0144",23,86054.86,666,{"0":13,"1-90":9,"1-2a":1},{"C2":21,"C3":2},25,2676.01,5,658.11,21,18,8,2460.82,1,3554.44,0,0.0,0,0,22,82603.69,21,79140.11,1,0],["ITAU","NICONS","0144",38,271907.58,2920,{"0":24,"3a+":2,"1-90":12},{"C2":38},100,26940.24,10,1964.5,36,33,12,7189.31,4,27190.76,0,0.0,0,0,34,245043.11,30,218121.9,4,0],["PERNAMBUCANAS","NSRCAR","0144",781,1690131.92,14001,{"1-90":282,"0":486,"1-2a":11,"2-3a":2},{"C2":759,"C3":21,"C1":1},1620,177352.7,270,29291.8,764,595,277,83333.46,64,131574.93,2,4544.53,15,2,717,1560801.56,666,1458102.48,52,3],["PERNAMBUCANAS","NSCARD","0144",19,79516.98,28305,{"3a+":19},{"C2":18,"C3":1},0,0.0,0,0.0,0,0,0,0.0,1,3975.85,0,0.0,0,0,18,75636.55,18,75719.75,0,0],["PAN","NACARD","0144",64,859325.61,75013,{"3a+":42,"2-3a":21,"1-2a":1},{"C2":63,"C3":1},0,0.0,0,0.0,1,1,0,64.53,7,89289.3,0,0.0,2,0,57,771067.5,51,695381.99,6,0],["PAN","NARCAR","0144",1062,4207054.26,12151,{"0":738,"1-90":316,"2-3a":3,"1-2a":5},{"C2":1051,"C3":11},2572,395654.88,418,57438.31,1042,853,306,140920.68,72,270962.82,5,20797.58,16,2,993,3954014.6,938,3752963.11,58,5],["PAN","NACPES","0144",791,7703487.4,136067,{"3a+":39,"0":418,"1-90":240,"1-2a":6,"2-3a":88},{"C2":779,"C3":10,"COINCIDENTES":1,"C1":1},1521,319242.23,220,45553.25,656,521,236,132919.45,62,573622.51,2,20451.74,15,2,729,7140082.97,682,6716015.87,50,3],["PAN","NARVEI","0144",512,14637642.26,7056,{"0":322,"1-90":184,"1-2a":6},{"C2":501,"C3":10,"C1":1},1617,1281547.29,197,163364.14,499,389,173,447311.1,53,1439463.45,3,90055.81,14,1,461,13277210.65,421,12214004.81,43,3],["PAN","NAVEIL","0144",4,439034.56,4472,{"3a+":2,"2-3a":2},{"C2":4},0,0.0,0,0.0,0,0,0,0.0,0,0.0,0,0.0,0,0,4,439561.4,4,440044.92,0,0],["NEON","NNRCAR","0144",1115,2746234.76,14720,{"0":721,"1-90":385,"1-2a":8,"2-3a":1},{"C2":1098,"C3":16,"C1":1},2070,234924.14,386,45420.64,1092,881,373,123679.48,104,243343.49,5,12930.7,17,2,1014,2514191.47,934,2331001.27,84,6],["NEON","NNCARD","0144",42,270170.95,51349,{"3a+":30,"2-3a":12},{"C2":41,"C3":1},0,0.0,0,0.0,0,0,0,0.0,4,24444.04,0,0.0,0,0,38,246051.12,34,221877.74,4,0],["SANTANDER","NDRVEI","0144",36,1522755.49,1063,{"1-90":13,"0":21,"91-180":1,"1-2a":1},{"C2":34,"C3":2},116,97060.27,17,18831.7,34,25,14,30344.23,2,80367.65,0,0.0,0,0,34,1444215.15,33,1405619.96,1,0],["SANTANDER","NDVEIL","0144",1,59791.4,1360,{"3a+":1},{"C2":1},0,0.0,0,0.0,0,0,0,0.0,0,0.0,0,0.0,0,0,1,59863.15,1,59929.0,0,0],["PAN","NARDES","0144",2879,4094491.64,93223,{"0":1700,"1-90":1087,"1-2a":42,"2-3a":48,"3a+":1,"91-180":1},{"C2":2814,"C3":60,"C1":5},6376,695597.08,953,101870.79,2748,2147,1043,286703.52,222,299940.36,12,17919.62,42,8,2661,3806006.75,2490,3580722.63,179,14],["BV","NORVEI","0144",135,3943343.6,1088,{"0":82,"1-90":53},{"C2":135},446,405390.07,57,55425.03,132,102,52,133540.13,10,277494.55,0,0.0,3,0,125,3670581.06,117,3452623.06,8,0],["ITAU","NICESP","0144",4,19883.84,5476,{"3a+":4},{"C2":4},0,0.0,0,0.0,0,0,0,0.0,0,0.0,0,0.0,0,0,4,19907.7,4,19929.6,0,0],["INTER","NTRDES","0144",677,872432.94,13436,{"1-90":260,"0":406,"1-2a":5,"2-3a":6},{"C2":669,"C3":7,"C1":1},1433,135776.59,212,20873.16,650,491,248,61785.49,44,53866.61,2,2706.22,15,2,633,819742.12,598,777924.26,35,2],["SUPER SIM","NSPSIM","0144",669,1020286.11,21621,{"1-90":240,"0":397,"2-3a":3,"1-2a":29},{"C2":663,"C1":1,"C3":5},579,55999.08,146,13942.3,633,481,232,62341.7,55,79686.02,3,4804.04,10,2,615,943578.29,572,882773.77,45,4],["SANTANDER","NDEMPA","0144",620,2812745.43,41780,{"0":362,"1-90":229,"3a+":26,"2-3a":2,"1-2a":1},{"C2":618,"C3":2},1354,196180.22,204,29202.43,587,463,224,82804.76,63,271520.67,2,9527.04,13,2,557,2545053.72,506,2328277.67,51,1],["SANTANDER","NDCRED","0144",363,1232986.34,64596,{"1-90":125,"0":187,"3a+":44,"2-3a":5,"1-2a":2},{"C2":360,"C3":3},456,54578.0,89,12066.52,311,245,121,38508.78,21,67763.3,2,7132.98,10,1,343,1170438.95,327,1120436.92,17,1],["SANTANDER","NDCONS","0144",50,430466.11,8429,{"1-90":20,"0":24,"3a+":6},{"C2":50},88,13462.88,10,1357.52,42,33,19,8211.97,5,40894.28,0,0.0,1,0,45,390088.39,41,357802.06,4,0],["SANTANDER","NDRCAN","0144",489,1175620.76,6615,{"1-90":218,"0":267,"91-180":1,"1-2a":3},{"C2":486,"C3":3},696,66963.95,138,14265.41,479,346,210,39374.78,44,100492.74,3,7573.02,8,1,447,1081707.65,415,1010533.14,35,3],["SANTANDER","NDCANC","0144",33,124954.49,44161,{"3a+":31,"2-3a":2},{"C2":33},0,0.0,0,0.0,0,0,0,0.0,1,3597.17,0,0.0,0,0,32,121507.27,31,118043.75,1,0],["SANTANDER","NDHERD","0144",2,9694.5,533,{"1-90":1,"1-2a":1},{"C2":2},17,520.68,2,61.26,0,0,0,0.0,0,0.0,0,0.0,0,0,2,9706.13,2,9716.81,0,0],["NÃO MAPEADO","DESREN","0144",26,41872.02,314,{"0":15,"1-90":11},{"C2":26},71,7858.44,9,790.45,26,20,11,3190.93,1,1529.94,0,0.0,0,0,25,40392.33,24,38906.82,1,0],["PAN","DESREN","0144",163,205817.29,1394,{"0":109,"1-90":54},{"C2":162,"C3":1},460,52052.5,71,9366.72,161,126,52,18823.59,12,14394.58,0,0.0,3,0,151,191669.69,141,179885.04,10,0],["BTG","DESREN","0144",6,7929.94,82,{"0":3,"1-90":3},{"C2":6},18,1750.89,2,147.26,6,4,3,637.16,0,0.0,0,0.0,0,0,6,7939.46,6,7948.19,0,0],["BV","NOVEIL","0144",1,49175.78,858,{"2-3a":1},{"C2":1},0,0.0,0,0.0,0,0,0,0.0,0,0.0,0,0.0,0,0,1,49234.79,1,49288.95,0,0],["NUBANK","NNRDES","0144",5,7026.06,1018,{"1-90":2,"181-360":2,"1-2a":1},{"C2":4,"C3":1},0,0.0,0,0.0,2,0,2,261.57,0,0.0,0,0.0,0,0,5,7034.49,5,7042.23,0,0],["MERCADO PAGO","NMCARD","0144",21,193827.92,17531,{"1-2a":9,"2-3a":8,"3a+":4},{"C2":19,"C3":2},0,0.0,0,0.0,0,0,0,0.0,2,17536.81,0,0.0,0,0,19,176523.7,18,167949.47,1,0],["MERCADO PAGO","NMRCAR","0144",3,3576.26,6,{"1-90":1,"0":2},{"C2":3},1,167.63,1,167.63,3,2,1,637.16,0,0.0,0,0.0,0,0,3,3580.55,3,3584.49,0,0],["PERNAMBUCANAS","NSCARD","0900",74840,288236668.35,109532225,{"3a+":74809,"2-3a":31},{"G3":37854,"G4":36289,"COINCIDENTES":529,"Prescrito":132,"G2":27,"G1":5,"M":4},39,3330.26,0,0.0,161,161,47,34105.5,1872,6849279.68,52,210284.9,865,10,73010,281905043.85,71428,276440970.17,1615,40],["PERNAMBUCANAS","NSRCAR","0900",620,2087064.86,20556,{"0":351,"1-90":171,"91-180":98},{"C1":232,"G3":183,"G4":113,"G1":70,"C2":7,"G2":13,"C3":1,"COINCIDENTES":1},511,44160.12,76,6661.9,594,566,243,50386.21,13,41572.99,0,0.0,5,0,607,2047996.35,596,2015072.0,11,0],["NEON","NNCARD","0900",85785,362451979.03,115558961,{"3a+":77969,"2-3a":7816},{"G3":40153,"G4":19993,"Prescrito":1101,"G2":23517,"COINCIDENTES":974,"M":46,"G1":1},22,1810.48,0,0.0,154,154,42,53608.12,1354,5434772.75,59,261746.23,534,11,84479,357667418.56,83348,353538494.78,1168,45],["NEON","NNRCAR","0900",807,2689464.4,22297,{"0":503,"91-180":96,"1-90":208},{"G4":87,"C1":267,"G3":193,"G2":141,"C2":15,"Prescrito":2,"G1":96,"C3":2,"COINCIDENTES":4},652,67961.08,128,13624.51,775,738,273,69144.51,21,66486.76,0,0.0,7,0,786,2626205.0,768,2572105.17,18,0],["PAN","NARDES","0900",6406,17141508.98,6288501,{"2-3a":5993,"3a+":296,"0":96,"1-90":16,"91-180":4,"1-2a":1},{"G2":6288,"COINCIDENTES":68,"G1":36,"C1":12,"C2":2},313,2746.49,15,1440.02,149,145,28,17246.96,112,284710.67,4,11238.58,74,0,6298,16888606.7,6204,16669033.32,97,3],["NOVERDE","NVCPES","0900",2557,33340035.48,2330004,{"0":28,"2-3a":2498,"1-90":7,"3a+":24},{"G2":2277,"G1":120,"COINCIDENTES":152,"C1":3,"G3":3,"C2":1,"G4":1},42,26395.03,4,1699.66,35,31,5,12857.18,48,594566.14,1,13690.67,22,0,2510,32799168.05,2469,32327388.56,41,0]],"uniq":{"NÃO MAPEADO":7536,"BTG":1337,"PAN":126693,"ITAU":175345,"PERNAMBUCANAS":86462,"NOVERDE":36713,"SUPER SIM":44478,"QUEROQUERO":7517,"BV":277,"INTER":16583,"NUBANK":89,"MERCADO PAGO":76059,"NEON":138496,"SANTANDER":117004,"BRADESCO":2036,"PORTOBANK":58},"cat":{"NCPPES":null,"NRECPP":null,"NRECP":null,"NCPPAR":null,"NCPPRE":null,"NEMPAC":null,"NRECAR":null,"NCARDC":"Cartão","NACARD":"Cartão","NACPES":"Crédito pessoal","NARCAR":null,"NICPRC":null,"NSCARD":"Cartão","NSRCAR":null,"NIMICR":null,"NICPSC":null,"NICONS":"Consignado","NICARD":"Cartão","NICPRL":null,"NVCPES":"Crédito pessoal","NSPSIM":null,"DESEMP":null,"NQEMPA":null,"NQCPES":"Crédito pessoal","NQCARD":"Cartão","NQRCAR":null,"NOVEIL":"Financiamento de veículo","NORVEI":"Financiamento de veículo","DESREN":null,"NTCARD":"Cartão","NTRCAR":null,"NNRDES":null,"NMCARD":"Cartão","NMRCAR":null,"NAVEIL":"Financiamento de veículo","NARVEI":"Financiamento de veículo","NNCARD":"Cartão","NNRCAR":null,"NDVEIL":"Financiamento de veículo","NARDES":null,"NLMAIS":null,"NIEMPA":null,"NICESP":"Cheque especial","NBCESP":"Cheque especial","NBCARD":"Cartão","NBRCAR":null,"NBCPES":"Crédito pessoal","NBRCES":"Cheque especial","NBCONS":"Consignado","NTRDES":null,"NDEMPA":null,"NDCRED":null,"NDCONS":"Consignado","NDCANC":null,"NDRCAN":null,"NBEMPA":null,"NPCARD":"Cartão","NPRCAR":null,"NDHERD":null,"NDRVEI":"Financiamento de veículo"},"unmapped":{"NPL Consumer":[7522,242353814.04],"EMPACOTAMENTO DESENROLA 2.0 ARC":[14,54984.4]}};
+var EPS = ['0140', '0144', '0900'];
+var NOME = { all: 'Consolidado ARC4', '0140': '0140 · CLEAN', '0144': '0144 · CAÍDOS', '0900': '0900 · DESAFIANTE' };
+var BK = [['0', 'Em dia'], ['1-90', '1 a 90 dias'], ['91-180', '91 a 180 dias'], ['181-360', '181 a 360 dias'], ['1-2a', '1 a 2 anos'], ['2-3a', '2 a 3 anos'], ['3a+', 'Mais de 3 anos']];
+var TOT = { unicos: 836683, posicoes: 847061, saldoUnico: 5608952396.19 };
+var USER = 'Rafael Costa (rafael.costa)';
+function nf(n) { return Math.round(n).toLocaleString('pt-BR'); }
+function money(v) {
+  var a = Math.abs(v), sg = v < 0 ? '−' : '';
+  if (a >= 1e9) return sg + 'R$ ' + (a / 1e9).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' bi';
+  if (a >= 1e6) return sg + 'R$ ' + (a / 1e6).toLocaleString('pt-BR', { minimumFractionDigits: 1, maximumFractionDigits: 1 }) + ' mi';
+  if (a >= 1e3) return sg + 'R$ ' + (a / 1e3).toLocaleString('pt-BR', { minimumFractionDigits: 1, maximumFractionDigits: 1 }) + ' mil';
+  return sg + 'R$ ' + a.toLocaleString('pt-BR', { maximumFractionDigits: 0 });
+}
+function brl(v) { return 'R$ ' + Math.round(v).toLocaleString('pt-BR'); }
+function sgn(n, f) { return (n > 0 ? '+' : (n < 0 ? '−' : '')) + f(Math.abs(n)); }
+function pc(x, d) { return (x * 100).toLocaleString('pt-BR', { maximumFractionDigits: d === undefined ? 1 : d, minimumFractionDigits: d === undefined ? 1 : d }) + '%'; }
+function agg(rs) {
+  var o = { n: 0, s: 0, atr: 0, pn: 0, ps: 0, ppn: 0, pps: 0, ent: 0, entS: 0, sai: 0, saiS: 0, grp: 0, trf: 0, pag: 0, pagV: 0, pagN: 0, pagNV: 0, ac: 0, acA: 0, acT: 0, acP: 0, ent0: 0, sai0: 0, b: {}, g: {}, e: {} };
+  rs.forEach(function (r) {
+    o.n += r[3]; o.s += r[4]; o.atr += r[5]; o.pagN += r[10]; o.pagNV += r[11]; o.pag += r[8]; o.pagV += r[9]; o.ac += r[12]; o.acA += r[13]; o.acT += r[14]; o.acP += r[15];
+    o.ent += r[16]; o.entS += r[17]; o.sai += r[18]; o.saiS += r[19]; o.grp += r[20]; o.trf += r[21]; o.pn += r[22]; o.ps += r[23]; o.ppn += r[24]; o.pps += r[25]; o.ent0 += r[26]; o.sai0 += r[27];
+    for (var k in r[6]) o.b[k] = (o.b[k] || 0) + r[6][k];
+    for (var g in r[7]) o.g[g] = (o.g[g] || 0) + r[7][g];
+    o.e[r[2]] = (o.e[r[2]] || 0) + r[3];
+  });
+  return o;
+}
+function catOf(p) { var c = D.cat[p]; return c ? { t: c, cls: 'chip' } : { t: 'Não mapeado', cls: 'chip chip-warn' }; }
+function rng(seed) { var x = seed; return function () { x = (x * 1103515245 + 12345) % 2147483648; return x / 2147483648; }; }
+function hash(s) { var h = 7; for (var i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) % 2147483647; return h; }
+function csv(name, filters, header, lines, self) {
+  var meta = '# Extraído em 19/11/2026 ' + new Date().toTimeString().slice(0, 5) + ' por ' + USER + '\n# Filtros: ' + filters + '\n# Origem: carga 19/11/2026 (variações contra 18/11 simuladas)\n';
+  var body = header.join(';') + '\n' + lines.map(function (l) { return l.join(';'); }).join('\n');
+  try { var b = new Blob(['﻿' + meta + body], { type: 'text/csv;charset=utf-8' }); var a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = name; a.click(); self.flash('Exportação gerada e registrada na auditoria'); }
+  catch (e) { self.flash('Não foi possível gerar o arquivo aqui'); }
+}
+
+class Component extends DCLogic {
+  constructor(props) { super(props); this.state = { tab: 'inst', lv: 'home', inst: null, prod: null, eps: 'all', sort: 's', a: '18', batInst: '', batInd: 'inc', toast: null }; }
+  flash(m) { var self = this; clearTimeout(this._t); this.setState({ toast: m }); this._t = setTimeout(function () { self.setState({ toast: null }); }, 3500); }
+  renderVals() {
+    var self = this, s = this.state;
+    var base = D.rows.filter(function (r) { return s.eps === 'all' || r[2] === s.eps; });
+    var all = agg(base);
+    var insts = {}; base.forEach(function (r) { (insts[r[0]] = insts[r[0]] || []).push(r); });
+    var totS = all.s;
+
+    function line(name, rs, isInst, denom) {
+      var a = agg(rs), dn = a.n - a.pn, ds = a.s - a.ps;
+      var n = isInst && s.eps === 'all' && D.uniq[name] ? D.uniq[name] : a.n;
+      return { nome: name, a: a, nRaw: n, n: nf(n), s: money(a.s), avg: brl(a.s / a.n), share: pc(a.s / denom), shareRaw: a.s / denom,
+        dn: sgn(dn, nf), dnCls: dn >= 0 ? 'mono num pos' : 'mono num neg', dnRaw: dn, ds: sgn(ds, money), dsCls: ds >= 0 ? 'mono num pos' : 'mono num neg', dsRaw: ds,
+        mov: '+' + nf(a.ent) + ' / −' + nf(a.sai) + ' / ' + sgn(a.ent - a.sai, nf), movRaw: a.ent + a.sai };
+    }
+    function sortIt(list) {
+      var k = s.sort;
+      return list.sort(function (x, y) { return k === 'n' ? y.nRaw - x.nRaw : k === 'v' ? Math.abs(y.dsRaw) - Math.abs(x.dsRaw) : k === 'm' ? y.movRaw - x.movRaw : y.a.s - x.a.s; });
+    }
+    var instList = sortIt(Object.keys(insts).map(function (i) { return line(i, insts[i], true, totS); }));
+    var maxShare = Math.max.apply(null, instList.map(function (x) { return x.shareRaw; }));
+    var topVar = instList.reduce(function (b, x) { return Math.abs(x.dsRaw) > Math.abs(b.dsRaw) ? x : b; }, instList[0]);
+    var topShare = instList.reduce(function (b, x) { return x.shareRaw > b.shareRaw ? x : b; }, instList[0]);
+    var instRows = instList.map(function (x) {
+      var un = x.nome === 'NÃO MAPEADO';
+      return Object.assign({}, x, { w: (x.shareRaw / maxShare * 100).toFixed(1), topShare: x === topShare, topVar: x === topVar && x !== topShare, unmapped: un, cls: un ? 'lrow lwarn' : 'lrow',
+        open: function () { self.setState({ lv: 'inst', inst: x.nome, prod: null }); } });
+    });
+
+    var dnAll = all.n - all.pn, dsAll = all.s - all.ps;
+    var KP = s.eps === 'all' ? [
+      ['k1', 'Contratos únicos', nf(TOT.unicos), sgn(dnAll, nf) + ' vs 18/11', 'Contratos distintos por contrato_original.', 'Um contrato em mais de uma EPS conta uma vez.', 'Carga 19/11/2026', 'REMESSA_ARC4U (3 EPS)'],
+      ['k2', 'Posições por EPS', nf(TOT.posicoes), '10.378 contratos em 2 EPS', 'Linhas de contrato em cada remessa.', 'Soma das remessas 0140, 0144 e 0900.', 'Carga 19/11/2026', 'REMESSA_ARC4U'],
+      ['k3', 'Saldo total', money(TOT.saldoUnico), sgn(dsAll, money) + ' vs 18/11', 'Soma de valor_curva.', 'Contratos coincidentes entram uma vez.', 'Carga 19/11/2026', 'REMESSA_ARC4U.valor_curva'],
+      ['k4', 'Saldo médio', brl(TOT.saldoUnico / TOT.unicos), 'por contrato único', 'Saldo total dividido pelos contratos únicos.', 'valor_curva ÷ contratos únicos.', 'Carga 19/11/2026', 'REMESSA_ARC4U'],
+      ['k5', 'Pago em novembro', money(all.pagNV), nf(all.pagN) + ' pagamentos', 'Valor efetivamente pago.', 'Soma de valor_pago com data em 11/2026.', '01/11 a 18/11/2026', 'PAGAMENTO (3 EPS)']
+    ] : [
+      ['k1', 'Contratos', nf(all.n), sgn(dnAll, nf) + ' vs 18/11', 'Contratos da remessa desta EPS.', 'Linhas de REMESSA_ARC4U da EPS.', 'Carga 19/11/2026', 'REMESSA_ARC4U_' + s.eps],
+      ['k2', 'Instituições', nf(Object.keys(insts).length), 'com contratos nesta EPS', 'Instituições normalizadas com ao menos um contrato.', 'Dicionário de instituições aplicado a nome_estrategia.', 'Carga 19/11/2026', 'REMESSA_ARC4U_' + s.eps],
+      ['k3', 'Saldo total', money(all.s), sgn(dsAll, money) + ' vs 18/11', 'Soma de valor_curva.', 'Soma simples da EPS.', 'Carga 19/11/2026', 'REMESSA_ARC4U_' + s.eps + '.valor_curva'],
+      ['k4', 'Saldo médio', brl(all.s / all.n), 'por contrato', 'Saldo dividido por contratos.', 'valor_curva ÷ contratos.', 'Carga 19/11/2026', 'REMESSA_ARC4U_' + s.eps],
+      ['k5', 'Pago em novembro', money(all.pagNV), nf(all.pagN) + ' pagamentos', 'Valor efetivamente pago.', 'Soma de valor_pago com data em 11/2026.', '01/11 a 18/11/2026', 'PAGAMENTO_' + s.eps]
+    ];
+    var kpis = KP.map(function (k, i) { return { id: k[0], nome: k[1], v: k[2], d: k[3], dCls: 'delta', def: k[4], regra: k[5], per: k[6], orig: k[7], bcls: i >= 3 ? 'bubble bubble-r' : 'bubble bubble-l' }; });
+
+    var curInst = s.inst && insts[s.inst] ? s.inst : null;
+    var instRs = curInst ? insts[curInst] : [];
+    var ia = agg(instRs);
+    var iUniq = s.eps === 'all' && D.uniq[curInst] ? D.uniq[curInst] : ia.n;
+    var instMetrics = curInst ? [
+      { k: s.eps === 'all' ? 'Contratos únicos' : 'Contratos', v: nf(iUniq) }, { k: 'Saldo total', v: money(ia.s) }, { k: 'Saldo médio', v: brl(ia.s / ia.n) }, { k: 'Participação na carteira', v: pc(ia.s / totS) },
+      { k: 'Δ contratos vs 18/11', v: sgn(ia.n - ia.pn, nf) }, { k: 'Δ saldo vs 18/11', v: sgn(ia.s - ia.ps, money) }, { k: 'Entradas / saídas', v: nf(ia.ent) + ' / ' + nf(ia.sai) }, { k: 'Movimentação líquida', v: sgn(ia.ent - ia.sai, nf) }
+    ] : [];
+    var prods = {}; instRs.forEach(function (r) { (prods[r[1]] = prods[r[1]] || []).push(r); });
+    var prodList = sortIt(Object.keys(prods).map(function (p) { return line(p, prods[p], false, ia.s || 1); }));
+    var pmax = Math.max.apply(null, prodList.map(function (x) { return x.shareRaw; }).concat([0.0001]));
+    var prodRows = prodList.map(function (x) { var c = catOf(x.nome); return Object.assign({}, x, { cat: c.t, catCls: c.cls, w: (x.shareRaw / pmax * 100).toFixed(1), open: function () { self.setState({ lv: 'prod', prod: x.nome }); } }); });
+
+    var curProd = s.prod && prods[s.prod] ? s.prod : null;
+    var pa = agg(curProd ? prods[curProd] : []);
+    var pc0 = curProd ? catOf(curProd) : { t: '', cls: 'chip' };
+    function dist(obj, keys, labels) {
+      var tot = 0; keys.forEach(function (k) { tot += obj[k] || 0; });
+      var mx = Math.max.apply(null, keys.map(function (k) { return obj[k] || 0; }).concat([1]));
+      return keys.filter(function (k) { return obj[k]; }).map(function (k, i) { return { k: labels ? labels[keys.indexOf(k)] : k, n: nf(obj[k]), p: pc(obj[k] / tot, 0), w: (obj[k] / mx * 100).toFixed(1) }; });
+    }
+    var gkeys = Object.keys(pa.g).sort(function (x, y) { return pa.g[y] - pa.g[x]; });
+    var prodMetrics = curProd ? [{ k: 'Posições', v: nf(pa.n) }, { k: 'Saldo', v: money(pa.s) }, { k: 'Saldo médio', v: brl(pa.s / pa.n) }, { k: 'Atraso médio', v: nf(pa.atr / pa.n) + ' dias' }] : [];
+    var evol = curProd ? [{ c: '17/11/2026 (sim.)', n: nf(pa.ppn), s: money(pa.pps) }, { c: '18/11/2026 (sim.)', n: nf(pa.pn), s: money(pa.ps) }, { c: '19/11/2026', n: nf(pa.n), s: money(pa.s) }] : [];
+    var movProd = curProd ? [{ k: 'Entradas', v: nf(pa.ent) }, { k: 'Saídas', v: nf(pa.sai) }, { k: 'Líquido', v: sgn(pa.ent - pa.sai, nf) }, { k: 'Saldo entradas', v: money(pa.entS) }, { k: 'Saldo saídas', v: money(pa.saiS) }, { k: 'Mudanças de grupo', v: nf(pa.grp) }] : [];
+    var efFin = curProd ? [
+      { k: 'Acordos vigentes', v: nf(pa.acA) }, { k: 'Acordos em atraso', v: nf(pa.acT) },
+      { k: 'Parcela atual acordada (soma)', v: money(pa.acP) }, { k: 'Pago em nov. (até 18/11)', v: money(pa.pagNV) },
+      { k: 'Pagamentos em nov.', v: nf(pa.pagN) + (pa.pagN ? ' · ticket ' + brl(pa.pagNV / pa.pagN) : '') }, { k: 'Recuperação no mês', v: pc(pa.pagNV / (pa.s || 1), 3) }
+    ] : [];
+
+    var ctrRows = [];
+    if (curProd) {
+      var r = rng(hash(curInst + curProd + s.eps)), epsIn = Object.keys(pa.e);
+      for (var i = 0; i < 10; i++) {
+        var e = epsIn[Math.floor(r() * epsIn.length)], avg = pa.s / pa.n;
+        ctrRows.push({ id: 'NPL0' + (10 + Math.floor(r() * 20)) + '-' + (100000000 + Math.floor(r() * 899999999)), eps: NOME[e], g: gkeys[Math.floor(r() * Math.min(3, gkeys.length))] || '—', s: brl(avg * (0.3 + r() * 1.6)), a: nf(pa.atr / pa.n * (0.4 + r() * 1.2)) + ' d', ac: r() < pa.ac / pa.n * 3 ? 'Vigente' : '—' });
+      }
+    }
+
+    var efRows = instList.filter(function (x) { return x.nome !== 'NÃO MAPEADO'; }).map(function (x) {
+      var a = x.a; return { nome: x.nome, n: nf(a.n), avg: brl(a.s / a.n), atr: nf(a.atr / a.n) + ' d', old: pc((a.b['3a+'] || 0) / a.n, 0), acm: nf(a.ac / a.n * 1000), acat: a.ac ? pc(a.acT / a.ac, 0) : '—', pago: money(a.pagNV), rec: pc(a.pagNV / a.s, 3), recRaw: a.pagNV / a.s,
+        open: function () { self.setState({ tab: 'inst', lv: 'inst', inst: x.nome }); } };
+    }).sort(function (x, y) { return y.recRaw - x.recRaw; });
+
+    var a17 = s.a === '17';
+    var bRows = base.filter(function (r) { return !s.batInst || r[0] === s.batInst; }), ba = agg(bRows);
+    var A = a17 ? ba.ppn : ba.pn, AS = a17 ? ba.pps : ba.ps, inc = ba.ent + (a17 ? ba.ent0 : 0), rem = ba.sai + (a17 ? ba.sai0 : 0);
+    var IND = [['inc', 'Incluídos', nf(inc), money(ba.entS)], ['rem', 'Removidos', nf(rem), money(ba.saiS)], ['man', 'Mantidos', nf(ba.n - inc - ba.trf), 'nas duas cargas'], ['liq', 'Variação líquida', sgn(ba.n - A, nf), nf(A) + ' → ' + nf(ba.n)],
+      ['sal', 'Variação de saldo', sgn(ba.s - AS, money), money(AS) + ' → ' + money(ba.s)], ['grp', 'Mudanças de grupo', nf(ba.grp), 'mesma EPS'], ['eps', 'Mudanças de EPS', nf(ba.trf), 'transferências'], ['coi', 'Coincidências entre EPS', s.batInst ? '—' : '10.378', s.batInst ? 'consolidado' : '+318 vs 18/11']];
+    var batInd = IND.map(function (x) { return { nome: x[1], v: x[2], sub: x[3], on: s.batInd === x[0], cls: s.batInd === x[0] ? 'ind ind-on' : 'ind', pick: function () { self.setState({ batInd: x[0] }); } }; });
+    var batRows = Object.keys(insts).map(function (i) { var a = agg(insts[i]); var aa = a17 ? a.ppn : a.pn, as = a17 ? a.pps : a.ps; return { nome: i, a: nf(aa), b: nf(a.n), inc: nf(a.ent + (a17 ? a.ent0 : 0)), rem: nf(a.sai + (a17 ? a.sai0 : 0)), ds: sgn(a.s - as, money), k: Math.abs(a.s - as), pick: function () { self.setState({ batInst: i }); } }; }).sort(function (x, y) { return y.k - x.k; });
+    var rr = rng(hash(s.batInd + s.batInst + s.eps + s.a)), batList = [], il = Object.keys(insts);
+    for (var j = 0; j < 8; j++) {
+      var ii = s.batInst || il[Math.floor(rr() * il.length)], e2 = s.eps === 'all' ? EPS[Math.floor(rr() * 3)] : s.eps, sa = 500 + rr() * 14000;
+      batList.push({ id: 'NPL0' + (10 + Math.floor(rr() * 20)) + '-' + (100000000 + Math.floor(rr() * 899999999)), i: ii, eps: s.batInd === 'eps' ? '0140 · CLEAN → ' + NOME[e2 === '0140' ? '0144' : e2] : NOME[e2], g: s.batInd === 'grp' ? 'G2 → G3' : 'G2', sa: s.batInd === 'inc' ? '—' : brl(sa), sb: s.batInd === 'rem' ? '—' : brl(sa * (0.97 + rr() * 0.05)) });
+    }
+    var batSel = IND.filter(function (x) { return x[0] === s.batInd; })[0];
+
+    var crumb = s.tab === 'inst' && s.lv !== 'home';
+    return {
+      userName: 'Rafael Costa', userPerfil: 'Gerência · Administrador', userIni: 'RC',
+      tabs: [['inst', 'Instituições'], ['ef', 'Comparação de eficiência'], ['bat', 'Batimento entre cargas']].map(function (t) { return { label: t[1], on: s.tab === t[0], cls: s.tab === t[0] ? 'tab tab-on' : 'tab', pick: function () { self.setState({ tab: t[0] }); } }; }),
+      tInst: s.tab === 'inst', tEf: s.tab === 'ef', tBat: s.tab === 'bat',
+      epsOpts: ['all', '0140', '0144', '0900'].map(function (k) { return { label: k === 'all' ? 'Consolidado' : NOME[k], on: s.eps === k, cls: s.eps === k ? 'seg-b seg-on' : 'seg-b', pick: function () { self.setState({ eps: k }); } }; }),
+      epsNome: NOME[s.eps],
+      showCrumb: crumb, crumbInst: crumb && !!curInst, instIsCur: s.lv === 'inst', instNotCur: s.lv !== 'inst', inst: curInst || '',
+      crumbProd: crumb && !!curProd && (s.lv === 'prod' || s.lv === 'ctr'), prodIsCur: s.lv === 'prod', prodNotCur: s.lv === 'ctr', prodLabel: curProd ? curProd + ' · ' + pc0.t : '',
+      crumbCtr: s.lv === 'ctr',
+      goHome: function () { self.setState({ lv: 'home', inst: null, prod: null }); }, goInst: function () { self.setState({ lv: 'inst', prod: null }); },
+      goProd: function () { self.setState({ lv: 'prod' }); }, goCtr: function () { self.setState({ lv: 'ctr' }); },
+      lvHome: s.lv === 'home' || !curInst, lvInst: s.lv === 'inst' && !!curInst, lvProd: s.lv === 'prod' && !!curProd, lvCtr: s.lv === 'ctr' && !!curProd,
+      kpis: kpis, colN: s.eps === 'all' ? 'Contratos únicos' : 'Contratos',
+      sortOpts: [['s', 'Saldo'], ['n', 'Contratos'], ['v', 'Variação'], ['m', 'Movimentação']].map(function (o) { return { label: o[1], on: s.sort === o[0], cls: s.sort === o[0] ? 'pill pill-on' : 'pill', pick: function () { self.setState({ sort: o[0] }); } }; }),
+      instRows: instRows, instMetrics: instMetrics, prodRows: prodRows,
+      prod: curProd || '', prodCat: pc0.t, prodCatCls: pc0.cls, prodMetrics: prodMetrics,
+      distEps: dist(pa.e, EPS, EPS.map(function (e) { return NOME[e]; })), distAtr: dist(pa.b, BK.map(function (b) { return b[0]; }), BK.map(function (b) { return b[1]; })), distGrp: dist(pa.g, gkeys),
+      evol: evol, movProd: movProd, efFin: efFin,
+      ctrRows: ctrRows, ctrInfo: '10 de ' + nf(pa.n) + ' posições',
+      efRows: efRows,
+      a: s.a, onA: function (e) { self.setState({ a: e.target.value }); },
+      batInst: s.batInst, onBatInst: function (e) { self.setState({ batInst: e.target.value }); },
+      instOpts: Object.keys(insts).sort().map(function (i) { return { v: i }; }),
+      batInd: batInd, batRows: batRows, batSelNome: batSel[1] + (s.batInst ? ' · ' + s.batInst : ''), batList: batList,
+      exportCur: function () {
+        var f = 'Carteira ' + NOME[s.eps] + (curInst ? ' · ' + curInst : '') + (curProd ? ' · ' + curProd : '');
+        if (s.tab === 'ef') csv('eficiencia_instituicoes.csv', f, ['instituicao', 'posicoes', 'saldo_medio', 'atraso_medio', 'pct_3anos', 'acordos_mil', 'acordos_atraso', 'pago_nov', 'recuperacao'], efRows.map(function (r) { return [r.nome, r.n, r.avg, r.atr, r.old, r.acm, r.acat, r.pago, r.rec]; }), self);
+        else if (s.tab === 'bat') csv('batimento_' + s.batInd + '.csv', f + ' · A=' + s.a + '/11 B=19/11 · ' + batSel[1], ['contrato', 'instituicao', 'carteira', 'grupo', 'saldo_A', 'saldo_B'], batList.map(function (c) { return [c.id, c.i, c.eps, c.g, c.sa, c.sb]; }), self);
+        else if (s.lv === 'prod' || s.lv === 'ctr') csv('produto_' + curProd + '.csv', f, ['contrato', 'carteira', 'grupo', 'saldo', 'atraso', 'acordo'], ctrRows.map(function (c) { return [c.id, c.eps, c.g, c.s, c.a, c.ac]; }), self);
+        else if (s.lv === 'inst') csv('instituicao_' + curInst + '.csv', f, ['produto', 'categoria', 'posicoes', 'saldo', 'saldo_medio', 'participacao', 'delta_contratos', 'delta_saldo', 'movimento'], prodRows.map(function (r) { return [r.nome, r.cat, r.n, r.s, r.avg, r.share, r.dn, r.ds, r.mov]; }), self);
+        else csv('carteira_instituicoes.csv', f, ['instituicao', 'contratos', 'saldo', 'saldo_medio', 'participacao', 'delta_contratos', 'delta_saldo', 'movimento'], instRows.map(function (r) { return [r.nome, r.n, r.s, r.avg, r.share, r.dn, r.ds, r.mov]; }), self);
+      },
+      hasToast: !!s.toast, toast: s.toast || ''
+    };
+  }
+}
+
+</script>
+</body>
+</html>

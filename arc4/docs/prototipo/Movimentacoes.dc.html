@@ -1,0 +1,384 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Movimentações</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#F4F8FE;font-family:Figtree,system-ui,sans-serif;color:#05132A}
+a{color:#195AB4}a:hover{color:#10408D}
+button,input,select,textarea{font-family:inherit}
+button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:2px solid #307AE0;outline-offset:2px}
+.top{background:#05132A;display:flex;align-items:center;gap:20px;padding:0 24px;min-height:60px;flex-wrap:wrap}
+.mark{width:28px;height:28px;border-radius:6px;background:#195AB4;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px}
+.avatar{width:32px;height:32px;border-radius:50%;background:#10408D;color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600}
+.nav{color:#B1D2FF;text-decoration:none;font-size:14px;font-weight:500;padding:8px 12px;border-radius:6px}
+.nav:hover{color:#fff;background:#0B2859}
+.nav-on{color:#fff;background:#10408D}
+.wrap{width:100%;max-width:1400px;margin:0 auto;padding:24px 28px 48px;box-sizing:border-box;display:flex;flex-direction:column;gap:20px}
+.card{background:#fff;border:1px solid #DCE6F5;border-radius:12px}
+.lbl{font-size:12px;color:#4A5B78;font-weight:500}
+.mono{font-variant-numeric:tabular-nums}
+.h1{margin:0;font-size:24px;font-weight:700}
+.h2{margin:0;font-size:17px;font-weight:600}
+.btn{display:inline-flex;align-items:center;gap:8px;height:40px;padding:0 16px;border-radius:8px;border:1px solid #B1D2FF;background:#fff;color:#0B2859;font-size:14px;font-weight:600;cursor:pointer;text-decoration:none;box-sizing:border-box;white-space:nowrap}
+.btn:hover{background:#EAF2FF;color:#0B2859}
+.btn-primary{background:#195AB4;border-color:#195AB4;color:#fff}
+.btn-primary:hover{background:#10408D;border-color:#10408D;color:#fff}
+.btn-off{background:#E6EDF7;border-color:#E6EDF7;color:#7B8BA6;cursor:not-allowed}
+.btn-off:hover{background:#E6EDF7;color:#7B8BA6}
+.btn-danger{color:#A1231A;border-color:#F1C9C5}
+.btn-danger:hover{background:#FDECEC;color:#A1231A}
+.btn-sm{height:32px;padding:0 12px;font-size:13px}
+.btn-link{border:0;background:none;color:#195AB4;font-size:13px;font-weight:600;cursor:pointer;padding:4px 6px;border-radius:6px}
+.btn-link:hover{background:#EAF2FF}
+.chip{display:inline-flex;align-items:center;gap:6px;height:24px;padding:0 8px;border-radius:6px;font-size:12px;font-weight:600;background:#EAF2FF;color:#0B2859;white-space:nowrap}
+.chip-warn{background:#FFF4E0;color:#8A4B06}
+.chip-crit{background:#FDECEC;color:#A1231A}
+.chip-ok{background:#D2E5FF;color:#0B2859}
+.chip-dark{background:#05132A;color:#fff}
+.chip-line{background:#fff;border:1px solid #B1D2FF}
+.chip-sim{background:#fff;border:1px dashed #87BAFF;color:#10408D}
+.seg{display:inline-flex;border:1px solid #B1D2FF;border-radius:8px;overflow:hidden;background:#fff;flex-wrap:wrap}
+.seg-b{border:0;background:#fff;height:36px;padding:0 14px;font-size:13px;font-weight:600;color:#0B2859;cursor:pointer;border-right:1px solid #DCE6F5}
+.seg-b:last-child{border-right:0}
+.seg-b:hover{background:#EAF2FF}
+.seg-on{background:#195AB4;color:#fff}
+.seg-on:hover{background:#10408D}
+.tabs{display:flex;gap:4px;border-bottom:1px solid #DCE6F5;flex-wrap:wrap}
+.tab{border:0;background:none;height:42px;padding:0 14px;font-size:14px;font-weight:600;color:#4A5B78;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px}
+.tab:hover{color:#0B2859}
+.tab-on{color:#195AB4;border-bottom-color:#195AB4}
+.inp,.sel{height:38px;border:1px solid #B1D2FF;border-radius:8px;padding:0 10px;font-size:14px;box-sizing:border-box;background:#fff;color:#05132A}
+.inp:focus,.sel:focus{border-color:#195AB4}
+.txa{border:1px solid #B1D2FF;border-radius:8px;padding:8px 10px;font-size:14px;box-sizing:border-box;width:100%;min-height:72px;resize:vertical;color:#05132A}
+.fld{display:flex;flex-direction:column;gap:4px}
+.pill{height:30px;padding:0 12px;border-radius:15px;border:1px solid #B1D2FF;background:#fff;font-size:12px;font-weight:500;cursor:pointer;color:#0B2859}
+.pill:hover{border-color:#549CFF}
+.pill-on{background:#195AB4;border-color:#195AB4;color:#fff}
+.tbl{width:100%;border-collapse:collapse;font-size:13px}
+.tbl th{text-align:left;font-weight:600;color:#4A5B78;font-size:12px;padding:10px 12px;border-bottom:1px solid #DCE6F5;white-space:nowrap}
+.tbl td{padding:10px 12px;border-bottom:1px solid #EEF3FA;vertical-align:middle}
+.tbl tr.clk:hover td{background:#F7FAFF;cursor:pointer}
+.num{text-align:right}
+.kpi{background:#fff;border:1px solid #DCE6F5;border-radius:12px;padding:14px 16px;display:flex;flex-direction:column;gap:4px}
+.kv{font-size:24px;font-weight:700;font-variant-numeric:tabular-nums}
+.delta{font-size:12px;font-weight:600;color:#10408D}
+.tip{position:relative;display:inline-flex;vertical-align:middle}
+.tip-btn{all:unset;cursor:help;width:22px;height:22px;display:inline-flex;align-items:center;justify-content:center;border-radius:50%;color:#4A5B78}
+.tip-btn:hover,.tip-btn:focus-visible{color:#195AB4;background:#EAF2FF}
+.tip-btn:focus-visible{outline:2px solid #307AE0}
+.bubble{position:absolute;z-index:40;top:calc(100% + 6px);left:50%;transform:translateX(-50%);width:max-content;max-width:280px;background:#05132A;color:#fff;font-size:12px;line-height:17px;font-weight:400;padding:8px 10px;border-radius:6px;opacity:0;visibility:hidden;pointer-events:none;transition:opacity .12s;text-align:left;white-space:normal}
+.bubble-r{left:auto;right:0;transform:none}
+.bubble-l{left:0;transform:none}
+.tip:hover .bubble,.tip:focus-within .bubble{opacity:1;visibility:visible}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:#05132A;color:#fff;border-radius:10px;padding:10px 16px;display:flex;gap:14px;align-items:center;font-size:13px;z-index:60}
+.sq{width:8px;height:8px;border-radius:2px;display:inline-block}
+.e0140{background:#195AB4}.e0144{background:#87BAFF}.e0900{background:#0B2859}
+.overlay{position:fixed;inset:0;background:rgba(5,19,42,.45);display:flex;align-items:flex-start;justify-content:center;padding:60px 16px;z-index:50;overflow:auto}
+.modal{background:#fff;border-radius:12px;width:100%;max-width:560px;padding:22px 24px;display:flex;flex-direction:column;gap:14px;box-sizing:border-box}
+.drawer{position:fixed;top:0;right:0;bottom:0;width:min(440px,100%);background:#fff;border-left:1px solid #DCE6F5;z-index:55;padding:22px 24px;box-sizing:border-box;overflow:auto;display:flex;flex-direction:column;gap:14px}
+.x{all:unset;cursor:pointer;width:32px;height:32px;display:inline-flex;align-items:center;justify-content:center;border-radius:6px;color:#4A5B78}
+.x:hover{background:#EAF2FF}
+.x:focus-visible{outline:2px solid #307AE0}
+
+.t-ent{background:#D2E5FF;color:#0B2859}.t-sai{background:#05132A;color:#fff}.t-grp{background:#EAF2FF;color:#10408D}.t-eps{background:#fff;border:1px solid #549CFF;color:#10408D}.t-coincMais,.t-coincMenos{background:#fff;border:1px dashed #549CFF;color:#10408D}.t-aus{background:#FFF4E0;color:#8A4B06}
+.bars{display:flex;gap:24px;align-items:flex-end;height:150px;padding:8px 4px 0}
+.bgroup{flex:1;display:flex;flex-direction:column;align-items:center;gap:6px}
+.bpair{display:flex;gap:6px;align-items:flex-end;height:120px}
+.b{width:28px;border-radius:4px 4px 0 0}
+.b-ent{background:#549CFF}.b-sai{background:#0B2859}
+.tl{display:flex;gap:10px;font-size:13px;padding:8px 0;border-bottom:1px solid #EEF3FA}
+
+</style>
+</helmet>
+<div style="min-height: 100vh; display: flex; flex-direction: column">
+  <header class="top">
+    <div style="display: flex; align-items: center; gap: 10px">
+      <div class="mark">A4</div>
+      <span style="color: #fff; font-weight: 600; font-size: 16px">ARC4 Cobrança</span>
+    </div>
+    <nav aria-label="Principal" style="display: flex; gap: 2px; flex-wrap: wrap"><a class="nav" href="Main.dc.html">Consulta</a><a class="nav" href="Carteira.dc.html">Carteira</a><a class="nav nav-on" href="Movimentacoes.dc.html" aria-current="page">Movimentações</a><a class="nav" href="Importacao.dc.html">Importação</a><a class="nav" href="Usuarios.dc.html">Administração</a></nav>
+    
+    <div style="margin-left: auto; display: flex; align-items: center; gap: 12px">
+      <div style="display: flex; flex-direction: column; align-items: flex-end; line-height: 1.2">
+        <span style="color: #fff; font-size: 13px; font-weight: 600">{{userName}}</span>
+        <span style="color: #87BAFF; font-size: 12px">{{userPerfil}}</span>
+      </div>
+      <div class="avatar" aria-hidden="true">{{userIni}}</div>
+      <a class="nav" href="Login.dc.html" style="display: inline-flex; align-items: center; gap: 6px"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M15 4h3a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-3"></path><path d="M10 17l-5-5 5-5"></path><path d="M5 12h11"></path></svg>Sair</a>
+    </div>
+  </header>
+  <main class="wrap">
+    <div style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 16px">
+      <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap">
+        <h1 class="h1">Movimentações</h1>
+        <span class="tip"><button type="button" class="tip-btn" aria-label="Como classificamos" aria-describedby="t-regra"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M19.4 7.6A9 9 0 1 1 16.4 4.1"></path><path d="M12 11v6"></path><path d="M12 7.6v.01"></path></svg></button><span role="tooltip" id="t-regra" class="bubble bubble-l">Entrada e saída só são efetivas quando o contrato entra ou sai de todas as carteiras. Saída exige RETIRADA. Sumir da remessa sem retirada vira “Ausente em análise”. Mudança de grupo ou de EPS não é entrada nem saída.</span></span>
+        <span style="display: inline-flex; align-items: center; gap: 2px"><span class="chip chip-sim">Movimentação de estoque simulada</span><span class="tip"><button type="button" class="tip-btn" aria-label="Sobre os dados" aria-describedby="t-sim"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M19.4 7.6A9 9 0 1 1 16.4 4.1"></path><path d="M12 11v6"></path><path d="M12 7.6v.01"></path></svg></button><span role="tooltip" id="t-sim" class="bubble bubble-l">As retiradas de 19/11 são reais (arquivo RETIRADA). Entradas, reclassificações e transferências dependem de uma carga anterior e foram simuladas.</span></span></span>
+      </div>
+      <button type="button" class="btn btn-primary" onClick="{{exportCsv}}">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 4v11"></path><path d="M8 11l4 4 4-4"></path><path d="M5 19h14"></path></svg>
+        Exportar CSV
+      </button>
+    </div>
+
+    <section class="card" aria-label="Filtros" style="padding: 14px 18px; display: flex; gap: 12px; flex-wrap: wrap; align-items: flex-end">
+      <div class="fld"><label for="f-per" class="lbl">Período</label>
+        <select id="f-per" class="sel" value="{{per}}" onChange="{{onPer}}"><option value="19">19/11/2026</option><option value="18">18/11/2026 (simulada)</option><option value="1819">18/11 a 19/11</option></select></div>
+      <div class="fld"><label for="f-eps" class="lbl">Carteira</label>
+        <select id="f-eps" class="sel" value="{{eps}}" onChange="{{onEps}}"><option value="all">Todas</option><option value="0140">0140 · CLEAN</option><option value="0144">0144 · CAÍDOS</option><option value="0900">0900 · DESAFIANTE</option></select></div>
+      <div class="fld"><label for="f-tipo" class="lbl">Tipo</label>
+        <select id="f-tipo" class="sel" value="{{tipo}}" onChange="{{onTipo}}"><option value="all">Todos</option><sc-for list="{{tipos}}" as="t" hint-placeholder-count="7"><option value="{{t.id}}">{{t.nome}}</option></sc-for></select></div>
+      <div class="fld"><label for="f-inst" class="lbl">Instituição</label>
+        <select id="f-inst" class="sel" value="{{inst}}" onChange="{{onInst}}"><option value="all">Todas</option><sc-for list="{{instOpts}}" as="o" hint-placeholder-count="8"><option value="{{o.v}}">{{o.v}}</option></sc-for></select></div>
+      <div class="fld"><label for="f-grp" class="lbl">Grupo</label>
+        <select id="f-grp" class="sel" value="{{grp}}" onChange="{{onGrp}}"><option value="all">Todos</option><sc-for list="{{gruposOpt}}" as="g" hint-placeholder-count="6"><option value="{{g.v}}">{{g.v}}</option></sc-for></select></div>
+      <div class="fld" style="flex: 1 1 220px"><label for="f-ct" class="lbl">Contrato</label>
+        <input id="f-ct" class="inp mono" placeholder="Ex.: NPL026-" value="{{q}}" onChange="{{onQ}}"></div>
+      <button type="button" class="btn" onClick="{{clear}}">Limpar</button>
+    </section>
+
+    <div style="display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 12px">
+      <sc-for list="{{kpis}}" as="k" hint-placeholder-count="6">
+        <div class="kpi">
+          <div style="display: flex; align-items: center; gap: 2px"><span class="lbl">{{k.nome}}</span><span class="tip"><button type="button" class="tip-btn" aria-label="Sobre {{k.nome}}" aria-describedby="tk-{{k.id}}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M19.4 7.6A9 9 0 1 1 16.4 4.1"></path><path d="M12 11v6"></path><path d="M12 7.6v.01"></path></svg></button><span role="tooltip" id="tk-{{k.id}}" class="{{k.tipCls}}">{{k.tip}}</span></span></div>
+          <div class="kv" style="font-size: 22px">{{k.n}}</div>
+          <div class="lbl">{{k.s}}</div>
+        </div>
+      </sc-for>
+    </div>
+
+    <div style="display: flex; gap: 20px; flex-wrap: wrap; align-items: flex-start">
+      <section class="card" aria-labelledby="h-eps" style="flex: 1 1 360px; padding: 16px 20px">
+        <h2 id="h-eps" class="h2" style="font-size: 15px">Entradas e saídas por carteira</h2>
+        <div class="bars" role="img" aria-label="{{barsAria}}">
+          <sc-for list="{{bars}}" as="b" hint-placeholder-count="3">
+            <div class="bgroup">
+              <div class="bpair">
+                <div class="b b-ent" style="height: {{b.he}}px" title="Entradas: {{b.ne}}"></div>
+                <div class="b b-sai" style="height: {{b.hs}}px" title="Saídas: {{b.ns}}"></div>
+              </div>
+              <span class="lbl" style="text-align: center">{{b.nome}}</span>
+              <span class="mono" style="font-size: 12px">+{{b.ne}} / −{{b.ns}}</span>
+            </div>
+          </sc-for>
+        </div>
+        <div style="display: flex; gap: 16px; margin-top: 10px">
+          <span class="lbl" style="display: inline-flex; align-items: center; gap: 6px"><span class="sq" style="background: #549CFF"></span>Entradas</span>
+          <span class="lbl" style="display: inline-flex; align-items: center; gap: 6px"><span class="sq" style="background: #0B2859"></span>Saídas efetivas</span>
+        </div>
+      </section>
+
+      <section class="card" aria-labelledby="h-mov" style="flex: 999 1 640px; min-width: 0; padding: 16px 12px">
+        <div style="display: flex; justify-content: space-between; align-items: center; padding: 0 12px 8px; gap: 10px; flex-wrap: wrap">
+          <h2 id="h-mov" class="h2" style="font-size: 15px">Contratos movimentados</h2>
+          <span class="lbl">{{nRows}}</span>
+        </div>
+        <div style="overflow-x: auto">
+          <table class="tbl">
+            <thead><tr><th scope="col">Data</th><th scope="col">Contrato</th><th scope="col">Instituição · produto</th><th scope="col">Tipo</th><th scope="col">Carteira</th><th scope="col">Grupo</th><th scope="col" class="num">Saldo</th><th scope="col">Motivo</th></tr></thead>
+            <tbody>
+              <sc-for list="{{rows}}" as="r" hint-placeholder-count="10">
+                <tr class="clk" onClick="{{r.open}}">
+                  <td class="mono">{{r.data}}</td>
+                  <td><button type="button" class="btn-link mono" style="padding: 0" onClick="{{r.open}}">{{r.contrato}}</button></td>
+                  <td><div style="font-weight: 600">{{r.inst}}</div><div class="lbl mono">{{r.prod}}</div></td>
+                  <td><span class="{{r.tCls}}">{{r.tNome}}</span></td>
+                  <td>{{r.cart}}</td>
+                  <td>{{r.grupo}}</td>
+                  <td class="mono num">{{r.saldo}}</td>
+                  <td>{{r.motivo}}</td>
+                </tr>
+              </sc-for>
+            </tbody>
+          </table>
+          <sc-if value="{{empty}}" hint-placeholder-val="{{ false }}"><div style="padding: 28px; text-align: center" class="lbl">Nenhuma movimentação com esses filtros.</div></sc-if>
+        </div>
+      </section>
+    </div>
+    <section class="card" aria-labelledby="h-fin" style="padding: 16px 20px; display: flex; flex-direction: column; gap: 10px">
+      <div style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap"><h2 id="h-fin" class="h2" style="font-size: 15px">Resultado financeiro realizado</h2><span class="tip"><button type="button" class="tip-btn" aria-label="Separado do estoque" aria-describedby="t-fin"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M19.4 7.6A9 9 0 1 1 16.4 4.1"></path><path d="M12 11v6"></path><path d="M12 7.6v.01"></path></svg></button><span role="tooltip" id="t-fin" class="bubble bubble-l">Pagamento efetivo do arquivo PAGAMENTO. Saída de contrato reduz o estoque disponível e não é perda financeira; promessa ou acordo não é pagamento.</span></span><span class="chip chip-line">real · 01/11 a 18/11/2026</span></div>
+      <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px">
+        <sc-for list="{{fin}}" as="f" hint-placeholder-count="3"><div class="kpi"><span class="lbl" title="{{f.d}}">{{f.k}}</span><span class="kv" style="font-size: 20px">{{f.v}}</span></div></sc-for>
+      </div>
+    </section>
+  </main>
+
+  <sc-if value="{{hasDrawer}}" hint-placeholder-val="{{ false }}">
+    <aside class="drawer" aria-label="Detalhe da movimentação">
+      <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 12px">
+        <div><div class="lbl">Contrato</div><h2 class="h2 mono" style="font-size: 20px">{{d.contrato}}</h2></div>
+        <button type="button" class="x" onClick="{{close}}" aria-label="Fechar"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12"></path><path d="M18 6L6 18"></path></svg></button>
+      </div>
+      <div style="display: flex; gap: 8px; flex-wrap: wrap"><span class="{{d.tCls}}">{{d.tNome}}</span><span class="chip chip-line">{{d.cart}}</span></div>
+      <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; background: #F4F8FE; border-radius: 10px; padding: 12px 14px">
+        <div><div class="lbl">Instituição</div><div style="font-weight: 600">{{d.inst}}</div></div>
+        <div><div class="lbl">Produto</div><div class="mono">{{d.prod}}</div></div>
+        <div><div class="lbl">EPS de origem</div><div>{{d.epsO}}</div></div>
+        <div><div class="lbl">EPS de destino</div><div>{{d.epsD}}</div></div>
+        <div><div class="lbl">Grupo anterior</div><div>{{d.gA}}</div></div>
+        <div><div class="lbl">Grupo atual</div><div>{{d.gB}}</div></div>
+        <div><div class="lbl">Saldo anterior</div><div class="mono">{{d.sA}}</div></div>
+        <div><div class="lbl">Saldo atual</div><div class="mono">{{d.sB}}</div></div>
+        <div><div class="lbl">Identificada na carga</div><div class="mono">{{d.data}}</div></div>
+        <div><div class="lbl">Motivo (fonte)</div><div>{{d.motivo}}</div></div>
+      </div>
+      <div class="fld"><span class="lbl">Regra aplicada</span><span style="font-size: 13px">{{d.regra}}</span></div>
+      <div class="fld"><span class="lbl">Rastreabilidade</span>
+        <sc-for list="{{d.trace}}" as="t" hint-placeholder-count="3"><div class="tl"><span class="mono lbl" style="width: 84px; flex: none">{{t.q}}</span><span>{{t.o}}</span></div></sc-for>
+      </div>
+      <a class="btn" href="Main.dc.html" style="align-self: flex-start">Abrir na Consulta 360º</a>
+    </aside>
+  </sc-if>
+  <sc-if value="{{hasToast}}" hint-placeholder-val="{{ false }}"><div role="status" class="toast">{{toast}}</div></sc-if>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1400}}'>
+var NOME = { '0140': '0140 · CLEAN', '0144': '0144 · CAÍDOS', '0900': '0900 · DESAFIANTE' };
+var EPS = ['0140', '0144', '0900'];
+var TIPOS = [
+  { id: 'ent', nome: 'Entrada', tip: 'Não estava em nenhuma carteira na carga anterior.' },
+  { id: 'sai', nome: 'Saída efetiva', tip: 'Confirmada pelo arquivo RETIRADA, com motivo.' },
+  { id: 'grp', nome: 'Reclassificação de grupo', tip: 'Mesma carteira, grupo ARC4 diferente. Não altera o estoque.' },
+  { id: 'eps', nome: 'Transferência entre EPS', tip: 'Saiu de uma carteira e entrou em outra. Não conta como entrada nem saída no consolidado.' },
+  { id: 'coincMais', nome: 'Passou a coincidente', tip: 'Começou a aparecer em mais de uma EPS.' },
+  { id: 'coincMenos', nome: 'Deixou de ser coincidente', tip: 'Estava em duas EPS e agora está em uma.' },
+  { id: 'aus', nome: 'Ausente em análise', tip: 'Sumiu da remessa sem RETIRADA. Não é saída: o MIS confirma após 3 cargas ou com retirada.' }
+];
+// [dia][eps] = contagens e saldo (R$). Saídas de 19/11 = arquivo RETIRADA real.
+var MOV = {
+  '19': { '0140': { ent: [2140, 15.9e6], sai: [18688, 141.2e6], grp: [3912, 0], eps: [0, 0], coincMais: [412, 0], coincMenos: [96, 0], aus: [214, 1.6e6] },
+          '0144': { ent: [1215, 5.9e6], sai: [54, 0.3e6], grp: [288, 0], eps: [37, 0.27e6], coincMais: [3, 0], coincMenos: [1, 0], aus: [9, 0.05e6] },
+          '0900': { ent: [3420, 14.1e6], sai: [116, 0.5e6], grp: [1507, 0], eps: [21, 0.16e6], coincMais: [0, 0], coincMenos: [0, 0], aus: [31, 0.13e6] } },
+  '18': { '0140': { ent: [1860, 13.6e6], sai: [1210, 9.4e6], grp: [2804, 0], eps: [0, 0], coincMais: [288, 0], coincMenos: [152, 0], aus: [188, 1.4e6] },
+          '0144': { ent: [980, 4.7e6], sai: [61, 0.3e6], grp: [241, 0], eps: [26, 0.19e6], coincMais: [2, 0], coincMenos: [2, 0], aus: [6, 0.03e6] },
+          '0900': { ent: [2950, 12.2e6], sai: [88, 0.4e6], grp: [1322, 0], eps: [15, 0.11e6], coincMais: [0, 0], coincMenos: [0, 0], aus: [27, 0.12e6] } }
+};
+var G = ['G1', 'G2', 'G3', 'G4', 'COINCIDENTES', 'C1', 'C2', 'C3'];
+var COMBOS = { '0140': [['ITAU', 'NICARD · Cartão'], ['MERCADO PAGO', 'NMCARD · Cartão'], ['SANTANDER', 'NDCANC · não mapeado'], ['PAN', 'NACARD · Cartão'], ['SUPER SIM', 'NSPSIM · não mapeado'], ['NEON', 'NNCARD · Cartão'], ['NOVERDE', 'NVCPES · Crédito pessoal']],
+  '0144': [['PAN', 'NARDES · não mapeado'], ['SANTANDER', 'NDCRED · não mapeado'], ['ITAU', 'NICARD · Cartão'], ['NEON', 'NNCARD · Cartão']],
+  '0900': [['NEON', 'NNCARD · Cartão'], ['PERNAMBUCANAS', 'NSCARD · Cartão'], ['PAN', 'NACPES · Crédito pessoal']] };
+var INSTS = ['ITAU', 'MERCADO PAGO', 'NEON', 'NOVERDE', 'PAN', 'PERNAMBUCANAS', 'SANTANDER', 'SUPER SIM'];
+var PAG_NOV = { '0140': [1745, 287306.53], '0144': [5112, 909423.15], '0900': [223, 23426.09] };
+var USER = 'Rafael Costa (rafael.costa)';
+function nf(n) { return Math.round(n).toLocaleString('pt-BR'); }
+function money(v) {
+  var a = Math.abs(v), sg = v < 0 ? '−' : '';
+  if (a >= 1e9) return sg + 'R$ ' + (a / 1e9).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' bi';
+  if (a >= 1e6) return sg + 'R$ ' + (a / 1e6).toLocaleString('pt-BR', { minimumFractionDigits: 1, maximumFractionDigits: 1 }) + ' mi';
+  if (a >= 1e3) return sg + 'R$ ' + (a / 1e3).toLocaleString('pt-BR', { minimumFractionDigits: 1, maximumFractionDigits: 1 }) + ' mil';
+  return sg + 'R$ ' + a.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+function rng(seed) { var x = seed; return function () { x = (x * 1103515245 + 12345) % 2147483648; return x / 2147483648; }; }
+var ROWS = (function () {
+  var r = rng(42), out = [], plan = [['19', 'sai', 5], ['19', 'ent', 4], ['19', 'grp', 4], ['19', 'eps', 2], ['19', 'coincMais', 2], ['19', 'aus', 3], ['18', 'ent', 3], ['18', 'sai', 2], ['18', 'grp', 2], ['18', 'coincMenos', 1], ['18', 'aus', 1]];
+  plan.forEach(function (p) {
+    for (var i = 0; i < p[2]; i++) {
+      var e = p[1] === 'eps' ? (r() < 0.6 ? '0144' : '0900') : (p[1] === 'coincMais' || p[1] === 'coincMenos' ? '0140' : EPS[Math.floor(r() * 3)]);
+      var g1 = G[Math.floor(r() * G.length)], g2 = G[Math.floor(r() * G.length)]; if (g2 === g1) g2 = 'G3';
+      var sal = 400 + r() * 14000;
+      var cb = COMBOS[e][Math.floor(r() * COMBOS[e].length)];
+      var row = { id: out.length, inst: cb[0], prod: cb[1], epsTo: null, saldoB: sal * (0.98 + r() * 0.03), dia: p[0], data: p[0] + '/11/2026', tipo: p[1], eps: e, contrato: 'NPL0' + (10 + Math.floor(r() * 20)) + '-' + (100000000 + Math.floor(r() * 899999999)), grupo: g1, grupoTo: null, saldo: sal, motivo: '—', cart: NOME[e] };
+      if (p[1] === 'sai') { row.motivo = r() < 0.9 ? 'Retirada · motivo 2' : 'Retirada · motivo 1'; row.saldoB = null; }
+      if (p[1] === 'ent') row.saldoA = null;
+      if (p[1] === 'grp') { row.grupoTo = g2; row.motivo = 'Reclassificação do banco'; }
+      if (p[1] === 'eps') { row.epsTo = e; row.eps = '0140'; row.cart = '0140 · CLEAN → ' + NOME[e]; row.motivo = 'Marcação de EPS alterada'; }
+      if (p[1] === 'coincMais') { row.cart = '0140 · CLEAN + 0900 · DESAFIANTE'; row.motivo = 'Recebido nas duas remessas'; }
+      if (p[1] === 'coincMenos') { row.cart = '0140 · CLEAN'; row.motivo = 'Não veio mais na 0900'; }
+      if (p[1] === 'aus') row.motivo = 'Sem RETIRADA · 1ª ausência';
+      if (p[1] === 'ent') row.motivo = 'Novo na remessa';
+      out.push(row);
+    }
+  });
+  return out;
+})();
+var REGRA = {
+  ent: 'Contrato ausente em todas as carteiras na carga anterior e presente na carga atual.',
+  sai: 'Contrato listado no arquivo RETIRADA da carga. Encerrado na base com motivo e data.',
+  grp: 'Mesmo contrato e EPS nas duas cargas, com grupo_arc4u diferente.',
+  eps: 'Estava somente na EPS de origem e, na carga atual, somente na EPS de destino.',
+  coincMais: 'Passou a constar em mais de uma remessa na mesma carga.',
+  coincMenos: 'Constava em duas remessas e agora consta em uma.',
+  aus: 'Não veio na remessa e não está em RETIRADA. Fica em análise; vira saída só com retirada ou confirmação do MIS após 3 cargas.'
+};
+function tipoNome(id) { return TIPOS.filter(function (t) { return t.id === id; })[0].nome; }
+
+class Component extends DCLogic {
+  constructor(props) { super(props); this.state = { per: '19', eps: 'all', tipo: 'all', grp: 'all', inst: 'all', q: '', open: null, toast: null }; }
+  flash(m) { var self = this; clearTimeout(this._t); this.setState({ toast: m }); this._t = setTimeout(function () { self.setState({ toast: null }); }, 3500); }
+  renderVals() {
+    var self = this, s = this.state;
+    var dias = s.per === '1819' ? ['18', '19'] : [s.per];
+    var eList = s.eps === 'all' ? EPS : [s.eps];
+    function tot(k) { var n = 0, v = 0; dias.forEach(function (d) { eList.forEach(function (e) { n += MOV[d][e][k][0]; v += MOV[d][e][k][1]; }); }); return [n, v]; }
+    var ent = tot('ent'), sai = tot('sai'), grp = tot('grp'), eps = tot('eps'), aus = tot('aus');
+    if (s.eps === 'all') { ent = [ent[0], ent[1]]; }
+    var liq = [ent[0] - sai[0], ent[1] - sai[1]];
+    var pag = [0, 0]; eList.forEach(function (e) { pag[0] += PAG_NOV[e][0]; pag[1] += PAG_NOV[e][1]; });
+    var kp = [
+      ['ent', 'Entradas', nf(ent[0]), money(ent[1]), TIPOS[0].tip],
+      ['sai', 'Saídas efetivas', nf(sai[0]), money(sai[1]), TIPOS[1].tip],
+      ['liq', 'Movimentação líquida', (liq[0] >= 0 ? '+' : '−') + nf(Math.abs(liq[0])), money(liq[1]), 'Entradas menos saídas efetivas, em contratos e saldo.'],
+      ['grp', 'Reclassificações', nf(grp[0]), 'sem efeito no estoque', TIPOS[2].tip],
+      ['eps', 'Transferências', nf(eps[0]), money(eps[1]), TIPOS[3].tip],
+      ['aus', 'Ausentes em análise', nf(aus[0]), money(aus[1]), TIPOS[6].tip]
+    ];
+    var fin = [
+      { k: 'Pago em novembro', v: money(pag[1]), d: 'Soma de valor_pago com data de 01/11 a 18/11/2026.' },
+      { k: 'Pagamentos', v: nf(pag[0]), d: 'Quantidade de linhas do arquivo PAGAMENTO no mês.' },
+      { k: 'Ticket médio pago', v: money(pag[1] / pag[0]), d: 'Valor pago dividido pela quantidade de pagamentos.' }
+    ];
+    var kpis = kp.map(function (k, i) { return { id: k[0], nome: k[1], n: k[2], s: k[3], tip: k[4], tipCls: i >= 4 ? 'bubble bubble-r' : 'bubble bubble-l' }; });
+    var mx = 1; EPS.forEach(function (e) { dias.forEach(function () {}); });
+    var per = EPS.map(function (e) { var ne = 0, ns = 0; dias.forEach(function (d) { ne += MOV[d][e].ent[0]; ns += MOV[d][e].sai[0]; }); mx = Math.max(mx, ne, ns); return { e: e, ne: ne, ns: ns }; });
+    var bars = per.filter(function (p) { return s.eps === 'all' || p.e === s.eps; }).map(function (p) { return { nome: NOME[p.e], ne: nf(p.ne), ns: nf(p.ns), he: Math.max(2, Math.round(p.ne / mx * 120)), hs: Math.max(2, Math.round(p.ns / mx * 120)) }; });
+    var q = s.q.trim().toUpperCase();
+    var rows = ROWS.filter(function (r) {
+      return dias.indexOf(r.dia) >= 0 && (s.inst === 'all' || r.inst === s.inst) && (s.eps === 'all' || r.eps === s.eps || r.epsTo === s.eps || (r.tipo === 'coincMais' && s.eps === '0900')) && (s.tipo === 'all' || r.tipo === s.tipo) && (s.grp === 'all' || r.grupo === s.grp || r.grupoTo === s.grp) && (!q || r.contrato.indexOf(q) >= 0);
+    }).map(function (r) {
+      return { inst: r.inst, prod: r.prod, data: r.data, contrato: r.contrato, tNome: tipoNome(r.tipo), tCls: 'chip t-' + r.tipo, cart: r.cart, grupo: r.grupoTo ? r.grupo + ' → ' + r.grupoTo : r.grupo, saldo: money(r.saldo), motivo: r.motivo, open: function () { self.setState({ open: r.id }); } };
+    });
+    var cur = s.open === null ? null : ROWS[s.open];
+    var d = cur ? {
+      contrato: cur.contrato, inst: cur.inst, prod: cur.prod, epsO: NOME[cur.eps], epsD: cur.epsTo ? NOME[cur.epsTo] : (cur.tipo === 'sai' ? '—' : NOME[cur.eps]), gA: cur.tipo === 'ent' ? '—' : cur.grupo, gB: cur.tipo === 'sai' ? '—' : (cur.grupoTo || cur.grupo), sA: cur.saldoA === null ? '—' : money(cur.saldo), sB: cur.saldoB === null ? '—' : money(cur.saldoB), tNome: tipoNome(cur.tipo), tCls: 'chip t-' + cur.tipo, cart: cur.cart, data: cur.data, saldo: money(cur.saldo),
+      grupo: cur.grupoTo ? cur.grupo + ' → ' + cur.grupoTo : cur.grupo, motivo: cur.motivo, regra: REGRA[cur.tipo],
+      trace: [
+        { q: cur.data, o: 'Lote ' + cur.data + ' · ' + (cur.tipo === 'sai' ? 'RETIRADA_' + cur.eps + '_OUT' : 'REMESSA_ARC4U_' + cur.eps + '_OUT') + ' · linha ' + nf(1000 + cur.saldo * 3) },
+        { q: cur.dia === '19' ? '18/11/2026' : '17/11/2026', o: 'Comparado com o lote anterior publicado' },
+        { q: cur.data, o: 'Classificado automaticamente pelo importador · aprovado por Marina Alves' }
+      ]
+    } : {};
+    return {
+      userName: 'Rafael Costa', userPerfil: 'Administrador', userIni: 'RC',
+      per: s.per, eps: s.eps, tipo: s.tipo, grp: s.grp, q: s.q,
+      onPer: function (e) { self.setState({ per: e.target.value }); }, onEps: function (e) { self.setState({ eps: e.target.value }); },
+      onTipo: function (e) { self.setState({ tipo: e.target.value }); }, onGrp: function (e) { self.setState({ grp: e.target.value }); },
+      onQ: function (e) { self.setState({ q: e.target.value }); },
+      inst: s.inst, onInst: function (e) { self.setState({ inst: e.target.value }); }, instOpts: INSTS.map(function (i) { return { v: i }; }), fin: fin,
+      clear: function () { self.setState({ per: '19', eps: 'all', tipo: 'all', grp: 'all', inst: 'all', q: '' }); },
+      tipos: TIPOS, gruposOpt: G.map(function (g) { return { v: g }; }),
+      kpis: kpis, bars: bars, barsAria: per.map(function (p) { return NOME[p.e] + ': ' + nf(p.ne) + ' entradas e ' + nf(p.ns) + ' saídas'; }).join('; '),
+      rows: rows, empty: rows.length === 0, nRows: 'Amostra de ' + rows.length + ' contratos · totais nos indicadores',
+      hasDrawer: !!cur, d: d, close: function () { self.setState({ open: null }); },
+      exportCsv: function () {
+        var meta = '# Extraído em 19/11/2026 ' + new Date().toTimeString().slice(0, 5) + ' por ' + USER + '\n# Filtros: período=' + s.per + ' carteira=' + s.eps + ' instituição=' + s.inst + ' tipo=' + s.tipo + ' grupo=' + s.grp + ' contrato=' + (s.q || '—') + '\n';
+        var csv = meta + 'data;contrato;instituicao;produto;tipo;carteira;grupo;saldo;motivo\n' + rows.map(function (r) { return [r.data, r.contrato, r.inst, r.prod, r.tNome, r.cart, r.grupo, r.saldo, r.motivo].join(';'); }).join('\n');
+        try { var b = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8' }); var a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = 'movimentacoes_' + s.per + '_11_2026.csv'; a.click(); self.flash('Exportação gerada e registrada na auditoria'); }
+        catch (e) { self.flash('Não foi possível gerar o arquivo aqui'); }
+      },
+      hasToast: !!s.toast, toast: s.toast || ''
+    };
+  }
+}
+
+</script>
+</body>
+</html>

@@ -1,0 +1,1175 @@
+{
+ "remessa_0140": {
+  "linhas": 660367,
+  "contratos": 660367,
+  "docs": 482881,
+  "dup_contrato": 0,
+  "eps_vs_marcacao_diverge": 0,
+  "contrato_diferente_original": 11923,
+  "segmentacao_error": 660367,
+  "ncols": {
+   "82": 660367
+  },
+  "grupos": {
+   "G2": [
+    308715,
+    2243674376.15
+   ],
+   "COINCIDENTES": [
+    185064,
+    1540118486.59
+   ],
+   "G1": [
+    166476,
+    1115800119.02
+   ],
+   "C1": [
+    37,
+    291044.92
+   ],
+   "M": [
+    37,
+    358486.36
+   ],
+   "Mundo Z": [
+    20,
+    66873.1
+   ],
+   "A1": [
+    10,
+    151792.85
+   ],
+   "<500": [
+    7,
+    16914.27
+   ],
+   "Prescrito": [
+    1,
+    1530.51
+   ]
+  },
+  "transicoes": [
+   [
+    "(vazio)",
+    "G2",
+    300792
+   ],
+   [
+    "(vazio)",
+    "G1",
+    165147
+   ],
+   [
+    "(vazio)",
+    "COINCIDENTES",
+    155307
+   ],
+   [
+    "D",
+    "COINCIDENTES",
+    22628
+   ],
+   [
+    "C",
+    "COINCIDENTES",
+    4015
+   ],
+   [
+    "D",
+    "G2",
+    3886
+   ],
+   [
+    "B",
+    "COINCIDENTES",
+    2365
+   ],
+   [
+    "B",
+    "G2",
+    2123
+   ],
+   [
+    "A",
+    "G2",
+    1090
+   ],
+   [
+    "D",
+    "G1",
+    912
+   ],
+   [
+    "C",
+    "G2",
+    824
+   ],
+   [
+    "A",
+    "COINCIDENTES",
+    749
+   ],
+   [
+    "B",
+    "G1",
+    226
+   ],
+   [
+    "C",
+    "G1",
+    118
+   ],
+   [
+    "A",
+    "G1",
+    73
+   ],
+   [
+    "(vazio)",
+    "C1",
+    34
+   ],
+   [
+    "(vazio)",
+    "M",
+    22
+   ],
+   [
+    "(vazio)",
+    "Mundo Z",
+    16
+   ],
+   [
+    "(vazio)",
+    "A1",
+    10
+   ],
+   [
+    "(vazio)",
+    "<500",
+    6
+   ],
+   [
+    "C",
+    "M",
+    6
+   ],
+   [
+    "D",
+    "M",
+    4
+   ],
+   [
+    "D",
+    "Mundo Z",
+    4
+   ],
+   [
+    "B",
+    "M",
+    4
+   ],
+   [
+    "D",
+    "C1",
+    2
+   ]
+  ],
+  "cluster_eps": {
+   "(vazio)": 465814,
+   "N": 49107,
+   "A": 44512,
+   "D": 42102,
+   "C": 37048,
+   "B": 20009,
+   "CA": 1743,
+   "AJU": 32
+  },
+  "risco_devedor": {
+   "S/I": 602489,
+   "High": 35418,
+   "Med": 14372,
+   "Low": 8088
+  },
+  "acordo_ativo": {
+   "N": 660367
+  },
+  "inibicao_cobranca": {
+   "N": 660367
+  },
+  "ajuizado": {
+   "N": 660367
+  },
+  "tipo_de_pagamento": {
+   "UNKNOWN": 649762,
+   "BOLETO": 10397,
+   "PIX_QRCODE": 208
+  },
+  "segmento_npl": {
+   "(vazio)": 565691,
+   "9": 42428,
+   "8": 23217,
+   "7": 16492,
+   "C1": 5308,
+   "5": 3874,
+   "1": 2428,
+   "Caidos-180+": 517,
+   "3": 150,
+   "Caidos-121-180": 106,
+   "Caidos-31-60": 52,
+   "Caidos-91-120": 38
+  },
+  "area_de_negocio": {
+   "npl": 660367
+  },
+  "tipo_cliente": {
+   "F": 655327,
+   "J": 5040
+  },
+  "processo_ativo": {
+   "N": 660324,
+   "Y": 43
+  },
+  "protesto": {
+   "N": 660341,
+   "Y": 26
+  },
+  "esta_demitido": {
+   "N": 660367
+  },
+  "elegivel_entrega_amigavel": {
+   "N": 660367
+  },
+  "estrategia": {
+   "ITAU CONSUMER 11/2025": 124158,
+   "SANTANDER NPL CONSUMER - 06/25": 115356,
+   "MERCADO PAGO NPL CONSUMER - 09/2026": 76035,
+   "SUPERSIM NPL CONSUMER - 05/26": 42192,
+   "NEON NPL CONSUMER - 11/25": 40616,
+   "PAN NPL CONSUMER II - 06/2025": 39203,
+   "PAN DESENROLA NPL CONSUMER - 11/2024": 20588,
+   "ITAU CONSUMER 06/2025": 16776,
+   "NEON NPL CONSUMER - 08/24": 16738,
+   "PAN NPL CONSUMER - 04/2026": 16354,
+   "NOVERDE - 08/26": 15325,
+   "PAN NPL CONSUMER - 12/2024": 15217
+  },
+  "prefixo": {
+   "NPL": 651939,
+   "CN": 5310,
+   "MAT": 1564,
+   "CP": 1310,
+   "LM": 228,
+   "EMP": 16
+  }
+ },
+ "remessa_0144": {
+  "linhas": 15679,
+  "contratos": 15679,
+  "docs": 13802,
+  "dup_contrato": 0,
+  "eps_vs_marcacao_diverge": 0,
+  "contrato_diferente_original": 14657,
+  "segmentacao_error": 15679,
+  "ncols": {
+   "82": 15679
+  },
+  "grupos": {
+   "C2": [
+    15314,
+    72451024.52
+   ],
+   "C3": [
+    331,
+    1605386.94
+   ],
+   "C1": [
+    32,
+    125460.46
+   ],
+   "COINCIDENTES": [
+    2,
+    180740.78
+   ]
+  },
+  "transicoes": [
+   [
+    "(vazio)",
+    "C2",
+    12908
+   ],
+   [
+    "D",
+    "C2",
+    1154
+   ],
+   [
+    "B",
+    "C2",
+    535
+   ],
+   [
+    "C",
+    "C2",
+    454
+   ],
+   [
+    "A",
+    "C2",
+    263
+   ],
+   [
+    "(vazio)",
+    "C3",
+    246
+   ],
+   [
+    "D",
+    "C3",
+    45
+   ],
+   [
+    "(vazio)",
+    "C1",
+    26
+   ],
+   [
+    "B",
+    "C3",
+    17
+   ],
+   [
+    "A",
+    "C3",
+    13
+   ],
+   [
+    "C",
+    "C3",
+    10
+   ],
+   [
+    "D",
+    "C1",
+    3
+   ],
+   [
+    "B",
+    "C1",
+    1
+   ],
+   [
+    "C",
+    "C1",
+    1
+   ],
+   [
+    "A",
+    "C1",
+    1
+   ],
+   [
+    "B",
+    "COINCIDENTES",
+    1
+   ],
+   [
+    "(vazio)",
+    "COINCIDENTES",
+    1
+   ]
+  ],
+  "cluster_eps": {
+   "(vazio)": 5624,
+   "A": 4219,
+   "C": 1942,
+   "B": 1466,
+   "D": 1298,
+   "N": 848,
+   "CA": 240,
+   "AJU": 42
+  },
+  "risco_devedor": {
+   "S/I": 13988,
+   "High": 1241,
+   "Med": 355,
+   "Low": 95
+  },
+  "acordo_ativo": {
+   "N": 15679
+  },
+  "inibicao_cobranca": {
+   "N": 15679
+  },
+  "ajuizado": {
+   "N": 15679
+  },
+  "tipo_de_pagamento": {
+   "BOLETO": 14470,
+   "UNKNOWN": 813,
+   "PIX_QRCODE": 396
+  },
+  "segmento_npl": {
+   "(vazio)": 10952,
+   "3": 979,
+   "Caidos-180+": 877,
+   "9": 434,
+   "7": 316,
+   "Caidos-31-60": 295,
+   "8": 291,
+   "Caidos-121-180": 278,
+   "1": 269,
+   "C1": 235,
+   "Caidos-61-90": 224,
+   "5": 161
+  },
+  "area_de_negocio": {
+   "npl": 15679
+  },
+  "tipo_cliente": {
+   "F": 15626,
+   "J": 53
+  },
+  "processo_ativo": {
+   "N": 15633,
+   "Y": 46
+  },
+  "protesto": {
+   "N": 15678,
+   "Y": 1
+  },
+  "esta_demitido": {
+   "N": 15679
+  },
+  "elegivel_entrega_amigavel": {
+   "N": 15679
+  },
+  "estrategia": {
+   "PAN DESENROLA NPL CONSUMER - 11/2024": 1729,
+   "SANTANDER NPL CONSUMER - 06/25": 1557,
+   "ITAU_CONSUMER - 11/23": 1195,
+   "PAN DESENROLA NPL CONSUMER - 05/2025": 1150,
+   "ITAU CONSUMER 11/2025": 1016,
+   "NEON NPL CONSUMER - 08/24": 957,
+   "PEFISA NPL CONSUMER - 03/24": 800,
+   "PAN NPL CONSUMER II - 06/2025": 755,
+   "PAN NPL CONSUMER - 03/2024": 679,
+   "INTER DESENROLA NPL CONSUMER - 05/25": 677,
+   "ITAU CONSUMER 03/2024": 672,
+   "PAN NPL CONSUMER - 12/2024": 464
+  },
+  "prefixo": {
+   "NPL": 15234,
+   "CN": 309,
+   "CP": 69,
+   "MAT": 55,
+   "LM": 12
+  }
+ },
+ "remessa_0900": {
+  "linhas": 171015,
+  "contratos": 171015,
+  "docs": 170679,
+  "dup_contrato": 0,
+  "eps_vs_marcacao_diverge": 0,
+  "contrato_diferente_original": 1609,
+  "segmentacao_error": 171015,
+  "ncols": {
+   "82": 171015
+  },
+  "grupos": {
+   "G3": [
+    78386,
+    268268119.86
+   ],
+   "G4": [
+    56483,
+    206394935.01
+   ],
+   "G2": [
+    32263,
+    208665762.12
+   ],
+   "COINCIDENTES": [
+    1728,
+    10439261.91
+   ],
+   "Prescrito": [
+    1235,
+    2703904.33
+   ],
+   "C1": [
+    514,
+    1671783.55
+   ],
+   "G1": [
+    328,
+    2116317.16
+   ],
+   "M": [
+    50,
+    5570102.69
+   ],
+   "C2": [
+    25,
+    105604.98
+   ],
+   "C3": [
+    3,
+    10929.49
+   ]
+  },
+  "transicoes": [
+   [
+    "(vazio)",
+    "G3",
+    40440
+   ],
+   [
+    "(vazio)",
+    "G2",
+    32249
+   ],
+   [
+    "(vazio)",
+    "G4",
+    20172
+   ],
+   [
+    "D",
+    "G4",
+    16013
+   ],
+   [
+    "B",
+    "G3",
+    14442
+   ],
+   [
+    "D",
+    "G3",
+    14194
+   ],
+   [
+    "B",
+    "G4",
+    11593
+   ],
+   [
+    "C",
+    "G4",
+    6390
+   ],
+   [
+    "C",
+    "G3",
+    5885
+   ],
+   [
+    "A",
+    "G3",
+    3425
+   ],
+   [
+    "A",
+    "G4",
+    2315
+   ],
+   [
+    "(vazio)",
+    "COINCIDENTES",
+    1198
+   ],
+   [
+    "(vazio)",
+    "Prescrito",
+    1103
+   ],
+   [
+    "(vazio)",
+    "C1",
+    282
+   ],
+   [
+    "D",
+    "COINCIDENTES",
+    270
+   ],
+   [
+    "(vazio)",
+    "G1",
+    259
+   ],
+   [
+    "C",
+    "COINCIDENTES",
+    115
+   ],
+   [
+    "B",
+    "COINCIDENTES",
+    99
+   ],
+   [
+    "D",
+    "C1",
+    98
+   ],
+   [
+    "B",
+    "C1",
+    69
+   ],
+   [
+    "C",
+    "Prescrito",
+    56
+   ],
+   [
+    "C",
+    "C1",
+    54
+   ],
+   [
+    "D",
+    "Prescrito",
+    49
+   ],
+   [
+    "A",
+    "COINCIDENTES",
+    46
+   ],
+   [
+    "(vazio)",
+    "M",
+    46
+   ]
+  ],
+  "cluster_eps": {
+   "A": 53494,
+   "C": 38311,
+   "B": 28900,
+   "D": 24079,
+   "(vazio)": 20427,
+   "CA": 5804
+  },
+  "risco_devedor": {
+   "S/I": 161351,
+   "High": 7224,
+   "Med": 1800,
+   "Low": 640
+  },
+  "acordo_ativo": {
+   "N": 171015
+  },
+  "inibicao_cobranca": {
+   "N": 171015
+  },
+  "ajuizado": {
+   "N": 171015
+  },
+  "tipo_de_pagamento": {
+   "UNKNOWN": 169406,
+   "BOLETO": 1566,
+   "PIX_QRCODE": 43
+  },
+  "segmento_npl": {
+   "(vazio)": 134695,
+   "C1": 36320
+  },
+  "area_de_negocio": {
+   "npl": 171015
+  },
+  "tipo_cliente": {
+   "F": 159661,
+   "J": 11354
+  },
+  "processo_ativo": {
+   "N": 171015
+  },
+  "protesto": {
+   "N": 171015
+  },
+  "esta_demitido": {
+   "N": 171015
+  },
+  "elegivel_entrega_amigavel": {
+   "N": 171015
+  },
+  "estrategia": {
+   "PEFISA NPL CONSUMER - 03/24": 75460,
+   "NEON NPL CONSUMER - 08/24": 66165,
+   "NEON NPL CONSUMER - 11/25": 20427,
+   "PAN DESENROLA NPL CONSUMER - 11/2024": 6406,
+   "NOVERDE - 12/24": 2557
+  },
+  "prefixo": {
+   "NPL": 171015
+  }
+ },
+ "overlap_contratos": {
+  "0140&0144": 0,
+  "0140&0900": 10353,
+  "0144&0900": 25
+ },
+ "overlap_docs": {
+  "0140&0144": 24,
+  "0140&0900": 10292,
+  "0144&0900": 25
+ },
+ "parcelas_0140": {
+  "linhas": 1813224,
+  "contratos": 660367,
+  "orfas_linhas": 0,
+  "orfas_presentes_em_outro_eps": 0,
+  "status": {
+   "PA": 1813224
+  },
+  "escriturado": {
+   "N": 1813224
+  },
+  "venc_fmt": {
+   "8dig": 1813224
+  },
+  "curva_bate_remessa": 0,
+  "curva_diverge": 0,
+  "contratos_remessa_sem_parcela": 0
+ },
+ "telefone_0140": {
+  "linhas": 2018955,
+  "numeros_distintos": 1302545,
+  "orfas": 0,
+  "duplicadas": 202909,
+  "numero_tamanho_invalido": 0,
+  "origem": {
+   "BULK_IMPORT": 1914598,
+   "LESS": 103498,
+   "PORTAL_PME": 511,
+   "DATA_LAKE": 348
+  },
+  "fonte": {
+   "Enriquecimento - 16/11/2026": 618092,
+   "TakeOver - 16/11/2026": 191519,
+   "Enriquecimento - 15/09/2026": 131711,
+   "Enriquecimento - 13/11/2026": 124490,
+   "Enriquecimento - 19/10/2026": 115656,
+   "": 104359,
+   "EPS - 16/11/2026": 53409,
+   "Enriquecimento - 05/10/2026": 50325
+  },
+  "prioridade": {
+   "1": 660366,
+   "2": 647926,
+   "3": 612994,
+   "4": 96921,
+   "5": 694,
+   "6": 48,
+   "7": 6
+  },
+  "contratos_sem_telefone": 1,
+  "tel_por_contrato": {
+   "1": 12440,
+   "2": 34932,
+   "3": 516073,
+   "4": 96227,
+   "5": 646,
+   "6": 42,
+   "7": 6
+  }
+ },
+ "acordo_atual_0140": {
+  "linhas": 8388,
+  "orfas": 0,
+  "total": 0.0,
+  "periodo": [
+   null,
+   null
+  ],
+  "status_acordo_atual": {
+   "PROCESSED": 5136,
+   "VALIDATED": 1437,
+   "BROKEN": 1082,
+   "OVERDUE": 683,
+   "WAITING_OVERLIMIT_APPROVAL": 47,
+   "PAYMENT_PROCESSING": 1,
+   "ACQUITTAL": 1,
+   "PROCESSED_FTS": 1
+  },
+  "tipo_status_acordo_atual": {
+   "ACTIVE": 6220,
+   "PROMISE": 1484,
+   "OVERDUE": 684
+  },
+  "eps_acordo_atual": {
+   "serasa_limpa_nome": 5328,
+   "leal": 1046,
+   "acordo_certo": 887,
+   "renegocie_arc4u": 404,
+   "quero_quitar": 140,
+   "consignado_arc4_pan": 96,
+   "acerto": 88,
+   "exsen": 87,
+   "everest": 53,
+   "fattor_desafiante": 28
+  },
+  "acordo_atual_em_atraso": {
+   "N": 6036,
+   "Y": 2352
+  },
+  "tipo_acordo_atual": {
+   "TOTAL": 7914,
+   "INSTALLMENT": 427,
+   "WRAP": 47
+  },
+  "codigo_eps_atual": {
+   "0140": 8388
+  }
+ },
+ "pagamento_0140": {
+  "linhas": 30494,
+  "orfas": 0,
+  "total": 6473130.16,
+  "periodo": [
+   "20210510",
+   "20261118"
+  ]
+ },
+ "retirada_0140": {
+  "linhas": 18688,
+  "orfas": 18688,
+  "total": 0.0,
+  "periodo": [
+   null,
+   null
+  ],
+  "motivo": {
+   "2": 18420,
+   "1": 268
+  },
+  "data": {
+   "11192026": 18688
+  }
+ },
+ "garantias_0140": {
+  "linhas": 790,
+  "orfas": 0,
+  "total": 0.0,
+  "periodo": [
+   null,
+   null
+  ],
+  "tipo": {
+   "AliFidVeiculo": 762,
+   "FGO": 28
+  }
+ },
+ "telefones_bloqueados_0140": {
+  "linhas": 6661,
+  "orfas": 0,
+  "total": 0.0,
+  "periodo": [
+   null,
+   null
+  ],
+  "contrato": {
+   "*": 6661
+  }
+ },
+ "parcelas_0144": {
+  "linhas": 158226,
+  "contratos": 15679,
+  "orfas_linhas": 0,
+  "orfas_presentes_em_outro_eps": 0,
+  "status": {
+   "PA": 158226
+  },
+  "escriturado": {
+   "N": 158226
+  },
+  "venc_fmt": {
+   "8dig": 158226
+  },
+  "curva_bate_remessa": 0,
+  "curva_diverge": 0,
+  "contratos_remessa_sem_parcela": 0
+ },
+ "telefone_0144": {
+  "linhas": 49545,
+  "numeros_distintos": 37151,
+  "orfas": 0,
+  "duplicadas": 7054,
+  "numero_tamanho_invalido": 0,
+  "origem": {
+   "BULK_IMPORT": 46347,
+   "LESS": 3194,
+   "PORTAL_PME": 4
+  },
+  "fonte": {
+   "Enriquecimento - 16/11/2026": 14018,
+   "TakeOver - 16/11/2026": 6733,
+   "": 3198,
+   "EPS - 16/11/2026": 2750,
+   "Enriquecimento - 15/09/2026": 2306,
+   "Enriquecimento - 19/10/2026": 1892,
+   "Enriquecimento - 13/11/2026": 1632,
+   "Enriquecimento - 05/10/2026": 913
+  },
+  "prioridade": {
+   "1": 15678,
+   "2": 15555,
+   "3": 15182,
+   "4": 3113,
+   "5": 17
+  },
+  "contratos_sem_telefone": 1,
+  "tel_por_contrato": {
+   "1": 123,
+   "2": 373,
+   "3": 12069,
+   "4": 3096,
+   "5": 17
+  }
+ },
+ "acordo_atual_0144": {
+  "linhas": 14522,
+  "orfas": 0,
+  "total": 0.0,
+  "periodo": [
+   null,
+   null
+  ],
+  "status_acordo_atual": {
+   "PROCESSED": 9740,
+   "OVERDUE": 3071,
+   "BROKEN": 1582,
+   "VALIDATED": 128,
+   "PROCESSED_FTS": 1
+  },
+  "tipo_status_acordo_atual": {
+   "ACTIVE": 11323,
+   "OVERDUE": 3071,
+   "PROMISE": 128
+  },
+  "eps_acordo_atual": {
+   "serasa_limpa_nome": 10559,
+   "acordo_certo": 1061,
+   "service_premium_caidos": 645,
+   "renegocie_arc4u": 535,
+   "goes_e_nicoladelli_caidos": 381,
+   "bellinati_caidos": 365,
+   "pasquali_ppgj_caidos": 248,
+   "quero_quitar": 162,
+   "exsen": 157,
+   "acerto": 130
+  },
+  "acordo_atual_em_atraso": {
+   "N": 9331,
+   "Y": 5191
+  },
+  "tipo_acordo_atual": {
+   "TOTAL": 14494,
+   "INSTALLMENT": 28
+  },
+  "codigo_eps_atual": {
+   "0144": 14522
+  }
+ },
+ "pagamento_0144": {
+  "linhas": 32655,
+  "orfas": 0,
+  "total": 6320856.09,
+  "periodo": [
+   "20211005",
+   "20261118"
+  ]
+ },
+ "retirada_0144": {
+  "linhas": 54,
+  "orfas": 54,
+  "total": 0.0,
+  "periodo": [
+   null,
+   null
+  ],
+  "motivo": {
+   "1": 53,
+   "2": 1
+  },
+  "data": {
+   "11192026": 54
+  }
+ },
+ "garantias_0144": {
+  "linhas": 881,
+  "orfas": 0,
+  "total": 0.0,
+  "periodo": [
+   null,
+   null
+  ],
+  "tipo": {
+   "AliFidVeiculo": 686,
+   "FGO": 195
+  }
+ },
+ "telefones_bloqueados_0144": {
+  "linhas": 6661,
+  "orfas": 0,
+  "total": 0.0,
+  "periodo": [
+   null,
+   null
+  ],
+  "contrato": {
+   "*": 6661
+  }
+ },
+ "parcelas_0900": {
+  "linhas": 315303,
+  "contratos": 171015,
+  "orfas_linhas": 0,
+  "orfas_presentes_em_outro_eps": 0,
+  "status": {
+   "PA": 315303
+  },
+  "escriturado": {
+   "N": 315303
+  },
+  "venc_fmt": {
+   "8dig": 315303
+  },
+  "curva_bate_remessa": 0,
+  "curva_diverge": 0,
+  "contratos_remessa_sem_parcela": 0
+ },
+ "telefone_0900": {
+  "linhas": 536476,
+  "numeros_distintos": 490829,
+  "orfas": 0,
+  "duplicadas": 43354,
+  "numero_tamanho_invalido": 0,
+  "origem": {
+   "BULK_IMPORT": 508577,
+   "LESS": 27195,
+   "PORTAL_PME": 704
+  },
+  "fonte": {
+   "Enriquecimento - 16/11/2026": 141709,
+   "TakeOver - 16/11/2026": 50729,
+   "Enriquecimento - 15/09/2026": 38286,
+   "Enriquecimento - 13/11/2026": 30724,
+   "": 27899,
+   "EPS - 16/11/2026": 20379,
+   "Enriquecimento - 19/10/2026": 17921,
+   "Enriquecimento - 03/11/2026": 15307
+  },
+  "prioridade": {
+   "1": 171015,
+   "2": 170709,
+   "3": 168490,
+   "4": 25565,
+   "5": 655,
+   "6": 42
+  },
+  "contratos_sem_telefone": 0,
+  "tel_por_contrato": {
+   "1": 306,
+   "2": 2219,
+   "3": 142925,
+   "4": 24910,
+   "5": 613,
+   "6": 42
+  }
+ },
+ "acordo_atual_0900": {
+  "linhas": 1868,
+  "orfas": 0,
+  "total": 0.0,
+  "periodo": [
+   null,
+   null
+  ],
+  "status_acordo_atual": {
+   "PROCESSED": 983,
+   "BROKEN": 449,
+   "VALIDATED": 362,
+   "OVERDUE": 73,
+   "WAITING_OVERLIMIT_APPROVAL": 1
+  },
+  "tipo_status_acordo_atual": {
+   "ACTIVE": 1432,
+   "PROMISE": 363,
+   "OVERDUE": 73
+  },
+  "eps_acordo_atual": {
+   "serasa_limpa_nome": 1255,
+   "acordo_certo": 227,
+   "leal_desafiante": 83,
+   "renegocie_arc4u": 71,
+   "pasquali_ppgj": 33,
+   "consignado_arc4_pan": 32,
+   "quero_quitar": 27,
+   "goes_e_nicoladelli": 23,
+   "fattor": 23,
+   "bellinati": 14
+  },
+  "acordo_atual_em_atraso": {
+   "N": 1230,
+   "Y": 638
+  },
+  "tipo_acordo_atual": {
+   "TOTAL": 1686,
+   "INSTALLMENT": 182
+  },
+  "codigo_eps_atual": {
+   "0900": 1868
+  }
+ },
+ "pagamento_0900": {
+  "linhas": 1579,
+  "orfas": 0,
+  "total": 146403.46,
+  "periodo": [
+   "20240509",
+   "20261118"
+  ]
+ },
+ "retirada_0900": {
+  "linhas": 116,
+  "orfas": 116,
+  "total": 0.0,
+  "periodo": [
+   null,
+   null
+  ],
+  "motivo": {
+   "1": 107,
+   "2": 9
+  },
+  "data": {
+   "11192026": 116
+  }
+ },
+ "garantias_0900": {
+  "linhas": 0,
+  "orfas": 0,
+  "total": 0.0,
+  "periodo": [
+   null,
+   null
+  ]
+ },
+ "telefones_bloqueados_0900": {
+  "linhas": 6661,
+  "orfas": 0,
+  "total": 0.0,
+  "periodo": [
+   null,
+   null
+  ],
+  "contrato": {
+   "*": 6661
+  }
+ }
+}

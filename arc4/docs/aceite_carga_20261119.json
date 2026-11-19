@@ -1,0 +1,418 @@
+{
+ "carga": "2026-11-19",
+ "arquivos": {
+  "20261119_ACORDO_ATUAL_0140_OUT.zip": {
+   "sha256": "3334e9eb583e40a0b8cfa21774a7c240071d407e5575f88861532ebcc7f4fd25",
+   "tamanho_bytes": 424901,
+   "registros": 8388
+  },
+  "20261119_ACORDO_ATUAL_0144_OUT.zip": {
+   "sha256": "61f75dea851ae0a49f9b30882ad7a751d596296e29d46ec0537105656e6e2aee",
+   "tamanho_bytes": 738204,
+   "registros": 14522
+  },
+  "20261119_ACORDO_ATUAL_0900_OUT.zip": {
+   "sha256": "16b85720dc2251d6370b0665e7753ade7ded54bc7e2829884983db68d30a3055",
+   "tamanho_bytes": 92367,
+   "registros": 1868
+  },
+  "20261119_AVALISTAS_0140_OUT.zip": {
+   "sha256": "9bd5ead544300000230e5289ceb7d61d9b317058074775957471d0be1b38bad8",
+   "tamanho_bytes": 338,
+   "registros": 0
+  },
+  "20261119_AVALISTAS_0144_OUT.zip": {
+   "sha256": "e9c9ebcc7f47ea1c902b0ed17577fed6bbe1e6259bb0244f3d62729d49fd9c15",
+   "tamanho_bytes": 338,
+   "registros": 0
+  },
+  "20261119_AVALISTAS_0900_OUT.zip": {
+   "sha256": "1c2d1a6f8d36489732af26c777cc0ddb59d874e6cfa92072f7ff9f3e4b5b46ae",
+   "tamanho_bytes": 338,
+   "registros": 0
+  },
+  "20261119_GARANTIAS_0140_OUT.zip": {
+   "sha256": "d45936c15aa0d6c3ae6c572cfb21990f85315e2d1955a7be06ac78105c4c4ad7",
+   "tamanho_bytes": 59898,
+   "registros": 790
+  },
+  "20261119_GARANTIAS_0144_OUT.zip": {
+   "sha256": "b7d20e68487ce043646cde1707c2c8fc4c7f70e05abbe5513419e8bdc5b89a01",
+   "tamanho_bytes": 68537,
+   "registros": 881
+  },
+  "20261119_GARANTIAS_0900_OUT.zip": {
+   "sha256": "a1d44e4c85bb7f06ac517173afb67e112cff4ead3cb25a82b65abd43c8b472b0",
+   "tamanho_bytes": 604,
+   "registros": 0
+  },
+  "20261119_PAGAMENTO_0140_OUT.zip": {
+   "sha256": "bac3486498a5c6f3b3ffa4e458ea0ae27c34fdfe0571733628c43be4b2dcbd96",
+   "tamanho_bytes": 239065,
+   "registros": 30494
+  },
+  "20261119_PAGAMENTO_0144_OUT.zip": {
+   "sha256": "ee3b6074e7c41071a2f669e73242d44e6b48169c8cd044a6db8ddc8f5d27dd49",
+   "tamanho_bytes": 266605,
+   "registros": 32655
+  },
+  "20261119_PAGAMENTO_0900_OUT.zip": {
+   "sha256": "7591f84f3e4cf7490c362dcafb1573bd1004e95e09251976a0c1419dd93193c8",
+   "tamanho_bytes": 13258,
+   "registros": 1579
+  },
+  "20261119_PARCELAS_0140_OUT.zip": {
+   "sha256": "c0e99d58a7f54cdbb1a3aaca8ef835ab1ea2d4be6d7b322c5850a0d484911f8e",
+   "tamanho_bytes": 39600212,
+   "registros": 1813224
+  },
+  "20261119_PARCELAS_0144_OUT.zip": {
+   "sha256": "d2d833a74385fa2bda4255e7caa1fd98d43328d9e562fecf459f8d1f2d9ffb60",
+   "tamanho_bytes": 2633354,
+   "registros": 158226
+  },
+  "20261119_PARCELAS_0900_OUT.zip": {
+   "sha256": "b5e522a40bbcf9876291e648bed520597905f47f9bab99b3a591bbe8e425ba98",
+   "tamanho_bytes": 7164508,
+   "registros": 315303
+  },
+  "20261119_REMESSA_ARC4U_0140_OUT.zip": {
+   "sha256": "c48dbedbea379a3ff919c388b95e99f19f200ccdedd71d9d3882b37061fdc633",
+   "tamanho_bytes": 78053810,
+   "registros": 660367
+  },
+  "20261119_REMESSA_ARC4U_0144_OUT.zip": {
+   "sha256": "ee3710d682244a35c2fe7eebbe3962a9d3821d5bfa11e61e1aa74d3b309a7e95",
+   "tamanho_bytes": 1925547,
+   "registros": 15679
+  },
+  "20261119_REMESSA_ARC4U_0900_OUT.zip": {
+   "sha256": "b5f8f207de23564ded8952f9b78d33a94d6888160982c22941e81778da8f91d8",
+   "tamanho_bytes": 20257328,
+   "registros": 171015
+  },
+  "20261119_RETIRADA_0140_OUT.zip": {
+   "sha256": "6d8763c598f95921d089508e01dd2fa2d5e495dbb2f9615f69a91d0eab99308b",
+   "tamanho_bytes": 254040,
+   "registros": 18688
+  },
+  "20261119_RETIRADA_0144_OUT.zip": {
+   "sha256": "b2b6f9d4b3976c33733262a8b31f1aa0f994cf20b5f65c029cb99ab3ececd223",
+   "tamanho_bytes": 1149,
+   "registros": 54
+  },
+  "20261119_RETIRADA_0900_OUT.zip": {
+   "sha256": "f1b5281f4bd0d6edc0aed23a961079940dd1c00f370655e60e6e309acca7fdb0",
+   "tamanho_bytes": 1794,
+   "registros": 116
+  },
+  "20261119_TELEFONES_BLOQUEADOS_0140_OUT.zip": {
+   "sha256": "f6d8eeb4d76c1db582881b53e73b35df83572ab40efa9a59b32d1adc24243cff",
+   "tamanho_bytes": 36958,
+   "registros": 6661
+  },
+  "20261119_TELEFONES_BLOQUEADOS_0144_OUT.zip": {
+   "sha256": "aec86b23e6bab8d8b98dd68341616bd916c84195037b66eeeb8d44beaecdc536",
+   "tamanho_bytes": 36958,
+   "registros": 6661
+  },
+  "20261119_TELEFONES_BLOQUEADOS_0900_OUT.zip": {
+   "sha256": "3ae47207d18c86a78486d00054fd72c870f8be4efd77677d645aaa863dc13342",
+   "tamanho_bytes": 36958,
+   "registros": 6661
+  },
+  "20261119_TELEFONE_0140_OUT.zip": {
+   "sha256": "d72c1e69578354585fa3724d80ae301af1d8b581ab83c8bc4e62aa6754d71301",
+   "tamanho_bytes": 22680714,
+   "registros": 2018955
+  },
+  "20261119_TELEFONE_0144_OUT.zip": {
+   "sha256": "4e311c9fbdd8e912123bdd23fd8a00865f0f39d97620155d51790921610f11e5",
+   "tamanho_bytes": 546329,
+   "registros": 49545
+  },
+  "20261119_TELEFONE_0900_OUT.zip": {
+   "sha256": "b65db9790c8b558f327af88320ecf33317b879dd1e6031db899f01d00e79fbe8",
+   "tamanho_bytes": 5809156,
+   "registros": 536476
+  }
+ },
+ "por_eps": {
+  "0140": {
+   "contratos": 660367,
+   "cpfs_cnpjs": 482881,
+   "saldo_curva": 4900479623.77,
+   "principal": 1887267459.26,
+   "atraso_medio_dias": 984.4,
+   "atraso_mediano_dias": 1027,
+   "coincidentes_com_outra_eps": 10353,
+   "retiradas": 18688,
+   "grupos": {
+    "G2": {
+     "contratos": 308715,
+     "saldo": 2243674376.15
+    },
+    "COINCIDENTES": {
+     "contratos": 185064,
+     "saldo": 1540118486.59
+    },
+    "G1": {
+     "contratos": 166476,
+     "saldo": 1115800119.02
+    },
+    "C1": {
+     "contratos": 37,
+     "saldo": 291044.92
+    },
+    "M": {
+     "contratos": 37,
+     "saldo": 358486.36
+    },
+    "<500": {
+     "contratos": 7,
+     "saldo": 16914.27
+    },
+    "Mundo Z": {
+     "contratos": 20,
+     "saldo": 66873.1
+    },
+    "Prescrito": {
+     "contratos": 1,
+     "saldo": 1530.51
+    },
+    "A1": {
+     "contratos": 10,
+     "saldo": 151792.85
+    }
+   }
+  },
+  "0144": {
+   "contratos": 15679,
+   "cpfs_cnpjs": 13802,
+   "saldo_curva": 74362612.7,
+   "principal": 62361178.76,
+   "atraso_medio_dias": 75.7,
+   "atraso_mediano_dias": 0,
+   "coincidentes_com_outra_eps": 25,
+   "retiradas": 54,
+   "grupos": {
+    "C2": {
+     "contratos": 15314,
+     "saldo": 72451024.52
+    },
+    "C1": {
+     "contratos": 32,
+     "saldo": 125460.46
+    },
+    "C3": {
+     "contratos": 331,
+     "saldo": 1605386.94
+    },
+    "COINCIDENTES": {
+     "contratos": 2,
+     "saldo": 180740.78
+    }
+   }
+  },
+  "0900": {
+   "contratos": 171015,
+   "cpfs_cnpjs": 170679,
+   "saldo_curva": 705946721.1,
+   "principal": 411203645.3,
+   "atraso_medio_dias": 1366.9,
+   "atraso_mediano_dias": 1378,
+   "coincidentes_com_outra_eps": 10378,
+   "retiradas": 116,
+   "grupos": {
+    "G3": {
+     "contratos": 78386,
+     "saldo": 268268119.86
+    },
+    "G4": {
+     "contratos": 56483,
+     "saldo": 206394935.01
+    },
+    "C1": {
+     "contratos": 514,
+     "saldo": 1671783.55
+    },
+    "COINCIDENTES": {
+     "contratos": 1728,
+     "saldo": 10439261.91
+    },
+    "Prescrito": {
+     "contratos": 1235,
+     "saldo": 2703904.33
+    },
+    "G1": {
+     "contratos": 328,
+     "saldo": 2116317.16
+    },
+    "C2": {
+     "contratos": 25,
+     "saldo": 105604.98
+    },
+    "G2": {
+     "contratos": 32263,
+     "saldo": 208665762.12
+    },
+    "C3": {
+     "contratos": 3,
+     "saldo": 10929.49
+    },
+    "M": {
+     "contratos": 50,
+     "saldo": 5570102.69
+    }
+   }
+  }
+ },
+ "consolidado": {
+  "contratos_unicos": 836683,
+  "posicoes": 847061,
+  "cpfs_cnpjs_unicos": 657021,
+  "saldo_unico": 5608952396.19,
+  "saldo_posicoes": 5680788957.57,
+  "atraso_medio_dias": 1044.8,
+  "atraso_mediano_dias": 1079,
+  "coincidentes_entre_eps": {
+   "total": 10378,
+   "0140_e_0900": 10353,
+   "0144_e_0900": 25,
+   "nas_tres": 0
+  }
+ },
+ "qualidade": {
+  "telefone_linhas_duplicadas": 253317,
+  "telefone_em_lista_de_bloqueio": {
+   "0140": 156,
+   "0144": 6,
+   "0900": 15
+  },
+  "acordos_com_acordo_ativo_N": 24778,
+  "curva_diverge_soma_parcelas_mais_de_1_real": {
+   "0140": 1683,
+   "0144": 7,
+   "0900": 14
+  },
+  "retiradas_presentes_na_remessa_do_dia": 0,
+  "parcelas_orfas": 0,
+  "telefones_orfaos": 0,
+  "segmentacao_do_contrato_ERROR_LEVEL_pct": 100
+ },
+ "pagamentos": {
+  "total_arquivo": 12940389.71,
+  "linhas_arquivo": 64728,
+  "novembro_2026_ate_18": {
+   "quantidade": 7080,
+   "valor": 1220155.77
+  }
+ },
+ "instituicoes": {
+  "PAN": {
+   "posicoes": 128865,
+   "contratos_unicos": 126693,
+   "saldo": 1463538862.55
+  },
+  "ITAU": {
+   "posicoes": 175345,
+   "contratos_unicos": 175345,
+   "saldo": 1270055523.46
+  },
+  "NEON": {
+   "posicoes": 145103,
+   "contratos_unicos": 138496,
+   "saldo": 746682120.42
+  },
+  "MERCADO PAGO": {
+   "posicoes": 76059,
+   "contratos_unicos": 76059,
+   "saldo": 503089641.96
+  },
+  "SANTANDER": {
+   "posicoes": 117004,
+   "contratos_unicos": 117004,
+   "saldo": 461074837.11
+  },
+  "NOVERDE": {
+   "posicoes": 38231,
+   "contratos_unicos": 36713,
+   "saldo": 376593178.07
+  },
+  "PERNAMBUCANAS": {
+   "posicoes": 86543,
+   "contratos_unicos": 86462,
+   "saldo": 330149918.37
+  },
+  "NÃO MAPEADO": {
+   "posicoes": 7536,
+   "contratos_unicos": 7536,
+   "saldo": 242408798.44
+  },
+  "INTER": {
+   "posicoes": 16583,
+   "contratos_unicos": 16583,
+   "saldo": 107940568.39
+  },
+  "SUPER SIM": {
+   "posicoes": 44478,
+   "contratos_unicos": 44478,
+   "saldo": 93052850.63
+  },
+  "QUEROQUERO": {
+   "posicoes": 7517,
+   "contratos_unicos": 7517,
+   "saldo": 29514456.62
+  },
+  "BTG": {
+   "posicoes": 1337,
+   "contratos_unicos": 1337,
+   "saldo": 27185083.52
+  },
+  "BRADESCO": {
+   "posicoes": 2036,
+   "contratos_unicos": 2036,
+   "saldo": 17288047.48
+  },
+  "BV": {
+   "posicoes": 277,
+   "contratos_unicos": 277,
+   "saldo": 11810462.63
+  },
+  "PORTOBANK": {
+   "posicoes": 58,
+   "contratos_unicos": 58,
+   "saldo": 219603.04
+  },
+  "NUBANK": {
+   "posicoes": 89,
+   "contratos_unicos": 89,
+   "saldo": 185004.88
+  }
+ },
+ "estrategias_sem_instituicao": {
+  "NPL Consumer": [
+   7522,
+   242353814.04
+  ],
+  "EMPACOTAMENTO DESENROLA 2.0 ARC": [
+   14,
+   54984.4
+  ]
+ },
+ "formatos_de_data": {
+  "MMDDAAAA": [
+   "REMESSA_ARC4U.menor_data_atraso",
+   "REMESSA_ARC4U.data_nascimento",
+   "PARCELAS.vencimento_parcela",
+   "RETIRADA.data_baixa",
+   "GARANTIAS.data_compra_garantia"
+  ],
+  "DDMMAAAA": [
+   "PAGAMENTO.data_pagamento"
+  ],
+  "DD/MM/AAAA": [
+   "ACORDO_ATUAL.vencimento_parcela_atual"
+  ]
+ }
+}

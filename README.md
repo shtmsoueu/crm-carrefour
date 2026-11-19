@@ -1,5 +1,7 @@
 # CRM de Batimento — Carteira Carrefour
 
+> A pasta [`arc4/`](arc4/README.md) contém outro projeto, o CRM de Cobrança ARC4, independente deste (stack, banco e CI próprios).
+
 Sistema web para importar os arquivos diários e mensais enviados pelo banco (layouts Cyber → Assessoria), guardar as informações em uma base relacional e conciliar automaticamente contratos, acordos, boletos, pagamentos, quebras, elegibilidade, comissão e campanhas. Ele substitui a conferência manual em Excel e mantém a rastreabilidade até o arquivo original.
 
 ## Funcionalidades

@@ -1,0 +1,565 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Administração</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#F4F8FE;font-family:Figtree,system-ui,sans-serif;color:#05132A}
+a{color:#195AB4}a:hover{color:#10408D}
+button,input,select,textarea{font-family:inherit}
+button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:2px solid #307AE0;outline-offset:2px}
+.top{background:#05132A;display:flex;align-items:center;gap:20px;padding:0 24px;min-height:60px;flex-wrap:wrap}
+.mark{width:28px;height:28px;border-radius:6px;background:#195AB4;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px}
+.avatar{width:32px;height:32px;border-radius:50%;background:#10408D;color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600}
+.nav{color:#B1D2FF;text-decoration:none;font-size:14px;font-weight:500;padding:8px 12px;border-radius:6px}
+.nav:hover{color:#fff;background:#0B2859}
+.nav-on{color:#fff;background:#10408D}
+.wrap{width:100%;max-width:1400px;margin:0 auto;padding:24px 28px 48px;box-sizing:border-box;display:flex;flex-direction:column;gap:20px}
+.card{background:#fff;border:1px solid #DCE6F5;border-radius:12px}
+.lbl{font-size:12px;color:#4A5B78;font-weight:500}
+.mono{font-variant-numeric:tabular-nums}
+.h1{margin:0;font-size:24px;font-weight:700}
+.h2{margin:0;font-size:17px;font-weight:600}
+.btn{display:inline-flex;align-items:center;gap:8px;height:40px;padding:0 16px;border-radius:8px;border:1px solid #B1D2FF;background:#fff;color:#0B2859;font-size:14px;font-weight:600;cursor:pointer;text-decoration:none;box-sizing:border-box;white-space:nowrap}
+.btn:hover{background:#EAF2FF;color:#0B2859}
+.btn-primary{background:#195AB4;border-color:#195AB4;color:#fff}
+.btn-primary:hover{background:#10408D;border-color:#10408D;color:#fff}
+.btn-off{background:#E6EDF7;border-color:#E6EDF7;color:#7B8BA6;cursor:not-allowed}
+.btn-off:hover{background:#E6EDF7;color:#7B8BA6}
+.btn-danger{color:#A1231A;border-color:#F1C9C5}
+.btn-danger:hover{background:#FDECEC;color:#A1231A}
+.btn-sm{height:32px;padding:0 12px;font-size:13px}
+.btn-link{border:0;background:none;color:#195AB4;font-size:13px;font-weight:600;cursor:pointer;padding:4px 6px;border-radius:6px}
+.btn-link:hover{background:#EAF2FF}
+.chip{display:inline-flex;align-items:center;gap:6px;height:24px;padding:0 8px;border-radius:6px;font-size:12px;font-weight:600;background:#EAF2FF;color:#0B2859;white-space:nowrap}
+.chip-warn{background:#FFF4E0;color:#8A4B06}
+.chip-crit{background:#FDECEC;color:#A1231A}
+.chip-ok{background:#D2E5FF;color:#0B2859}
+.chip-dark{background:#05132A;color:#fff}
+.chip-line{background:#fff;border:1px solid #B1D2FF}
+.chip-sim{background:#fff;border:1px dashed #87BAFF;color:#10408D}
+.seg{display:inline-flex;border:1px solid #B1D2FF;border-radius:8px;overflow:hidden;background:#fff;flex-wrap:wrap}
+.seg-b{border:0;background:#fff;height:36px;padding:0 14px;font-size:13px;font-weight:600;color:#0B2859;cursor:pointer;border-right:1px solid #DCE6F5}
+.seg-b:last-child{border-right:0}
+.seg-b:hover{background:#EAF2FF}
+.seg-on{background:#195AB4;color:#fff}
+.seg-on:hover{background:#10408D}
+.tabs{display:flex;gap:4px;border-bottom:1px solid #DCE6F5;flex-wrap:wrap}
+.tab{border:0;background:none;height:42px;padding:0 14px;font-size:14px;font-weight:600;color:#4A5B78;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px}
+.tab:hover{color:#0B2859}
+.tab-on{color:#195AB4;border-bottom-color:#195AB4}
+.inp,.sel{height:38px;border:1px solid #B1D2FF;border-radius:8px;padding:0 10px;font-size:14px;box-sizing:border-box;background:#fff;color:#05132A}
+.inp:focus,.sel:focus{border-color:#195AB4}
+.txa{border:1px solid #B1D2FF;border-radius:8px;padding:8px 10px;font-size:14px;box-sizing:border-box;width:100%;min-height:72px;resize:vertical;color:#05132A}
+.fld{display:flex;flex-direction:column;gap:4px}
+.pill{height:30px;padding:0 12px;border-radius:15px;border:1px solid #B1D2FF;background:#fff;font-size:12px;font-weight:500;cursor:pointer;color:#0B2859}
+.pill:hover{border-color:#549CFF}
+.pill-on{background:#195AB4;border-color:#195AB4;color:#fff}
+.tbl{width:100%;border-collapse:collapse;font-size:13px}
+.tbl th{text-align:left;font-weight:600;color:#4A5B78;font-size:12px;padding:10px 12px;border-bottom:1px solid #DCE6F5;white-space:nowrap}
+.tbl td{padding:10px 12px;border-bottom:1px solid #EEF3FA;vertical-align:middle}
+.tbl tr.clk:hover td{background:#F7FAFF;cursor:pointer}
+.num{text-align:right}
+.kpi{background:#fff;border:1px solid #DCE6F5;border-radius:12px;padding:14px 16px;display:flex;flex-direction:column;gap:4px}
+.kv{font-size:24px;font-weight:700;font-variant-numeric:tabular-nums}
+.delta{font-size:12px;font-weight:600;color:#10408D}
+.tip{position:relative;display:inline-flex;vertical-align:middle}
+.tip-btn{all:unset;cursor:help;width:22px;height:22px;display:inline-flex;align-items:center;justify-content:center;border-radius:50%;color:#4A5B78}
+.tip-btn:hover,.tip-btn:focus-visible{color:#195AB4;background:#EAF2FF}
+.tip-btn:focus-visible{outline:2px solid #307AE0}
+.bubble{position:absolute;z-index:40;top:calc(100% + 6px);left:50%;transform:translateX(-50%);width:max-content;max-width:280px;background:#05132A;color:#fff;font-size:12px;line-height:17px;font-weight:400;padding:8px 10px;border-radius:6px;opacity:0;visibility:hidden;pointer-events:none;transition:opacity .12s;text-align:left;white-space:normal}
+.bubble-r{left:auto;right:0;transform:none}
+.bubble-l{left:0;transform:none}
+.tip:hover .bubble,.tip:focus-within .bubble{opacity:1;visibility:visible}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:#05132A;color:#fff;border-radius:10px;padding:10px 16px;display:flex;gap:14px;align-items:center;font-size:13px;z-index:60}
+.sq{width:8px;height:8px;border-radius:2px;display:inline-block}
+.e0140{background:#195AB4}.e0144{background:#87BAFF}.e0900{background:#0B2859}
+.overlay{position:fixed;inset:0;background:rgba(5,19,42,.45);display:flex;align-items:flex-start;justify-content:center;padding:60px 16px;z-index:50;overflow:auto}
+.modal{background:#fff;border-radius:12px;width:100%;max-width:560px;padding:22px 24px;display:flex;flex-direction:column;gap:14px;box-sizing:border-box}
+.drawer{position:fixed;top:0;right:0;bottom:0;width:min(440px,100%);background:#fff;border-left:1px solid #DCE6F5;z-index:55;padding:22px 24px;box-sizing:border-box;overflow:auto;display:flex;flex-direction:column;gap:14px}
+.x{all:unset;cursor:pointer;width:32px;height:32px;display:inline-flex;align-items:center;justify-content:center;border-radius:6px;color:#4A5B78}
+.x:hover{background:#EAF2FF}
+.x:focus-visible{outline:2px solid #307AE0}
+
+.st{display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:500}
+.st-dot{width:8px;height:8px;border-radius:50%;display:inline-block}
+.d-ativo{background:#195AB4}.d-bloq{background:#A1231A}.d-desat{background:#B1BDD0}.d-pend{background:#D97706}
+.mx th,.mx td{text-align:center}
+.mx th:first-child,.mx td:first-child{text-align:left}
+.ck{width:18px;height:18px;accent-color:#195AB4;cursor:pointer}
+.na{color:#B1BDD0}
+.ev-row{display:grid;grid-template-columns:130px 180px minmax(0,1fr) 120px;gap:12px;padding:10px 12px;border-bottom:1px solid #EEF3FA;font-size:13px;align-items:center}
+
+</style>
+</helmet>
+<div style="min-height: 100vh; display: flex; flex-direction: column">
+  <header class="top">
+    <div style="display: flex; align-items: center; gap: 10px">
+      <div class="mark">A4</div>
+      <span style="color: #fff; font-weight: 600; font-size: 16px">ARC4 Cobrança</span>
+    </div>
+    <nav aria-label="Principal" style="display: flex; gap: 2px; flex-wrap: wrap"><a class="nav" href="Main.dc.html">Consulta</a><a class="nav" href="Carteira.dc.html">Carteira</a><a class="nav" href="Movimentacoes.dc.html">Movimentações</a><a class="nav" href="Importacao.dc.html">Importação</a><a class="nav nav-on" href="Usuarios.dc.html" aria-current="page">Administração</a></nav>
+    
+    <div style="margin-left: auto; display: flex; align-items: center; gap: 12px">
+      <div style="display: flex; flex-direction: column; align-items: flex-end; line-height: 1.2">
+        <span style="color: #fff; font-size: 13px; font-weight: 600">{{userName}}</span>
+        <span style="color: #87BAFF; font-size: 12px">{{userPerfil}}</span>
+      </div>
+      <div class="avatar" aria-hidden="true">{{userIni}}</div>
+      <a class="nav" href="Login.dc.html" style="display: inline-flex; align-items: center; gap: 6px"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M15 4h3a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-3"></path><path d="M10 17l-5-5 5-5"></path><path d="M5 12h11"></path></svg>Sair</a>
+    </div>
+  </header>
+  <main class="wrap">
+    <div style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 16px">
+      <div style="display: flex; align-items: center; gap: 10px">
+        <h1 class="h1">Administração</h1>
+        <span class="tip"><button type="button" class="tip-btn" aria-label="Sobre esta área" aria-describedby="t-adm"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M19.4 7.6A9 9 0 1 1 16.4 4.1"></path><path d="M12 11v6"></path><path d="M12 7.6v.01"></path></svg></button><span role="tooltip" id="t-adm" class="bubble bubble-l">Usuários, perfis, domínios e auditoria. O administrador nunca vê senhas: ele envia um link de redefinição.</span></span>
+      </div>
+      <button type="button" class="btn btn-primary" onClick="{{openNew}}">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14"></path><path d="M5 12h14"></path></svg>
+        Novo usuário
+      </button>
+    </div>
+
+    <div class="tabs" role="tablist">
+      <sc-for list="{{tabs}}" as="t" hint-placeholder-count="4">
+        <button type="button" role="tab" class="{{t.cls}}" aria-selected="{{t.on}}" onClick="{{t.pick}}">{{t.label}}</button>
+      </sc-for>
+    </div>
+
+    <sc-if value="{{tabUsers}}" hint-placeholder-val="{{ true }}">
+      <section class="card" aria-label="Usuários" style="padding: 16px 12px">
+        <div style="display: flex; gap: 10px; flex-wrap: wrap; padding: 0 12px 12px; align-items: flex-end">
+          <div class="fld" style="flex: 1 1 260px">
+            <label for="u-q" class="lbl">Buscar</label>
+            <input id="u-q" class="inp" placeholder="Nome, login ou e-mail" value="{{q}}" onChange="{{onQ}}">
+          </div>
+          <div class="fld">
+            <label for="u-p" class="lbl">Perfil</label>
+            <select id="u-p" class="sel" value="{{fPerfil}}" onChange="{{onFPerfil}}">
+              <option value="">Todos</option>
+              <sc-for list="{{perfisOpt}}" as="p" hint-placeholder-count="6"><option value="{{p.v}}">{{p.v}}</option></sc-for>
+            </select>
+          </div>
+          <div class="fld">
+            <label for="u-s" class="lbl">Situação</label>
+            <select id="u-s" class="sel" value="{{fStatus}}" onChange="{{onFStatus}}">
+              <option value="">Todas</option>
+              <option value="ativo">Ativo</option>
+              <option value="pend">Aguardando primeiro acesso</option>
+              <option value="bloq">Bloqueado</option>
+              <option value="desat">Desativado</option>
+            </select>
+          </div>
+          <span class="lbl" style="margin-left: auto; padding-bottom: 10px">{{nUsers}}</span>
+        </div>
+        <div style="overflow-x: auto">
+          <table class="tbl">
+            <thead><tr><th scope="col">Nome</th><th scope="col">Login</th><th scope="col">Perfis</th><th scope="col">Carteiras</th><th scope="col">Situação</th><th scope="col">Último acesso</th></tr></thead>
+            <tbody>
+              <sc-for list="{{users}}" as="u" hint-placeholder-count="8">
+                <tr class="clk" onClick="{{u.open}}">
+                  <td><button type="button" class="btn-link" style="padding: 0; color: #05132A; font-size: 14px" onClick="{{u.open}}">{{u.nome}}</button><div class="lbl">{{u.email}}</div></td>
+                  <td class="mono">{{u.login}}</td>
+                  <td>{{u.perfis}}</td>
+                  <td class="mono">{{u.carteiras}}</td>
+                  <td><span class="st"><span class="{{u.dot}}"></span>{{u.stLabel}}</span></td>
+                  <td class="mono">{{u.ultimo}}</td>
+                </tr>
+              </sc-for>
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </sc-if>
+
+    <sc-if value="{{tabPerms}}" hint-placeholder-val="{{ false }}">
+      <section class="card" aria-label="Perfis e permissões" style="padding: 18px 20px; display: flex; flex-direction: column; gap: 14px">
+        <div style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center">
+          <sc-for list="{{perfisPills}}" as="p" hint-placeholder-count="6">
+            <button type="button" class="{{p.cls}}" onClick="{{p.pick}}" aria-pressed="{{p.on}}">{{p.v}}</button>
+          </sc-for>
+        </div>
+        <div style="display: flex; align-items: center; gap: 4px">
+          <span style="font-size: 14px; color: #4A5B78">{{perfilDesc}}</span>
+        </div>
+        <div style="overflow-x: auto">
+          <table class="tbl mx">
+            <thead><tr><th scope="col">Módulo</th><th scope="col">Ver</th><th scope="col">Criar / editar</th><th scope="col">Exportar</th><th scope="col">Aprovar</th></tr></thead>
+            <tbody>
+              <sc-for list="{{matrix}}" as="m" hint-placeholder-count="10">
+                <tr>
+                  <td><span style="display: inline-flex; align-items: center; gap: 2px"><span style="font-weight: 600">{{m.nome}}</span><span class="tip"><button type="button" class="tip-btn" aria-label="Sobre {{m.nome}}" aria-describedby="tm-{{m.id}}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M19.4 7.6A9 9 0 1 1 16.4 4.1"></path><path d="M12 11v6"></path><path d="M12 7.6v.01"></path></svg></button><span role="tooltip" id="tm-{{m.id}}" class="bubble bubble-l">{{m.desc}}</span></span></span></td>
+                  <sc-for list="{{m.cells}}" as="c" hint-placeholder-count="4">
+                    <td>
+                      <sc-if value="{{c.has}}" hint-placeholder-val="{{ true }}"><input type="checkbox" class="ck" checked="{{c.on}}" onChange="{{c.toggle}}" aria-label="{{c.aria}}"></sc-if>
+                      <sc-if value="{{c.none}}" hint-placeholder-val="{{ false }}"><span class="na" aria-label="Não se aplica">—</span></sc-if>
+                    </td>
+                  </sc-for>
+                </tr>
+              </sc-for>
+            </tbody>
+          </table>
+        </div>
+        <div style="display: flex; justify-content: flex-end; gap: 10px; align-items: center">
+          <sc-if value="{{permsDirty}}" hint-placeholder-val="{{ false }}"><span class="lbl" style="color: #8A4B06">Alterações não salvas</span></sc-if>
+          <button type="button" class="btn" onClick="{{resetPerms}}">Descartar</button>
+          <button type="button" class="btn btn-primary" onClick="{{savePerms}}">Salvar permissões</button>
+        </div>
+      </section>
+    </sc-if>
+
+    <sc-if value="{{tabDom}}" hint-placeholder-val="{{ false }}">
+      <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap">
+        <span style="font-size: 13px">Atuando como <strong>{{actorName}}</strong></span>
+        <button type="button" class="btn-link" onClick="{{toggleApprover}}">Alternar para outro aprovador (demo)</button>
+      </div>
+      <section class="card" aria-labelledby="h-dp" style="padding: 16px 12px">
+        <div style="display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 0 12px 10px; flex-wrap: wrap">
+          <div style="display: flex; align-items: center; gap: 2px"><h2 id="h-dp" class="h2">Produtos</h2><span class="tip"><button type="button" class="tip-btn" aria-label="Dicionário de produtos" aria-describedby="t-dp"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M19.4 7.6A9 9 0 1 1 16.4 4.1"></path><path d="M12 11v6"></path><path d="M12 7.6v.01"></path></svg></button><span role="tooltip" id="t-dp" class="bubble bubble-l">Categoria por código produto_legado. O valor original nunca muda. Sugestões automáticas vêm do padrão do código e só valem depois de aprovadas. Quem propõe não aprova.</span></span></div>
+          <div style="display: flex; gap: 6px; flex-wrap: wrap"><sc-for list="{{dFilters}}" as="f" hint-placeholder-count="4"><button type="button" class="{{f.cls}}" onClick="{{f.pick}}" aria-pressed="{{f.on}}">{{f.label}}</button></sc-for></div>
+        </div>
+        <div style="overflow-x: auto; max-height: 460px; overflow-y: auto">
+          <table class="tbl">
+            <thead><tr><th scope="col">Código</th><th scope="col">Instituição</th><th scope="col" class="num">Posições</th><th scope="col" class="num">Saldo</th><th scope="col">Categoria</th><th scope="col">Situação</th><th scope="col"><span class="sr">Ações</span></th></tr></thead>
+            <tbody>
+              <sc-for list="{{prodRows}}" as="p" hint-placeholder-count="10">
+                <tr>
+                  <td class="mono" style="font-weight: 600">{{p.code}}</td><td>{{p.inst}}</td><td class="mono num">{{p.n}}</td><td class="mono num">{{p.saldo}}</td><td>{{p.cat}}</td>
+                  <td><span class="{{p.stCls}}">{{p.stLabel}}</span><div class="lbl" style="margin-top: 2px">{{p.by}}</div></td>
+                  <td style="text-align: right; white-space: nowrap">
+                    <sc-if value="{{p.canApprove}}" hint-placeholder-val="{{ false }}"><button type="button" class="btn btn-sm btn-primary" onClick="{{p.approve}}">Aprovar</button> <button type="button" class="btn btn-sm" onClick="{{p.reject}}">Rejeitar</button></sc-if>
+                    <sc-if value="{{p.selfBlock}}" hint-placeholder-val="{{ false }}"><span class="lbl">Aguardando outro aprovador</span></sc-if>
+                    <sc-if value="{{p.isNao}}" hint-placeholder-val="{{ false }}"><label class="sr" for="pc-{{p.code}}">Propor categoria para {{p.code}}</label><select id="pc-{{p.code}}" class="sel" style="height: 32px; font-size: 13px" onChange="{{p.propose}}"><option value="">Propor categoria…</option><sc-for list="{{p.opts}}" as="o" hint-placeholder-count="7"><option value="{{o.v}}">{{o.v}}</option></sc-for></select></sc-if>
+                    <sc-if value="{{p.isOk}}" hint-placeholder-val="{{ false }}"><button type="button" class="btn-link" onClick="{{p.revert}}">Revogar</button></sc-if>
+                  </td>
+                </tr>
+              </sc-for>
+            </tbody>
+          </table>
+        </div>
+      </section>
+      <div style="display: flex; gap: 20px; flex-wrap: wrap; align-items: flex-start">
+        <section class="card" aria-labelledby="h-di" style="flex: 1 1 520px; padding: 16px 12px">
+          <div style="display: flex; align-items: center; gap: 2px; padding: 0 12px 10px"><h2 id="h-di" class="h2">Instituições</h2><span class="tip"><button type="button" class="tip-btn" aria-label="Dicionário de instituições" aria-describedby="t-di"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M19.4 7.6A9 9 0 1 1 16.4 4.1"></path><path d="M12 11v6"></path><path d="M12 7.6v.01"></path></svg></button><span role="tooltip" id="t-di" class="bubble bubble-l">Regras aplicadas a nome_estrategia em ordem de prioridade. Instituição e produto são classificações separadas.</span></span></div>
+          <table class="tbl"><thead><tr><th scope="col">Prior.</th><th scope="col">Regra</th><th scope="col">Instituição</th><th scope="col" class="num">Posições</th><th scope="col" class="num">Saldo</th></tr></thead>
+            <tbody><sc-for list="{{instRules}}" as="x" hint-placeholder-count="15"><tr><td class="mono">{{x.prio}}</td><td class="mono" style="font-size: 12px">{{x.rx}}</td><td style="font-weight: 600">{{x.inst}}</td><td class="mono num">{{x.n}}</td><td class="mono num">{{x.saldo}}</td></tr></sc-for></tbody></table>
+        </section>
+        <section class="card" aria-labelledby="h-dn" style="flex: 1 1 380px; padding: 16px 16px">
+          <div style="display: flex; align-items: center; gap: 2px; margin-bottom: 10px"><h2 id="h-dn" class="h2">Estratégias sem instituição</h2><span class="tip"><button type="button" class="tip-btn" aria-label="Não mapeados" aria-describedby="t-dn"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M19.4 7.6A9 9 0 1 1 16.4 4.1"></path><path d="M12 11v6"></path><path d="M12 7.6v.01"></path></svg></button><span role="tooltip" id="t-dn" class="bubble bubble-r">Valores de nome_estrategia que nenhuma regra cobre. Aparecem como NÃO MAPEADO na Carteira até a aprovação.</span></span></div>
+          <sc-for list="{{unmap}}" as="u" hint-placeholder-count="2">
+            <div style="border: 1px solid #F3D3A0; background: #FFF9EF; border-radius: 10px; padding: 12px 14px; margin-bottom: 10px; display: flex; flex-direction: column; gap: 8px">
+              <div style="display: flex; justify-content: space-between; gap: 8px; flex-wrap: wrap"><span class="mono" style="font-weight: 600">{{u.est}}</span><span class="mono lbl">{{u.n}} · {{u.saldo}}</span></div>
+              <sc-if value="{{u.has}}" hint-placeholder-val="{{ false }}"><span class="chip chip-warn">{{u.prop}} · aguarda aprovação</span></sc-if>
+              <label class="sr" for="ui-{{u.est}}">Propor instituição</label>
+              <select id="ui-{{u.est}}" class="sel" style="height: 34px" onChange="{{u.onProp}}"><option value="">Propor instituição…</option><sc-for list="{{u.opts}}" as="o" hint-placeholder-count="15"><option value="{{o.v}}">{{o.v}}</option></sc-for></select>
+            </div>
+          </sc-for>
+        </section>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{tabAudit}}" hint-placeholder-val="{{ false }}">
+      <section class="card" aria-label="Auditoria" style="padding: 16px 12px">
+        <div style="display: flex; gap: 8px; flex-wrap: wrap; padding: 0 12px 12px; align-items: center">
+          <sc-for list="{{auditFilters}}" as="f" hint-placeholder-count="5">
+            <button type="button" class="{{f.cls}}" onClick="{{f.pick}}" aria-pressed="{{f.on}}">{{f.label}}</button>
+          </sc-for>
+          <button type="button" class="btn btn-sm" style="margin-left: auto" onClick="{{exportAudit}}">Exportar CSV</button>
+        </div>
+        <div class="ev-row lbl" style="padding-top: 0"><span>Data e hora</span><span>Usuário</span><span>Evento</span><span>Tipo</span></div>
+        <sc-for list="{{audit}}" as="a" hint-placeholder-count="8">
+          <div class="ev-row">
+            <span class="mono" style="color: #4A5B78">{{a.quando}}</span>
+            <span style="font-weight: 600">{{a.quem}}</span>
+            <span>{{a.oque}}</span>
+            <span><span class="chip">{{a.tipo}}</span></span>
+          </div>
+        </sc-for>
+      </section>
+    </sc-if>
+  </main>
+
+  <sc-if value="{{hasDrawer}}" hint-placeholder-val="{{ false }}">
+    <aside class="drawer" aria-label="Detalhes do usuário">
+      <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 12px">
+        <div>
+          <h2 class="h2" style="font-size: 20px">{{du.nome}}</h2>
+          <div class="lbl mono" style="margin-top: 4px">{{du.login}} · {{du.email}}</div>
+        </div>
+        <button type="button" class="x" onClick="{{closeDrawer}}" aria-label="Fechar"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12"></path><path d="M18 6L6 18"></path></svg></button>
+      </div>
+      <div style="display: flex; gap: 8px; flex-wrap: wrap"><span class="st"><span class="{{du.dot}}"></span>{{du.stLabel}}</span><span class="lbl">· último acesso {{du.ultimo}}</span></div>
+      <div class="fld">
+        <span class="lbl">Perfis</span>
+        <div style="display: flex; gap: 6px; flex-wrap: wrap">
+          <sc-for list="{{duPerfis}}" as="p" hint-placeholder-count="6">
+            <button type="button" class="{{p.cls}}" onClick="{{p.pick}}" aria-pressed="{{p.on}}">{{p.v}}</button>
+          </sc-for>
+        </div>
+      </div>
+      <div class="fld">
+        <span class="lbl">Carteiras visíveis</span>
+        <div style="display: flex; gap: 6px; flex-wrap: wrap">
+          <sc-for list="{{duCart}}" as="c" hint-placeholder-count="3">
+            <button type="button" class="{{c.cls}}" onClick="{{c.pick}}" aria-pressed="{{c.on}}">{{c.v}}</button>
+          </sc-for>
+        </div>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 8px; border-top: 1px solid #EEF3FA; padding-top: 14px">
+        <span class="lbl">Ações</span>
+        <div style="display: flex; gap: 8px; flex-wrap: wrap">
+          <button type="button" class="btn btn-sm" onClick="{{resetPass}}">Enviar link de redefinição</button>
+          <button type="button" class="btn btn-sm" onClick="{{toggleBlock}}">{{blockLabel}}</button>
+          <button type="button" class="btn btn-sm btn-danger" onClick="{{toggleActive}}">{{activeLabel}}</button>
+        </div>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 6px; border-top: 1px solid #EEF3FA; padding-top: 14px">
+        <span class="lbl">Atividade recente</span>
+        <sc-for list="{{duAudit}}" as="a" hint-placeholder-count="3">
+          <div style="font-size: 13px; display: flex; gap: 10px"><span class="mono lbl" style="width: 90px; flex: none">{{a.quando}}</span><span>{{a.oque}}</span></div>
+        </sc-for>
+        <sc-if value="{{duNoAudit}}" hint-placeholder-val="{{ false }}"><span class="lbl">Sem atividade registrada.</span></sc-if>
+      </div>
+    </aside>
+  </sc-if>
+
+  <sc-if value="{{hasNew}}" hint-placeholder-val="{{ false }}">
+    <div class="overlay">
+      <div class="modal" role="dialog" aria-modal="true" aria-labelledby="nu-t">
+        <div style="display: flex; justify-content: space-between; align-items: center">
+          <div style="display: flex; align-items: center; gap: 4px"><h2 id="nu-t" class="h2" style="font-size: 20px">Novo usuário</h2><span class="tip"><button type="button" class="tip-btn" aria-label="Sobre o cadastro" aria-describedby="t-nu"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M19.4 7.6A9 9 0 1 1 16.4 4.1"></path><path d="M12 11v6"></path><path d="M12 7.6v.01"></path></svg></button><span role="tooltip" id="t-nu" class="bubble bubble-l">O usuário recebe um link para criar a própria senha e configurar o MFA. Nenhuma área é liberada além das do perfil escolhido.</span></span></div>
+          <button type="button" class="x" onClick="{{closeNew}}" aria-label="Fechar"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12"></path><path d="M18 6L6 18"></path></svg></button>
+        </div>
+        <div class="fld"><label for="nu-n" class="lbl">Nome completo</label><input id="nu-n" class="inp" value="{{nNome}}" onChange="{{onNNome}}"></div>
+        <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px">
+          <div class="fld"><label for="nu-e" class="lbl">E-mail corporativo</label><input id="nu-e" class="inp" type="email" value="{{nEmail}}" onChange="{{onNEmail}}"></div>
+          <div class="fld"><label for="nu-l" class="lbl">Login</label><input id="nu-l" class="inp mono" value="{{nLogin}}" onChange="{{onNLogin}}"></div>
+        </div>
+        <div class="fld">
+          <span class="lbl">Perfis</span>
+          <div style="display: flex; gap: 6px; flex-wrap: wrap">
+            <sc-for list="{{nPerfis}}" as="p" hint-placeholder-count="6"><button type="button" class="{{p.cls}}" onClick="{{p.pick}}" aria-pressed="{{p.on}}">{{p.v}}</button></sc-for>
+          </div>
+        </div>
+        <div class="fld">
+          <span class="lbl">Carteiras visíveis</span>
+          <div style="display: flex; gap: 6px; flex-wrap: wrap">
+            <sc-for list="{{nCart}}" as="c" hint-placeholder-count="3"><button type="button" class="{{c.cls}}" onClick="{{c.pick}}" aria-pressed="{{c.on}}">{{c.v}}</button></sc-for>
+          </div>
+        </div>
+        <sc-if value="{{hasNErr}}" hint-placeholder-val="{{ false }}"><span role="alert" style="font-size: 13px; color: #A1231A">{{nErr}}</span></sc-if>
+        <div style="display: flex; justify-content: flex-end; gap: 10px">
+          <button type="button" class="btn" onClick="{{closeNew}}">Cancelar</button>
+          <button type="button" class="btn btn-primary" onClick="{{createUser}}">Criar e enviar convite</button>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{hasToast}}" hint-placeholder-val="{{ false }}"><div role="status" class="toast">{{toast}}</div></sc-if>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1300}}'>
+var PRODS = [["NNCARD", "NEON", 142464, 738054185.74, "Cartão"], ["NICARD", "ITAU", 119089, 1002946614.3, "Cartão"], ["NSCARD", "PERNAMBUCANAS", 84844, 325494364.68, "Cartão"], ["NMCARD", "MERCADO PAGO", 75958, 502614230.24, "Cartão"], ["NDCANC", "SANTANDER", 54814, 168312725.49, null], ["NACARD", "PAN", 47693, 479938636.55, "Cartão"], ["NSPSIM", "SUPER SIM", 44478, 93052850.63, null], ["NARDES", "PAN", 41473, 116283390.21, null], ["NVCPES", "NOVERDE", 38231, 376593178.07, "Crédito pessoal"], ["NACPES", "PAN", 36624, 810189697.92, "Crédito pessoal"], ["NDCRED", "SANTANDER", 34901, 123944296.55, null], ["NICPRC", "ITAU", 28238, 143227418.8, null], ["NDEMPA", "SANTANDER", 19066, 96172315.86, null], ["NICPRL", "ITAU", 17375, 74748063.74, null], ["NTCARD", "INTER", 8606, 83216989.07, "Cartão"], ["NTRDES", "INTER", 7678, 23098922.11, null], ["NDCONS", "SANTANDER", 5001, 51319940.71, "Consignado"], ["NCARDC", "BTG/NÃO MAPEADO", 4945, 183617607.8, "Cartão"], ["NICESP", "ITAU", 4597, 10905349.92, "Cheque especial"], ["NIEMPA", "ITAU", 3604, 15203361.13, null], ["NQCPES", "QUEROQUERO", 3364, 16759135.02, "Crédito pessoal"], ["NQCARD", "QUEROQUERO", 3180, 6898895.95, "Cartão"], ["NNRCAR", "NEON", 2639, 8627934.68, null], ["NDHERD", "SANTANDER", 2341, 14843516.55, null], ["NARCAR", "PAN", 1813, 8396833.18, null], ["NSRCAR", "PERNAMBUCANAS", 1699, 4655553.69, null], ["NLMAIS", "BTG/NÃO MAPEADO", 1581, 6748028.19, null], ["NBCARD", "BRADESCO", 1532, 12739821.42, "Cartão"], ["NICONS", "ITAU", 1232, 12448944.26, "Consignado"], ["NCPPES", "BTG/NÃO MAPEADO", 1159, 65132909.88, null], ["NQEMPA", "QUEROQUERO", 963, 5846859.65, null], ["NDRCAN", "SANTANDER", 790, 2276082.13, null], ["NICPSC", "ITAU", 766, 8229658.09, null], ["NRECAR", "BTG/NÃO MAPEADO", 645, 6615484.68, null], ["NAVEIL", "PAN", 547, 33189819.1, "Financiamento de veículo"], ["NARVEI", "PAN", 538, 15315588.55, "Financiamento de veículo"], ["NIMICR", "ITAU", 444, 2346113.22, null], ["NTRCAR", "INTER", 299, 1624657.21, null], ["NBEMPA", "BRADESCO", 261, 3131221.11, null], ["NCPPAR", "BTG/NÃO MAPEADO", 236, 2959772.12, null], ["NRECPP", "BTG/NÃO MAPEADO", 216, 3959767.77, null], ["DESREN", "BTG/NÃO MAPEADO/PAN", 209, 274699.0, null], ["NORVEI", "BV", 152, 4880996.25, "Financiamento de veículo"], ["NBRCAR", "BRADESCO", 129, 726151.87, null], ["NOVEIL", "BV", 125, 6929466.38, "Financiamento de veículo"], ["NMRCAR", "MERCADO PAGO", 101, 475411.72, null], ["NNRDES", "NUBANK", 89, 185004.88, null], ["NBCPES", "BRADESCO", 70, 366335.98, "Crédito pessoal"], ["NDVEIL", "SANTANDER", 55, 2683204.33, "Financiamento de veículo"], ["NRECP", "BTG/NÃO MAPEADO", 42, 259434.95, null], ["NDRVEI", "SANTANDER", 36, 1522755.49, "Financiamento de veículo"], ["NPRCAR", "PORTOBANK", 33, 192797.52, null], ["NBCONS", "BRADESCO", 26, 254323.74, "Consignado"], ["NPCARD", "PORTOBANK", 25, 26805.52, "Cartão"], ["NBCESP", "BRADESCO", 15, 65470.12, "Cheque especial"], ["DESEMP", "NÃO MAPEADO", 14, 54984.4, null], ["NQRCAR", "QUEROQUERO", 10, 9566.0, null], ["NBRCES", "BRADESCO", 3, 4723.24, "Cheque especial"], ["NEMPAC", "BTG", 2, 25831.27, null], ["NCPPRE", "NÃO MAPEADO", 1, 170258.94, null]];
+var INSTR = [["ITAU", "^ITAU", 175345, 1270055523.46], ["NEON", "^NEON", 145103, 746682120.42], ["PAN", "^PAN", 128865, 1463538862.55], ["SANTANDER", "^SANTANDER", 117004, 461074837.11], ["PERNAMBUCANAS", "^PEFISA", 86543, 330149918.37], ["MERCADO PAGO", "^MERCADO PAGO", 76059, 503089641.96], ["SUPER SIM", "^SUPERSIM", 44478, 93052850.63], ["NOVERDE", "^NOVERDE", 38231, 376593178.07], ["INTER", "^INTER", 16583, 107940568.39], ["QUEROQUERO", "^LOJAS QUERO QUERO", 7517, 29514456.62], ["BRADESCO", "^BRADESCO", 2036, 17288047.48], ["BTG", "^BTG", 1337, 27185083.52], ["BV", "^BV", 277, 11810462.63], ["NUBANK", "^NUBANK", 89, 185004.88], ["PORTOBANK", "^PORTOBANK", 58, 219603.04]];
+var UNMAP = {"NPL Consumer": [7522, 242353814.04], "EMPACOTAMENTO DESENROLA 2.0 ARC": [14, 54984.4]};
+
+var CATS = ['Cartão', 'Crédito pessoal', 'Consignado', 'Financiamento de veículo', 'Cheque especial', 'Renegociação', 'Empréstimo'];
+var PERFIS = ['Operação', 'Supervisão', 'Gerência', 'MIS / BackOffice', 'Importador', 'Aprovador', 'Administrador'];
+var PERFIL_DESC = {
+  'Operação': 'Consulta dados e registra acionamentos.',
+  'Supervisão': 'Permissões da operação e acompanhamento da equipe.',
+  'Gerência': 'Visão consolidada, indicadores, análises e relatórios.',
+  'MIS / BackOffice': 'Consultas analíticas, conciliações, exportações e validações.',
+  'Importador': 'Envia arquivos e executa a simulação da carga.',
+  'Aprovador': 'Revisa e aprova cargas enviadas por outra pessoa.',
+  'Administrador': 'Administra usuários, parâmetros, domínios e permissões.'
+};
+var CARTEIRAS = ['0140 · CLEAN', '0144 · CAÍDOS', '0900 · DESAFIANTE'];
+var ACOES = ['ver', 'editar', 'exportar', 'aprovar'];
+var MODS = [
+  { id: 'consulta', nome: 'Consulta 360º', acoes: ['ver', 'editar'], desc: 'Ver a ficha do devedor e corrigir dados com motivo.' },
+  { id: 'acion', nome: 'Acionamentos', acoes: ['ver', 'editar'], desc: 'Ver e registrar acionamentos na linha do tempo.' },
+  { id: 'carteira', nome: 'Carteira', acoes: ['ver', 'exportar'], desc: 'Visão executiva e por carteira.' },
+  { id: 'batimento', nome: 'Batimento entre cargas', acoes: ['ver', 'exportar'], desc: 'Comparar duas cargas e abrir os contratos envolvidos.' },
+  { id: 'mov', nome: 'Movimentações', acoes: ['ver', 'exportar'], desc: 'Entradas, saídas, reclassificações e transferências.' },
+  { id: 'imp', nome: 'Importação e simulação', acoes: ['ver', 'editar'], desc: 'Enviar arquivos e executar a simulação.' },
+  { id: 'pub', nome: 'Aprovação e publicação', acoes: ['aprovar'], desc: 'Publicar uma carga. Quem enviou não pode aprovar.' },
+  { id: 'rest', nome: 'Restauração de versão', acoes: ['aprovar'], desc: 'Voltar a base para uma carga anterior publicada.' },
+  { id: 'users', nome: 'Usuários e permissões', acoes: ['ver', 'editar'], desc: 'Cadastrar usuários e definir perfis.' },
+  { id: 'equipe', nome: 'Acompanhamento da equipe', acoes: ['ver', 'exportar'], desc: 'Acionamentos e produção por operador.' },
+  { id: 'dom', nome: 'Domínios e mapeamentos', acoes: ['ver', 'editar', 'aprovar'], desc: 'Dicionários de instituição e produto. Quem propõe não aprova.' },
+  { id: 'audit', nome: 'Auditoria', acoes: ['ver', 'exportar'], desc: 'Eventos de acesso, segurança e administração.' }
+];
+function P(list) { var o = {}; list.forEach(function (k) { o[k] = true; }); return o; }
+var DEFAULT_PERMS = {
+  'Operação': P(['consulta.ver', 'consulta.editar', 'acion.ver', 'acion.editar']),
+  'Supervisão': P(['consulta.ver', 'consulta.editar', 'acion.ver', 'acion.editar', 'equipe.ver', 'carteira.ver', 'mov.ver']),
+  'Gerência': P(['consulta.ver', 'acion.ver', 'equipe.ver', 'equipe.exportar', 'carteira.ver', 'carteira.exportar', 'batimento.ver', 'batimento.exportar', 'mov.ver', 'mov.exportar']),
+  'MIS / BackOffice': P(['consulta.ver', 'carteira.ver', 'carteira.exportar', 'batimento.ver', 'batimento.exportar', 'mov.ver', 'mov.exportar', 'imp.ver', 'dom.ver', 'dom.editar']),
+  'Importador': P(['imp.ver', 'imp.editar', 'carteira.ver', 'mov.ver']),
+  'Aprovador': P(['imp.ver', 'pub.aprovar', 'rest.aprovar', 'carteira.ver', 'mov.ver', 'batimento.ver']),
+  'Administrador': P(['consulta.ver', 'carteira.ver', 'users.ver', 'users.editar', 'dom.ver', 'dom.editar', 'dom.aprovar', 'audit.ver', 'audit.exportar'])
+};
+var ALL = CARTEIRAS.slice();
+var USERS = [
+  { id: 1, nome: 'Rafael Costa', login: 'rafael.costa', email: 'rafael.costa@empresa.com.br', perfis: ['Administrador', 'Importador'], cart: ALL, st: 'ativo', ultimo: '19/11/2026 13:02' },
+  { id: 2, nome: 'Marina Alves', login: 'marina.alves', email: 'marina.alves@empresa.com.br', perfis: ['Aprovador'], cart: ALL, st: 'ativo', ultimo: '19/11/2026 08:41' },
+  { id: 3, nome: 'Juliana Prado', login: 'juliana.prado', email: 'juliana.prado@empresa.com.br', perfis: ['Operação'], cart: ['0144 · CAÍDOS'], st: 'ativo', ultimo: '19/11/2026 12:55' },
+  { id: 4, nome: 'Bruno Teixeira', login: 'bruno.teixeira', email: 'bruno.teixeira@empresa.com.br', perfis: ['Operação'], cart: ['0140 · CLEAN'], st: 'bloq', ultimo: '18/11/2026 17:20' },
+  { id: 5, nome: 'Patrícia Nunes', login: 'patricia.nunes', email: 'patricia.nunes@empresa.com.br', perfis: ['Supervisão'], cart: ALL, st: 'ativo', ultimo: '19/11/2026 11:10' },
+  { id: 6, nome: 'Eduardo Lima', login: 'eduardo.lima', email: 'eduardo.lima@empresa.com.br', perfis: ['Gerência'], cart: ALL, st: 'ativo', ultimo: '18/11/2026 16:03' },
+  { id: 7, nome: 'Camila Rocha', login: 'camila.rocha', email: 'camila.rocha@empresa.com.br', perfis: ['MIS / BackOffice'], cart: ALL, st: 'ativo', ultimo: '19/11/2026 09:30' },
+  { id: 8, nome: 'Letícia Souza', login: 'leticia.souza', email: 'leticia.souza@empresa.com.br', perfis: ['Importador'], cart: ALL, st: 'pend', ultimo: '—' },
+  { id: 9, nome: 'Thiago Moura', login: 'thiago.moura', email: 'thiago.moura@empresa.com.br', perfis: ['Operação'], cart: ['0900 · DESAFIANTE'], st: 'desat', ultimo: '30/10/2026 18:05' }
+];
+var AUDIT = [
+  { quando: '19/11/2026 13:02', quem: 'Rafael Costa', uid: 1, oque: 'Login com MFA', tipo: 'Acesso' },
+  { quando: '19/11/2026 12:58', quem: 'Sistema', uid: 4, oque: 'Conta bruno.teixeira bloqueada após 5 tentativas', tipo: 'Segurança' },
+  { quando: '19/11/2026 12:10', quem: 'Rafael Costa', uid: 8, oque: 'Usuário leticia.souza criado com perfil Importador', tipo: 'Usuários' },
+  { quando: '19/11/2026 08:41', quem: 'Marina Alves', uid: 2, oque: 'Login com MFA', tipo: 'Acesso' },
+  { quando: '18/11/2026 17:20', quem: 'Sistema', uid: 4, oque: 'Senha inválida para bruno.teixeira (5ª tentativa)', tipo: 'Segurança' },
+  { quando: '18/11/2026 16:40', quem: 'Rafael Costa', uid: 1, oque: 'Gerência recebeu Exportar em Batimento entre cargas', tipo: 'Permissões' },
+  { quando: '30/10/2026 18:10', quem: 'Rafael Costa', uid: 9, oque: 'Conta thiago.moura desativada', tipo: 'Usuários' }
+];
+var ST = { ativo: ['Ativo', 'st-dot d-ativo'], bloq: ['Bloqueado', 'st-dot d-bloq'], desat: ['Desativado', 'st-dot d-desat'], pend: ['Aguardando primeiro acesso', 'st-dot d-pend'] };
+function now() { var d = new Date(); function p(n) { return (n < 10 ? '0' : '') + n; } return '19/11/2026 ' + p(d.getHours()) + ':' + p(d.getMinutes()); }
+function clone(o) { return JSON.parse(JSON.stringify(o)); }
+function slugLogin(n) { return n.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').trim().split(/\s+/).filter(Boolean).reduce(function (a, w, i, arr) { return i === 0 ? w : (i === arr.length - 1 ? a + '.' + w : a); }, ''); }
+
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { approver: false, dStatus: 'todos', prodSt: (function () { var o = {}; PRODS.forEach(function (p) { o[p[0]] = p[4] ? { st: 'sug', cat: p[4], by: 'Sistema (regra por código)' } : { st: 'nao', cat: null }; }); return o; })(), propInst: {}, tab: 'users', q: '', fPerfil: '', fStatus: '', users: clone(USERS), audit: clone(AUDIT), perms: clone(DEFAULT_PERMS), draft: clone(DEFAULT_PERMS), perfilSel: 'Operação', open: null, isNew: false, n: { nome: '', email: '', login: '', perfis: [], cart: ALL.slice() }, nErr: null, aFilter: 'Todos', toast: null };
+  }
+  log(oque, tipo, uid) { return [{ quando: now(), quem: 'Rafael Costa', uid: uid || 1, oque: oque, tipo: tipo }].concat(this.state.audit); }
+  flash(msg) { var self = this; clearTimeout(this._t); this.setState({ toast: msg }); this._t = setTimeout(function () { self.setState({ toast: null }); }, 3500); }
+  updUser(id, ch, msg, tipo) {
+    var users = this.state.users.map(function (u) { return u.id === id ? Object.assign({}, u, ch) : u; });
+    this.setState({ users: users, audit: msg ? this.log(msg, tipo || 'Usuários', id) : this.state.audit });
+  }
+  renderVals() {
+    var self = this, s = this.state;
+    var tabs = [['users', 'Usuários'], ['perms', 'Perfis e permissões'], ['dom', 'Domínios'], ['audit', 'Auditoria']].map(function (t) {
+      return { label: t[1], on: s.tab === t[0], cls: s.tab === t[0] ? 'tab tab-on' : 'tab', pick: function () { self.setState({ tab: t[0] }); } };
+    });
+    var q = s.q.toLowerCase();
+    var users = s.users.filter(function (u) {
+      if (q && (u.nome + ' ' + u.login + ' ' + u.email).toLowerCase().indexOf(q) < 0) return false;
+      if (s.fPerfil && u.perfis.indexOf(s.fPerfil) < 0) return false;
+      if (s.fStatus && u.st !== s.fStatus) return false;
+      return true;
+    }).map(function (u) {
+      return { nome: u.nome, email: u.email, login: u.login, perfis: u.perfis.join(', '), carteiras: u.cart.length === 3 ? 'Todas' : u.cart.map(function (c) { return c.slice(0, 4); }).join(', '),
+        stLabel: ST[u.st][0], dot: ST[u.st][1], ultimo: u.ultimo, open: function () { self.setState({ open: u.id }); } };
+    });
+    var sel = s.perfilSel, d = s.draft[sel] || {};
+    var matrix = MODS.map(function (m) {
+      return { id: m.id, nome: m.nome, desc: m.desc, cells: ACOES.map(function (a) {
+        var key = m.id + '.' + a, has = m.acoes.indexOf(a) >= 0;
+        return { has: has, none: !has, on: !!d[key], aria: m.nome + ': ' + a,
+          toggle: function () { var dr = clone(s.draft); dr[sel] = dr[sel] || {}; if (dr[sel][key]) delete dr[sel][key]; else dr[sel][key] = true; self.setState({ draft: dr }); } };
+      }) };
+    });
+    var dirty = JSON.stringify(s.draft) !== JSON.stringify(s.perms);
+    var AF = ['Todos', 'Acesso', 'Segurança', 'Usuários', 'Permissões', 'Domínios'];
+    var actor = s.approver ? 'Camila Rocha' : 'Rafael Costa';
+    function nf(n) { return Math.round(n).toLocaleString('pt-BR'); }
+    function mo(v) { return v >= 1e9 ? 'R$ ' + (v / 1e9).toLocaleString('pt-BR', { maximumFractionDigits: 2, minimumFractionDigits: 2 }) + ' bi' : v >= 1e6 ? 'R$ ' + (v / 1e6).toLocaleString('pt-BR', { maximumFractionDigits: 1, minimumFractionDigits: 1 }) + ' mi' : 'R$ ' + (v / 1e3).toLocaleString('pt-BR', { maximumFractionDigits: 1, minimumFractionDigits: 1 }) + ' mil'; }
+    var STL = { ok: ['Aprovado', 'chip chip-ok'], sug: ['Sugerido · aguarda aprovação', 'chip chip-warn'], prop: ['Proposto · aguarda aprovação', 'chip chip-warn'], nao: ['Não mapeado', 'chip chip-crit'] };
+    function setP(code, ch, msg) { var o = Object.assign({}, s.prodSt); o[code] = Object.assign({}, o[code], ch); self.setState({ prodSt: o, audit: [{ quando: now(), quem: actor, uid: 1, oque: msg, tipo: 'Domínios' }].concat(s.audit) }); }
+    var counts = { todos: PRODS.length, ok: 0, sug: 0, nao: 0 };
+    PRODS.forEach(function (p) { var st = s.prodSt[p[0]].st; if (st === 'ok') counts.ok++; else if (st === 'nao') counts.nao++; else counts.sug++; });
+    var prodRows = PRODS.filter(function (p) { var st = s.prodSt[p[0]].st; return s.dStatus === 'todos' || (s.dStatus === 'sug' ? (st === 'sug' || st === 'prop') : st === s.dStatus); }).map(function (p) {
+      var ps = s.prodSt[p[0]], st = STL[ps.st], mine = ps.by && ps.by.indexOf(actor) === 0;
+      return { code: p[0], inst: p[1], n: nf(p[2]), saldo: mo(p[3]), cat: ps.cat || '—', stLabel: st[0], stCls: st[1], by: ps.by || '',
+        isPend: ps.st === 'sug' || ps.st === 'prop', canApprove: (ps.st === 'sug' || ps.st === 'prop') && !mine, selfBlock: (ps.st === 'sug' || ps.st === 'prop') && mine, isNao: ps.st === 'nao', isOk: ps.st === 'ok',
+        opts: CATS.map(function (c) { return { v: c }; }),
+        approve: function () { setP(p[0], { st: 'ok', by: actor + ' em ' + now() }, 'Produto ' + p[0] + ' aprovado como ' + ps.cat); },
+        reject: function () { setP(p[0], { st: 'nao', cat: null, by: '' }, 'Sugestão para ' + p[0] + ' rejeitada'); },
+        propose: function (e) { var v = e.target.value; if (!v) return; setP(p[0], { st: 'prop', cat: v, by: actor + ' em ' + now() }, 'Categoria ' + v + ' proposta para ' + p[0]); },
+        revert: function () { setP(p[0], { st: 'nao', cat: null, by: '' }, 'Mapeamento de ' + p[0] + ' revogado'); } };
+    });
+    var dFilters = [['todos', 'Todos'], ['ok', 'Aprovados'], ['sug', 'Aguardando aprovação'], ['nao', 'Não mapeados']].map(function (f) { var n = f[0] === 'sug' ? counts.sug : counts[f[0]]; return { label: f[1] + ' · ' + n, on: s.dStatus === f[0], cls: s.dStatus === f[0] ? 'pill pill-on' : 'pill', pick: function () { self.setState({ dStatus: f[0] }); } }; });
+    var instRules = INSTR.map(function (x, i) { return { inst: x[0], rx: 'nome_estrategia começa com ' + x[1].replace('^', ''), prio: i + 1, n: nf(x[2]), saldo: mo(x[3]) }; });
+    var unmap = Object.keys(UNMAP).map(function (k) { var pi = s.propInst[k]; return { est: k, n: nf(UNMAP[k][0]), saldo: mo(UNMAP[k][1]), opts: INSTR.map(function (x) { return { v: x[0] }; }), has: !!pi, prop: pi ? pi.inst + ' · proposto por ' + pi.by : '',
+      onProp: function (e) { var v = e.target.value; if (!v) return; var o = Object.assign({}, s.propInst); o[k] = { inst: v, by: actor }; self.setState({ propInst: o, audit: [{ quando: now(), quem: actor, uid: 1, oque: 'Instituição ' + v + ' proposta para “' + k + '”', tipo: 'Domínios' }].concat(s.audit) }); } }; });
+    var audit = s.audit.filter(function (a) { return s.aFilter === 'Todos' || a.tipo === s.aFilter; });
+    var du = s.users.filter(function (u) { return u.id === s.open; })[0];
+    var duAudit = du ? s.audit.filter(function (a) { return a.uid === du.id; }).slice(0, 5) : [];
+    function pills(list, chosen, fn) { return list.map(function (v) { var on = chosen.indexOf(v) >= 0; return { v: v, on: on, cls: on ? 'pill pill-on' : 'pill', pick: function () { fn(v, on); } }; }); }
+    function toggleIn(arr, v, on) { return on ? arr.filter(function (x) { return x !== v; }) : arr.concat([v]); }
+
+    return {
+      userName: actor, userPerfil: s.approver ? 'MIS / BackOffice · Administrador' : 'Administrador', userIni: s.approver ? 'CR' : 'RC',
+      tabs: tabs, tabUsers: s.tab === 'users', tabPerms: s.tab === 'perms', tabAudit: s.tab === 'audit', tabDom: s.tab === 'dom',
+      prodRows: prodRows, dFilters: dFilters, instRules: instRules, unmap: unmap, actorName: actor, isApprover: s.approver,
+      toggleApprover: function () { self.setState({ approver: !s.approver }); },
+      q: s.q, onQ: function (e) { self.setState({ q: e.target.value }); },
+      fPerfil: s.fPerfil, onFPerfil: function (e) { self.setState({ fPerfil: e.target.value }); },
+      fStatus: s.fStatus, onFStatus: function (e) { self.setState({ fStatus: e.target.value }); },
+      perfisOpt: PERFIS.map(function (p) { return { v: p }; }),
+      users: users, nUsers: users.length + (users.length === 1 ? ' usuário' : ' usuários'),
+      perfisPills: PERFIS.map(function (p) { return { v: p, on: sel === p, cls: sel === p ? 'pill pill-on' : 'pill', pick: function () { self.setState({ perfilSel: p }); } }; }),
+      perfilDesc: PERFIL_DESC[sel], matrix: matrix, permsDirty: dirty,
+      resetPerms: function () { self.setState({ draft: clone(s.perms) }); },
+      savePerms: function () { if (!dirty) return; self.setState({ perms: clone(s.draft), audit: self.log('Permissões do perfil ' + sel + ' alteradas', 'Permissões') }); self.flash('Permissões salvas e registradas na auditoria'); },
+      auditFilters: AF.map(function (f) { return { label: f, on: s.aFilter === f, cls: s.aFilter === f ? 'pill pill-on' : 'pill', pick: function () { self.setState({ aFilter: f }); } }; }),
+      audit: audit,
+      exportAudit: function () {
+        var csv = 'data_hora;usuario;evento;tipo\n' + audit.map(function (a) { return [a.quando, a.quem, a.oque, a.tipo].join(';'); }).join('\n');
+        try { var b = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8' }); var a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = 'auditoria_20261119.csv'; a.click(); self.flash('CSV da auditoria gerado'); }
+        catch (e) { self.flash('Não foi possível gerar o arquivo aqui'); }
+      },
+      hasDrawer: !!du,
+      du: du ? { nome: du.nome, login: du.login, email: du.email, ultimo: du.ultimo, stLabel: ST[du.st][0], dot: ST[du.st][1] } : {},
+      duPerfis: du ? pills(PERFIS, du.perfis, function (v, on) {
+        var np = toggleIn(du.perfis, v, on); if (!np.length) { self.flash('O usuário precisa de ao menos um perfil'); return; }
+        self.updUser(du.id, { perfis: np }, (on ? 'Perfil ' + v + ' removido de ' : 'Perfil ' + v + ' atribuído a ') + du.login, 'Permissões');
+      }) : [],
+      duCart: du ? pills(CARTEIRAS, du.cart, function (v, on) { var nc = toggleIn(du.cart, v, on); if (!nc.length) return; self.updUser(du.id, { cart: nc }, 'Carteiras de ' + du.login + ' alteradas', 'Permissões'); }) : [],
+      duAudit: duAudit, duNoAudit: du ? duAudit.length === 0 : false,
+      closeDrawer: function () { self.setState({ open: null }); },
+      resetPass: function () { self.setState({ audit: self.log('Link de redefinição de senha enviado a ' + du.login, 'Segurança', du.id) }); self.flash('Link de redefinição enviado para ' + du.email); },
+      blockLabel: du && du.st === 'bloq' ? 'Desbloquear' : 'Bloquear',
+      toggleBlock: function () { if (du.st === 'desat') return; var b = du.st === 'bloq'; self.updUser(du.id, { st: b ? 'ativo' : 'bloq' }, 'Conta ' + du.login + (b ? ' desbloqueada' : ' bloqueada'), 'Segurança'); },
+      activeLabel: du && du.st === 'desat' ? 'Reativar' : 'Desativar',
+      toggleActive: function () { var a = du.st === 'desat'; self.updUser(du.id, { st: a ? 'ativo' : 'desat' }, 'Conta ' + du.login + (a ? ' reativada' : ' desativada'), 'Usuários'); },
+      hasNew: s.isNew,
+      openNew: function () { self.setState({ isNew: true, nErr: null, n: { nome: '', email: '', login: '', perfis: [], cart: ALL.slice() } }); },
+      closeNew: function () { self.setState({ isNew: false }); },
+      nNome: s.n.nome, nEmail: s.n.email, nLogin: s.n.login,
+      onNNome: function (e) { var v = e.target.value; self.setState({ n: Object.assign({}, s.n, { nome: v, login: slugLogin(v) }), nErr: null }); },
+      onNEmail: function (e) { self.setState({ n: Object.assign({}, s.n, { email: e.target.value }), nErr: null }); },
+      onNLogin: function (e) { self.setState({ n: Object.assign({}, s.n, { login: e.target.value }), nErr: null }); },
+      nPerfis: pills(PERFIS, s.n.perfis, function (v, on) { self.setState({ n: Object.assign({}, s.n, { perfis: toggleIn(s.n.perfis, v, on) }) }); }),
+      nCart: pills(CARTEIRAS, s.n.cart, function (v, on) { self.setState({ n: Object.assign({}, s.n, { cart: toggleIn(s.n.cart, v, on) }) }); }),
+      hasNErr: !!s.nErr, nErr: s.nErr || '',
+      createUser: function () {
+        var n = s.n;
+        if (!n.nome.trim() || n.email.indexOf('@') < 1 || !n.login.trim()) { self.setState({ nErr: 'Preencha nome, e-mail e login.' }); return; }
+        if (!n.perfis.length) { self.setState({ nErr: 'Escolha ao menos um perfil.' }); return; }
+        if (s.users.some(function (u) { return u.login === n.login.trim(); })) { self.setState({ nErr: 'Este login já existe.' }); return; }
+        var id = Date.now();
+        var users = s.users.concat([{ id: id, nome: n.nome.trim(), login: n.login.trim(), email: n.email.trim(), perfis: n.perfis, cart: n.cart.length ? n.cart : ALL.slice(), st: 'pend', ultimo: '—' }]);
+        self.setState({ users: users, isNew: false, audit: self.log('Usuário ' + n.login.trim() + ' criado com perfil ' + n.perfis.join(', '), 'Usuários', id) });
+        self.flash('Convite enviado para ' + n.email.trim());
+      },
+      hasToast: !!s.toast, toast: s.toast || ''
+    };
+  }
+}
+
+</script>
+</body>
+</html>

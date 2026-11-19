@@ -1,0 +1,564 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Importação de cargas</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#F4F8FE;font-family:Figtree,system-ui,sans-serif;color:#05132A}
+a{color:#195AB4}a:hover{color:#10408D}
+button,input,select,textarea{font-family:inherit}
+button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:2px solid #307AE0;outline-offset:2px}
+.top{background:#05132A;display:flex;align-items:center;gap:20px;padding:0 24px;min-height:60px;flex-wrap:wrap}
+.mark{width:28px;height:28px;border-radius:6px;background:#195AB4;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px}
+.avatar{width:32px;height:32px;border-radius:50%;background:#10408D;color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600}
+.nav{color:#B1D2FF;text-decoration:none;font-size:14px;font-weight:500;padding:8px 12px;border-radius:6px}
+.nav:hover{color:#fff;background:#0B2859}
+.nav-on{color:#fff;background:#10408D}
+.wrap{width:100%;max-width:1400px;margin:0 auto;padding:24px 28px 48px;box-sizing:border-box;display:flex;flex-direction:column;gap:20px}
+.card{background:#fff;border:1px solid #DCE6F5;border-radius:12px}
+.lbl{font-size:12px;color:#4A5B78;font-weight:500}
+.mono{font-variant-numeric:tabular-nums}
+.h1{margin:0;font-size:24px;font-weight:700}
+.h2{margin:0;font-size:17px;font-weight:600}
+.btn{display:inline-flex;align-items:center;gap:8px;height:40px;padding:0 16px;border-radius:8px;border:1px solid #B1D2FF;background:#fff;color:#0B2859;font-size:14px;font-weight:600;cursor:pointer;text-decoration:none;box-sizing:border-box;white-space:nowrap}
+.btn:hover{background:#EAF2FF;color:#0B2859}
+.btn-primary{background:#195AB4;border-color:#195AB4;color:#fff}
+.btn-primary:hover{background:#10408D;border-color:#10408D;color:#fff}
+.btn-off{background:#E6EDF7;border-color:#E6EDF7;color:#7B8BA6;cursor:not-allowed}
+.btn-off:hover{background:#E6EDF7;color:#7B8BA6}
+.btn-danger{color:#A1231A;border-color:#F1C9C5}
+.btn-danger:hover{background:#FDECEC;color:#A1231A}
+.btn-sm{height:32px;padding:0 12px;font-size:13px}
+.btn-link{border:0;background:none;color:#195AB4;font-size:13px;font-weight:600;cursor:pointer;padding:4px 6px;border-radius:6px}
+.btn-link:hover{background:#EAF2FF}
+.chip{display:inline-flex;align-items:center;gap:6px;height:24px;padding:0 8px;border-radius:6px;font-size:12px;font-weight:600;background:#EAF2FF;color:#0B2859;white-space:nowrap}
+.chip-warn{background:#FFF4E0;color:#8A4B06}
+.chip-crit{background:#FDECEC;color:#A1231A}
+.chip-ok{background:#D2E5FF;color:#0B2859}
+.chip-dark{background:#05132A;color:#fff}
+.chip-line{background:#fff;border:1px solid #B1D2FF}
+.chip-sim{background:#fff;border:1px dashed #87BAFF;color:#10408D}
+.seg{display:inline-flex;border:1px solid #B1D2FF;border-radius:8px;overflow:hidden;background:#fff;flex-wrap:wrap}
+.seg-b{border:0;background:#fff;height:36px;padding:0 14px;font-size:13px;font-weight:600;color:#0B2859;cursor:pointer;border-right:1px solid #DCE6F5}
+.seg-b:last-child{border-right:0}
+.seg-b:hover{background:#EAF2FF}
+.seg-on{background:#195AB4;color:#fff}
+.seg-on:hover{background:#10408D}
+.tabs{display:flex;gap:4px;border-bottom:1px solid #DCE6F5;flex-wrap:wrap}
+.tab{border:0;background:none;height:42px;padding:0 14px;font-size:14px;font-weight:600;color:#4A5B78;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px}
+.tab:hover{color:#0B2859}
+.tab-on{color:#195AB4;border-bottom-color:#195AB4}
+.inp,.sel{height:38px;border:1px solid #B1D2FF;border-radius:8px;padding:0 10px;font-size:14px;box-sizing:border-box;background:#fff;color:#05132A}
+.inp:focus,.sel:focus{border-color:#195AB4}
+.txa{border:1px solid #B1D2FF;border-radius:8px;padding:8px 10px;font-size:14px;box-sizing:border-box;width:100%;min-height:72px;resize:vertical;color:#05132A}
+.fld{display:flex;flex-direction:column;gap:4px}
+.pill{height:30px;padding:0 12px;border-radius:15px;border:1px solid #B1D2FF;background:#fff;font-size:12px;font-weight:500;cursor:pointer;color:#0B2859}
+.pill:hover{border-color:#549CFF}
+.pill-on{background:#195AB4;border-color:#195AB4;color:#fff}
+.tbl{width:100%;border-collapse:collapse;font-size:13px}
+.tbl th{text-align:left;font-weight:600;color:#4A5B78;font-size:12px;padding:10px 12px;border-bottom:1px solid #DCE6F5;white-space:nowrap}
+.tbl td{padding:10px 12px;border-bottom:1px solid #EEF3FA;vertical-align:middle}
+.tbl tr.clk:hover td{background:#F7FAFF;cursor:pointer}
+.num{text-align:right}
+.kpi{background:#fff;border:1px solid #DCE6F5;border-radius:12px;padding:14px 16px;display:flex;flex-direction:column;gap:4px}
+.kv{font-size:24px;font-weight:700;font-variant-numeric:tabular-nums}
+.delta{font-size:12px;font-weight:600;color:#10408D}
+.tip{position:relative;display:inline-flex;vertical-align:middle}
+.tip-btn{all:unset;cursor:help;width:22px;height:22px;display:inline-flex;align-items:center;justify-content:center;border-radius:50%;color:#4A5B78}
+.tip-btn:hover,.tip-btn:focus-visible{color:#195AB4;background:#EAF2FF}
+.tip-btn:focus-visible{outline:2px solid #307AE0}
+.bubble{position:absolute;z-index:40;top:calc(100% + 6px);left:50%;transform:translateX(-50%);width:max-content;max-width:280px;background:#05132A;color:#fff;font-size:12px;line-height:17px;font-weight:400;padding:8px 10px;border-radius:6px;opacity:0;visibility:hidden;pointer-events:none;transition:opacity .12s;text-align:left;white-space:normal}
+.bubble-r{left:auto;right:0;transform:none}
+.bubble-l{left:0;transform:none}
+.tip:hover .bubble,.tip:focus-within .bubble{opacity:1;visibility:visible}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:#05132A;color:#fff;border-radius:10px;padding:10px 16px;display:flex;gap:14px;align-items:center;font-size:13px;z-index:60}
+.sq{width:8px;height:8px;border-radius:2px;display:inline-block}
+.e0140{background:#195AB4}.e0144{background:#87BAFF}.e0900{background:#0B2859}
+.overlay{position:fixed;inset:0;background:rgba(5,19,42,.45);display:flex;align-items:flex-start;justify-content:center;padding:60px 16px;z-index:50;overflow:auto}
+.modal{background:#fff;border-radius:12px;width:100%;max-width:560px;padding:22px 24px;display:flex;flex-direction:column;gap:14px;box-sizing:border-box}
+.drawer{position:fixed;top:0;right:0;bottom:0;width:min(440px,100%);background:#fff;border-left:1px solid #DCE6F5;z-index:55;padding:22px 24px;box-sizing:border-box;overflow:auto;display:flex;flex-direction:column;gap:14px}
+.x{all:unset;cursor:pointer;width:32px;height:32px;display:inline-flex;align-items:center;justify-content:center;border-radius:6px;color:#4A5B78}
+.x:hover{background:#EAF2FF}
+.x:focus-visible{outline:2px solid #307AE0}
+
+.drop{border:1.5px dashed #87BAFF;border-radius:12px;background:#F7FAFF;padding:28px 24px;display:flex;flex-wrap:wrap;align-items:center;gap:20px}
+.drop-on{background:#EAF2FF;border-color:#195AB4}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.track{height:6px;border-radius:3px;background:#E6EDF7;overflow:hidden}
+.fill{height:6px;border-radius:3px;background:#195AB4}
+.mx{width:100%;border-collapse:collapse;font-size:13px}
+.mx th{text-align:left;font-weight:600;color:#4A5B78;font-size:12px;padding:8px 12px;border-bottom:1px solid #DCE6F5}
+.mx td{padding:8px 12px;border-bottom:1px solid #EEF3FA}
+.cell{display:inline-flex;align-items:center;gap:6px}
+.c-ok{color:#195AB4}.c-falta{color:#7B8BA6}.c-erro{color:#A1231A}
+.step{flex:1 1 140px;display:flex;flex-direction:column;gap:4px;padding:12px 14px;border-radius:10px;border:1px solid #DCE6F5;background:#fff}
+.st-done{border-color:#87BAFF;background:#F2F7FF}
+.st-run{border-color:#195AB4;background:#EAF2FF}
+.st-wait{border-color:#F3D3A0;background:#FFF9EF}
+.st-fail{border-color:#F1C9C5;background:#FDF3F2}
+.st-todo{background:#fff}
+.rule{border:1px solid #E3EBF6;border-radius:10px}
+.rulebtn{all:unset;box-sizing:border-box;display:flex;gap:12px;align-items:center;width:100%;padding:12px 14px;cursor:pointer;border-radius:10px}
+.rulebtn:hover{background:#F7FAFF}
+.rulebtn:focus-visible{outline:2px solid #307AE0}
+.sec{display:flex;align-items:center;gap:8px;font-size:13px;color:#0B2859}
+
+.ld-cur{background:#F2F7FF}
+
+</style>
+</helmet>
+<div style="min-height: 100vh; display: flex; flex-direction: column">
+  <header class="top">
+    <div style="display: flex; align-items: center; gap: 10px">
+      <div class="mark">A4</div>
+      <span style="color: #fff; font-weight: 600; font-size: 16px">ARC4 Cobrança</span>
+    </div>
+    <nav aria-label="Principal" style="display: flex; gap: 2px; flex-wrap: wrap"><a class="nav" href="Main.dc.html">Consulta</a><a class="nav" href="Carteira.dc.html">Carteira</a><a class="nav" href="Movimentacoes.dc.html">Movimentações</a><a class="nav nav-on" href="Importacao.dc.html" aria-current="page">Importação</a><a class="nav" href="Usuarios.dc.html">Administração</a></nav>
+    
+    <div style="margin-left: auto; display: flex; align-items: center; gap: 12px">
+      <div style="display: flex; flex-direction: column; align-items: flex-end; line-height: 1.2">
+        <span style="color: #fff; font-size: 13px; font-weight: 600">{{userName}}</span>
+        <span style="color: #87BAFF; font-size: 12px">{{userPerfil}}</span>
+      </div>
+      <div class="avatar" aria-hidden="true">{{userIni}}</div>
+      <a class="nav" href="Login.dc.html" style="display: inline-flex; align-items: center; gap: 6px"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M15 4h3a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-3"></path><path d="M10 17l-5-5 5-5"></path><path d="M5 12h11"></path></svg>Sair</a>
+    </div>
+  </header>
+
+
+  <main class="wrap">
+
+    <div style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 16px">
+      <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap">
+        <h1 style="margin: 0; font-size: 24px; font-weight: 700">Importação</h1>
+        <span class="{{statusCls}}">{{statusLabel}}</span>
+        <sc-if value="{{hasData}}" hint-placeholder-val="{{ false }}"><span class="chip">Lote {{dataLote}}</span><span class="chip chip-line">Enviado por Rafael Costa</span></sc-if>
+      </div>
+      <div style="display: flex; gap: 18px; flex-wrap: wrap">
+        <span class="sec">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#195AB4" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M12 3l7 3v5c0 4.5-3 8-7 10-4-2-7-5.5-7-10V6l4-1.7"></path></svg>
+          Acesso restrito
+          <span class="tip"><button type="button" class="tip-btn" aria-label="Sobre o acesso restrito" aria-describedby="t-acesso"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M19.4 7.6A9 9 0 1 1 16.4 4.1"></path><path d="M12 11v6"></path><path d="M12 7.6v.01"></path></svg></button><span role="tooltip" id="t-acesso" class="bubble bubble-r">Só o perfil Importação abre esta área. Login com MFA, sessão curta e registro de cada ação.</span></span>
+        </span>
+        <span class="sec">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#195AB4" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M20 12a8 8 0 1 1-3-6.2"></path><path d="M8.5 12l2.5 2.5L20 5.5"></path></svg>
+          Verificação de arquivos
+          <span class="tip"><button type="button" class="tip-btn" aria-label="Sobre a verificação" aria-describedby="t-verif"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M19.4 7.6A9 9 0 1 1 16.4 4.1"></path><path d="M12 11v6"></path><path d="M12 7.6v.01"></path></svg></button><span role="tooltip" id="t-verif" class="bubble bubble-r">Cada ZIP passa por antivírus, conferência de hash SHA-256 (bloqueia reenvio) e limite de tamanho antes de ser lido.</span></span>
+        </span>
+        <span class="sec">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#195AB4" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M16 20v-1.5a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4V20"></path><circle cx="9.5" cy="7.5" r="3.5"></circle><path d="M17 11.5l2 2 3.5-3.5"></path></svg>
+          Aprovação dupla
+          <span class="tip"><button type="button" class="tip-btn" aria-label="Sobre a aprovação dupla" aria-describedby="t-dupla"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M19.4 7.6A9 9 0 1 1 16.4 4.1"></path><path d="M12 11v6"></path><path d="M12 7.6v.01"></path></svg></button><span role="tooltip" id="t-dupla" class="bubble bubble-r">Quem envia não aprova. A publicação exige um segundo usuário com perfil de aprovador.</span></span>
+        </span>
+      </div>
+    </div>
+
+    <section class="card" aria-labelledby="h-envio" style="padding: 20px 24px; display: flex; flex-direction: column; gap: 18px">
+      <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap">
+        <div style="display: flex; align-items: center; gap: 4px">
+          <h2 id="h-envio" style="margin: 0; font-size: 17px; font-weight: 600">Enviar arquivos do dia</h2>
+          <span class="tip"><button type="button" class="tip-btn" aria-label="Formato esperado" aria-describedby="t-formato"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M19.4 7.6A9 9 0 1 1 16.4 4.1"></path><path d="M12 11v6"></path><path d="M12 7.6v.01"></path></svg></button><span role="tooltip" id="t-formato" class="bubble bubble-l">27 ZIPs no padrão AAAAMMDD_TIPO_EPS_OUT.zip: 9 tipos × EPS 0140, 0144 e 0900. Remessa, parcelas e telefone são obrigatórios.</span></span>
+        </div>
+        <div style="display: flex; align-items: center; gap: 12px; min-width: 240px">
+          <span class="mono lbl" style="color: #0B2859; font-weight: 600">{{nOk}} de 27</span>
+          <div class="track" style="flex: 1; min-width: 160px"><div class="fill" style="width: {{pct}}%"></div></div>
+        </div>
+      </div>
+
+      <sc-if value="{{canEditFiles}}" hint-placeholder-val="{{ true }}">
+        <div class="{{dropCls}}" onDragOver="{{onDragOver}}" onDragLeave="{{onDragLeave}}" onDrop="{{onDrop}}">
+          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#195AB4" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 18H6a4 4 0 0 1-.6-8A6 6 0 0 1 17 8.5"></path><path d="M17.5 10.5A3.8 3.8 0 0 1 18 18h-1"></path><path d="M12 12v8"></path><path d="M9 15l3-3 3 3"></path></svg>
+          <div style="flex: 1 1 260px; display: flex; flex-direction: column; gap: 4px">
+            <span style="font-size: 15px; font-weight: 600">Arraste os arquivos .zip para cá</span>
+            <span class="lbl">ou escolha no computador. Pode enviar em partes.</span>
+          </div>
+          <div style="display: flex; gap: 8px; flex-wrap: wrap">
+            <label class="btn btn-primary" for="upl">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 15V4"></path><path d="M8 8l4-4 4 4"></path><path d="M5 14v5h14v-5"></path></svg>
+              Selecionar arquivos
+              <input id="upl" class="sr" type="file" multiple accept=".zip" onChange="{{onPick}}">
+            </label>
+            <button type="button" class="btn" onClick="{{simulate}}">Simular carga de 19/11</button>
+          </div>
+        </div>
+      </sc-if>
+
+      <div style="overflow-x: auto">
+        <table class="mx">
+          <thead><tr><th scope="col">Tipo</th><th scope="col">0140 · CLEAN</th><th scope="col">0144 · CAÍDOS</th><th scope="col">0900 · DESAFIANTE</th></tr></thead>
+          <tbody>
+            <sc-for list="{{matrix}}" as="r" hint-placeholder-count="9">
+              <tr>
+                <td>
+                  <span style="display: inline-flex; align-items: center; gap: 2px">
+                    <span style="font-weight: 600">{{r.tipo}}</span>
+                    <sc-if value="{{r.req}}" hint-placeholder-val="{{ false }}"><span class="lbl" style="margin-left: 4px">obrigatório</span></sc-if>
+                    <span class="tip"><button type="button" class="tip-btn" aria-label="Sobre {{r.tipo}}" aria-describedby="t-{{r.id}}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M19.4 7.6A9 9 0 1 1 16.4 4.1"></path><path d="M12 11v6"></path><path d="M12 7.6v.01"></path></svg></button><span role="tooltip" id="t-{{r.id}}" class="bubble bubble-l">{{r.nota}}</span></span>
+                  </span>
+                </td>
+                <sc-for list="{{r.cells}}" as="c" hint-placeholder-count="3">
+                  <td><span class="{{c.cls}}">
+                    <sc-if value="{{c.ok}}" hint-placeholder-val="{{ false }}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M20 12a8 8 0 1 1-3-6.2"></path><path d="M8.5 12l2.5 2.5L20 5.5"></path></svg></sc-if>
+                    <sc-if value="{{c.erro}}" hint-placeholder-val="{{ false }}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 7v6"></path><path d="M12 16.5v.01"></path><path d="M20 12a8 8 0 1 1-3-6.2"></path></svg></sc-if>
+                    <span class="mono">{{c.txt}}</span>
+                  </span></td>
+                </sc-for>
+              </tr>
+            </sc-for>
+          </tbody>
+        </table>
+      </div>
+
+      <sc-if value="{{hasIgnored}}" hint-placeholder-val="{{ false }}">
+        <div style="background: #FDF3F2; border-radius: 8px; padding: 10px 12px; display: flex; flex-direction: column; gap: 4px">
+          <span style="font-size: 13px; font-weight: 600; color: #A1231A">{{ignoredTitle}}</span>
+          <sc-for list="{{ignored}}" as="g" hint-placeholder-count="1"><span class="mono" style="font-size: 12px; color: #5A2A26">{{g.name}} · {{g.why}}</span></sc-for>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{showFiles}}" hint-placeholder-val="{{ false }}">
+        <div><button type="button" class="btn-link" onClick="{{toggleFiles}}" aria-expanded="{{filesOpen}}">{{filesLabel}}</button></div>
+        <sc-if value="{{filesOpen}}" hint-placeholder-val="{{ false }}">
+          <div style="overflow-x: auto; max-height: 380px; overflow-y: auto; border: 1px solid #E3EBF6; border-radius: 10px">
+            <table class="mx" style="font-size: 12px">
+              <thead><tr><th scope="col">Nome original</th><th scope="col">Tipo</th><th scope="col">EPS</th><th scope="col">Recebido em</th><th scope="col" style="text-align: right">Registros</th><th scope="col" style="text-align: right">Tamanho</th><th scope="col">Hash SHA-256</th><th scope="col">Validação</th><th scope="col">Status</th></tr></thead>
+              <tbody><sc-for list="{{fileRows}}" as="f" hint-placeholder-count="5"><tr><td class="mono">{{f.name}}</td><td>{{f.tipo}}</td><td>{{f.eps}}</td><td class="mono">{{f.at}}</td><td class="mono" style="text-align: right">{{f.regs}}</td><td class="mono" style="text-align: right">{{f.size}}</td><td><span class="tip"><span class="mono" tabindex="0" aria-describedby="h-{{f.name}}" style="cursor: help">{{f.hashShort}}</span><span role="tooltip" id="h-{{f.name}}" class="bubble bubble-l" style="max-width: 320px; word-break: break-all">{{f.hashFull}}</span></span></td><td><span class="{{f.validCls}}">{{f.valid}}</span></td><td>{{f.st}}</td></tr></sc-for></tbody>
+            </table>
+          </div>
+        </sc-if>
+      </sc-if>
+
+      <div style="display: flex; gap: 10px; justify-content: flex-end; flex-wrap: wrap; align-items: center">
+        <sc-if value="{{showMissingReq}}" hint-placeholder-val="{{ false }}"><span class="lbl" style="color: #8A4B06">Faltam arquivos obrigatórios</span></sc-if>
+        <sc-if value="{{canEditFiles}}" hint-placeholder-val="{{ true }}">
+          <button type="button" class="btn" onClick="{{clear}}">Limpar</button>
+        </sc-if>
+        <sc-if value="{{canStart}}" hint-placeholder-val="{{ false }}">
+          <button type="button" class="btn btn-primary" onClick="{{start}}">Validar e simular</button>
+        </sc-if>
+        <sc-if value="{{cantStart}}" hint-placeholder-val="{{ true }}">
+          <button type="button" class="btn btn-off" disabled="{{ true }}">Validar e simular</button>
+        </sc-if>
+      </div>
+    </section>
+
+    <section aria-labelledby="h-etapas" style="display: flex; flex-direction: column; gap: 10px">
+      <h2 id="h-etapas" class="sr">Etapas</h2>
+      <div role="list" style="display: flex; gap: 10px; flex-wrap: wrap">
+        <sc-for list="{{steps}}" as="st" hint-placeholder-count="8">
+          <div role="listitem" class="{{st.cls}}">
+            <span class="lbl">{{st.n}}</span>
+            <span style="font-size: 14px; font-weight: 600">{{st.name}}</span>
+            <span style="font-size: 12px; color: #4A5B78">{{st.note}}</span>
+          </div>
+        </sc-for>
+      </div>
+    </section>
+
+    <sc-if value="{{showReview}}" hint-placeholder-val="{{ false }}">
+      <section class="card" aria-labelledby="h-reg" style="padding: 20px 24px; display: flex; flex-direction: column; gap: 16px">
+        <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap">
+          <div style="display: flex; align-items: center; gap: 4px">
+            <h2 id="h-reg" style="margin: 0; font-size: 17px; font-weight: 600">Relatório da simulação</h2>
+            <span class="tip"><button type="button" class="tip-btn" aria-label="Sobre a revisão" aria-describedby="t-rev"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M19.4 7.6A9 9 0 1 1 16.4 4.1"></path><path d="M12 11v6"></path><path d="M12 7.6v.01"></path></svg></button><span role="tooltip" id="t-rev" class="bubble bubble-l">Duas regras passaram do limite de publicação automática, por isso o lote pede aprovação. No protótipo, os números são os da carga real de 19/11.</span></span>
+          </div>
+          <div style="display: flex; gap: 24px; flex-wrap: wrap">
+            <div><div class="lbl">Linhas lidas</div><div class="mono" style="font-size: 18px; font-weight: 700">{{totalLinhas}}</div></div>
+            <div><div class="lbl">Contratos</div><div class="mono" style="font-size: 18px; font-weight: 700">836.683</div></div>
+            <div><div class="lbl">Regras disparadas</div><div class="mono" style="font-size: 18px; font-weight: 700">6</div></div>
+          </div>
+        </div>
+        <div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px">
+          <sc-for list="{{simCards}}" as="c" hint-placeholder-count="12"><div style="background: #F4F8FE; border-radius: 10px; padding: 10px 12px"><div class="lbl">{{c.k}}</div><div class="mono" style="font-size: 15px; font-weight: 700; margin-top: 2px">{{c.v}}</div></div></sc-for>
+        </div>
+        <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px">
+          <div style="border: 1px solid #E3EBF6; border-radius: 10px; padding: 10px 12px"><div style="display: flex; align-items: center; gap: 6px; margin-bottom: 6px"><span style="font-weight: 600; font-size: 13px">Impacto por EPS</span><span class="chip chip-sim">vs 18/11 simulada</span></div>
+            <table class="mx" style="font-size: 12px"><thead><tr><th scope="col">EPS</th><th scope="col" style="text-align: right">Antes</th><th scope="col" style="text-align: right">Depois</th><th scope="col" style="text-align: right">Saldo</th></tr></thead><tbody><sc-for list="{{impEps}}" as="x" hint-placeholder-count="3"><tr><td>{{x.k}}</td><td class="mono" style="text-align: right">{{x.a}}</td><td class="mono" style="text-align: right">{{x.b}}</td><td class="mono" style="text-align: right">{{x.sd}}</td></tr></sc-for></tbody></table></div>
+          <div style="border: 1px solid #E3EBF6; border-radius: 10px; padding: 10px 12px"><div style="font-weight: 600; font-size: 13px; margin-bottom: 6px">Maiores impactos por instituição</div>
+            <table class="mx" style="font-size: 12px"><thead><tr><th scope="col">Instituição</th><th scope="col" style="text-align: right">Posições</th><th scope="col" style="text-align: right">Δ</th><th scope="col" style="text-align: right">Saldo</th></tr></thead><tbody><sc-for list="{{impInst}}" as="x" hint-placeholder-count="5"><tr><td>{{x.k}}</td><td class="mono" style="text-align: right">{{x.b}}</td><td class="mono" style="text-align: right">{{x.d}}</td><td class="mono" style="text-align: right">{{x.sd}}</td></tr></sc-for></tbody></table></div>
+          <div style="border: 1px solid #E3EBF6; border-radius: 10px; padding: 10px 12px"><div style="font-weight: 600; font-size: 13px; margin-bottom: 6px">Maiores impactos por produto</div>
+            <table class="mx" style="font-size: 12px"><thead><tr><th scope="col">Produto</th><th scope="col">Instituição</th><th scope="col" style="text-align: right">Posições</th><th scope="col" style="text-align: right">Δ</th></tr></thead><tbody><sc-for list="{{impProd}}" as="x" hint-placeholder-count="5"><tr><td class="mono">{{x.k}}</td><td>{{x.i}}</td><td class="mono" style="text-align: right">{{x.b}}</td><td class="mono" style="text-align: right">{{x.d}}</td></tr></sc-for></tbody></table></div>
+        </div>
+        <span class="lbl" style="font-weight: 600; color: #0B2859">Regras de conciliação</span>
+        <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px">
+          <sc-for list="{{rules}}" as="r" hint-placeholder-count="7">
+            <div class="rule">
+              <button type="button" class="rulebtn" onClick="{{r.toggle}}" aria-expanded="{{r.open}}">
+                <span class="{{r.chipCls}}">{{r.sev}}</span>
+                <span style="flex: 1; font-size: 14px; font-weight: 600">{{r.name}}</span>
+                <span class="mono" style="font-size: 14px; font-weight: 600">{{r.n}}</span>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#4A5B78" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="{{r.chev}}"></path></svg>
+              </button>
+              <sc-if value="{{r.open}}" hint-placeholder-val="{{ false }}">
+                <div style="padding: 0 14px 14px; display: flex; flex-direction: column; gap: 6px">
+                  <span style="font-size: 13px">{{r.desc}}</span>
+                  <span class="lbl">Ação: {{r.acao}}</span>
+                </div>
+              </sc-if>
+            </div>
+          </sc-for>
+        </div>
+        <div style="display: flex; gap: 10px; justify-content: flex-end; flex-wrap: wrap; border-top: 1px solid #EEF3FA; padding-top: 16px">
+          <sc-if value="{{pendingApproval}}" hint-placeholder-val="{{ true }}">
+            <span style="display: inline-flex; align-items: center; gap: 4px; margin-right: auto; font-size: 13px">Aprovador: <strong>{{approverName}}</strong>
+              <sc-if value="{{selfApprove}}" hint-placeholder-val="{{ true }}"><span class="chip chip-warn">mesma pessoa que enviou</span><button type="button" class="btn-link" onClick="{{switchApprover}}">Entrar como Marina Alves · Aprovador (demo)</button></sc-if>
+            </span>
+            <button type="button" class="btn btn-danger" onClick="{{reject}}">Rejeitar lote</button>
+            <sc-if value="{{canApprove}}" hint-placeholder-val="{{ false }}"><button type="button" class="btn btn-primary" onClick="{{publish}}">Aprovar e publicar</button></sc-if>
+            <sc-if value="{{selfApprove}}" hint-placeholder-val="{{ true }}"><span class="tip"><button type="button" class="btn btn-off" disabled="{{ true }}" aria-describedby="t-self">Aprovar e publicar</button><span role="tooltip" id="t-self" class="bubble bubble-r">Quem enviou o lote não pode aprovar. Outro usuário com perfil Aprovador precisa revisar e publicar.</span></span></sc-if>
+          </sc-if>
+          <sc-if value="{{decided}}" hint-placeholder-val="{{ false }}">
+            <button type="button" class="btn" onClick="{{reopen}}">Desfazer decisão</button>
+            <button type="button" class="btn" onClick="{{newLot}}">Nova carga</button>
+          </sc-if>
+        </div>
+      </section>
+    </sc-if>
+    <section class="card" aria-labelledby="h-fal" style="padding: 18px 12px">
+      <div style="display: flex; align-items: center; gap: 4px; padding: 0 12px 10px"><h2 id="h-fal" class="h2">Falhas e reprocessamentos</h2><span class="chip chip-sim">exemplo</span></div>
+      <div style="overflow-x: auto"><table class="tbl"><thead><tr><th scope="col">Quando</th><th scope="col">Responsável</th><th scope="col">Ocorrência</th><th scope="col">Resultado</th><th scope="col">Desfecho</th></tr></thead>
+        <tbody><sc-for list="{{falhas}}" as="f" hint-placeholder-count="3"><tr><td class="mono">{{f.q}}</td><td>{{f.u}}</td><td>{{f.o}}</td><td><span class="chip chip-crit">{{f.r}}</span></td><td>{{f.s}}</td></tr></sc-for></tbody></table></div>
+    </section>
+
+    <section class="card" aria-labelledby="h-hist" style="padding: 18px 12px">
+      <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 0 12px 10px; flex-wrap: wrap">
+        <div style="display: flex; align-items: center; gap: 4px"><h2 id="h-hist" class="h2">Histórico de cargas</h2><span class="tip"><button type="button" class="tip-btn" aria-label="Sobre o histórico" aria-describedby="t-hist"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M19.4 7.6A9 9 0 1 1 16.4 4.1"></path><path d="M12 11v6"></path><path d="M12 7.6v.01"></path></svg></button><span role="tooltip" id="t-hist" class="bubble bubble-l">Todas as cargas ficam guardadas com os arquivos originais. A base vigente só muda depois de uma publicação bem-sucedida, e uma versão anterior pode ser restaurada com aprovação.</span></span></div>
+        <span class="chip chip-sim">17/11 e 18/11 simuladas</span>
+      </div>
+      <div style="overflow-x: auto">
+        <table class="tbl">
+          <thead><tr><th scope="col">Carga</th><th scope="col">Arquivos originais</th><th scope="col">Enviado por</th><th scope="col">Aprovado por</th><th scope="col">Publicação</th><th scope="col">Situação</th><th scope="col"><span class="sr">Ações</span></th></tr></thead>
+          <tbody>
+            <sc-for list="{{hist}}" as="h" hint-placeholder-count="3">
+              <tr class="{{h.trCls}}">
+                <td class="mono" style="font-weight: 600">{{h.data}}</td>
+                <td>{{h.arquivos}}</td>
+                <td>{{h.envio}}</td>
+                <td>{{h.aprov}}</td>
+                <td class="mono">{{h.pub}}</td>
+                <td><span class="{{h.stCls}}">{{h.st}}</span></td>
+                <td style="text-align: right"><sc-if value="{{h.canRestore}}" hint-placeholder-val="{{ false }}"><button type="button" class="btn btn-sm" onClick="{{h.restore}}">Restaurar esta versão</button></sc-if></td>
+              </tr>
+            </sc-for>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <sc-if value="{{hasRestore}}" hint-placeholder-val="{{ false }}">
+    <div class="overlay">
+      <div class="modal" role="dialog" aria-modal="true" aria-labelledby="rs-t">
+        <h2 id="rs-t" class="h2" style="font-size: 20px">Restaurar a carga de {{restoreData}}</h2>
+        <span style="font-size: 14px">A base vigente volta para {{restoreData}}. A carga {{currentData}} continua guardada e pode ser publicada de novo.</span>
+        <div class="fld"><label for="rs-m" class="lbl">Motivo</label><textarea id="rs-m" class="txa" value="{{restoreMotivo}}" onChange="{{onRestoreMotivo}}"></textarea></div>
+        <sc-if value="{{restoreErr}}" hint-placeholder-val="{{ false }}"><span role="alert" style="font-size: 13px; color: #A1231A">Informe o motivo.</span></sc-if>
+        <div style="display: flex; justify-content: flex-end; gap: 10px">
+          <button type="button" class="btn" onClick="{{cancelRestore}}">Cancelar</button>
+          <button type="button" class="btn btn-primary" onClick="{{confirmRestore}}">Restaurar</button>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+  <sc-if value="{{hasToast}}" hint-placeholder-val="{{ false }}"><div role="status" class="toast">{{toast}}</div></sc-if>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1500}}'>
+
+var TYPES = [
+  { tipo: 'REMESSA_ARC4U', req: true, n: [660367, 15679, 171015], mb: [78.1, 1.9, 20.3], nota: 'Estoque e dados do devedor, 82 colunas. Chave: contrato_original.' },
+  { tipo: 'PARCELAS', req: true, n: [1813224, 158226, 315303], mb: [39.6, 2.6, 7.2], nota: 'Parcelas em aberto. A soma confere a curva de cada contrato.' },
+  { tipo: 'TELEFONE', req: true, n: [2018955, 49545, 536476], mb: [22.7, 0.5, 5.8], nota: 'Telefones por contrato. Duplicados são unificados; bloqueados saem de SMS.' },
+  { tipo: 'TELEFONES_BLOQUEADOS', req: false, n: [6661, 6661, 6661], mb: [0.04, 0.04, 0.04], nota: 'Lista global de bloqueio, igual nas 3 EPS. Aplicada uma vez.' },
+  { tipo: 'ACORDO_ATUAL', req: false, n: [8388, 14522, 1868], mb: [0.42, 0.74, 0.09], nota: 'Acordo vigente. Data de vencimento chega em DD/MM/AAAA.' },
+  { tipo: 'PAGAMENTO', req: false, n: [30494, 32655, 1579], mb: [0.24, 0.27, 0.01], nota: 'Arquivo acumulado desde 2021. Só pagamentos novos geram evento.' },
+  { tipo: 'RETIRADA', req: false, n: [18688, 54, 116], mb: [0.25, 0.001, 0.002], nota: 'Contratos baixados. Aplicado sobre o histórico.' },
+  { tipo: 'GARANTIAS', req: false, n: [790, 881, 0], mb: [0.06, 0.07, 0.001], nota: 'Veículos e FGO.' },
+  { tipo: 'AVALISTAS', req: false, n: [0, 0, 0], mb: [0.0003, 0.0003, 0.0003], nota: 'Hoje chega vazio. Estrutura pronta para quando vier.' }
+];
+var EPS = ['0140', '0144', '0900'];
+var RE = /^(\d{8})_(REMESSA_ARC4U|PARCELAS|TELEFONES_BLOQUEADOS|TELEFONE|ACORDO_ATUAL|PAGAMENTO|RETIRADA|GARANTIAS|AVALISTAS)_(0140|0144|0900)_OUT\.zip$/i;
+var RULES = [
+  { id: 'eps', sev: 'Aprovação', name: 'Contrato em mais de uma EPS', n: 10378, desc: '10.353 contratos em 0140 e 0900 e 25 em 0144 e 0900, com o mesmo grupo e a mesma curva.', acao: 'define a EPS primária e envia à fila de conflitos.' },
+  { id: 'bloq', sev: 'Aprovação', name: 'Telefone enviado e bloqueado', n: 177, desc: '156 na 0140, 6 na 0144 e 15 na 0900.', acao: 'marca como bloqueado e retira de SMS e discador.' },
+  { id: 'dup', sev: 'Aviso', name: 'Telefone duplicado', n: 253317, desc: 'Mesmo contrato, DDD e número repetidos.', acao: 'uma linha por número, com todas as fontes.' },
+  { id: 'acordo', sev: 'Aviso', name: 'Acordo sem sinalizador', n: 24778, desc: 'Há acordo, mas a remessa diz acordo_ativo = N.', acao: 'acordo_ativo passa a ser calculado.' },
+  { id: 'ret', sev: 'Info', name: 'Retirada de contrato', n: 18858, desc: 'Motivo 2 em 98% dos casos.', acao: 'encerra o contrato no histórico.' },
+  { id: 'curva', sev: 'Aviso', name: 'Curva diferente das parcelas', n: 1704, desc: 'Diferenças de R$ 1 a R$ 10.', acao: 'aviso no contrato, sem bloquear.' },
+  { id: 'grupo', sev: 'Info', name: 'Grupo ARC4 não catalogado', n: 0, desc: 'Os 13 grupos recebidos já estão no cadastro.', acao: 'nenhuma.' }
+];
+var HASH = {"20261119_ACORDO_ATUAL_0140_OUT.zip": ["3334e9eb583e40a0b8cfa21774a7c240071d407e5575f88861532ebcc7f4fd25", 424901, 8388], "20261119_ACORDO_ATUAL_0144_OUT.zip": ["61f75dea851ae0a49f9b30882ad7a751d596296e29d46ec0537105656e6e2aee", 738204, 14522], "20261119_ACORDO_ATUAL_0900_OUT.zip": ["16b85720dc2251d6370b0665e7753ade7ded54bc7e2829884983db68d30a3055", 92367, 1868], "20261119_AVALISTAS_0140_OUT.zip": ["9bd5ead544300000230e5289ceb7d61d9b317058074775957471d0be1b38bad8", 338, 0], "20261119_AVALISTAS_0144_OUT.zip": ["e9c9ebcc7f47ea1c902b0ed17577fed6bbe1e6259bb0244f3d62729d49fd9c15", 338, 0], "20261119_AVALISTAS_0900_OUT.zip": ["1c2d1a6f8d36489732af26c777cc0ddb59d874e6cfa92072f7ff9f3e4b5b46ae", 338, 0], "20261119_GARANTIAS_0140_OUT.zip": ["d45936c15aa0d6c3ae6c572cfb21990f85315e2d1955a7be06ac78105c4c4ad7", 59898, 790], "20261119_GARANTIAS_0144_OUT.zip": ["b7d20e68487ce043646cde1707c2c8fc4c7f70e05abbe5513419e8bdc5b89a01", 68537, 881], "20261119_GARANTIAS_0900_OUT.zip": ["a1d44e4c85bb7f06ac517173afb67e112cff4ead3cb25a82b65abd43c8b472b0", 604, 0], "20261119_PAGAMENTO_0140_OUT.zip": ["bac3486498a5c6f3b3ffa4e458ea0ae27c34fdfe0571733628c43be4b2dcbd96", 239065, 30494], "20261119_PAGAMENTO_0144_OUT.zip": ["ee3b6074e7c41071a2f669e73242d44e6b48169c8cd044a6db8ddc8f5d27dd49", 266605, 32655], "20261119_PAGAMENTO_0900_OUT.zip": ["7591f84f3e4cf7490c362dcafb1573bd1004e95e09251976a0c1419dd93193c8", 13258, 1579], "20261119_PARCELAS_0140_OUT.zip": ["c0e99d58a7f54cdbb1a3aaca8ef835ab1ea2d4be6d7b322c5850a0d484911f8e", 39600212, 1813224], "20261119_PARCELAS_0144_OUT.zip": ["d2d833a74385fa2bda4255e7caa1fd98d43328d9e562fecf459f8d1f2d9ffb60", 2633354, 158226], "20261119_PARCELAS_0900_OUT.zip": ["b5e522a40bbcf9876291e648bed520597905f47f9bab99b3a591bbe8e425ba98", 7164508, 315303], "20261119_REMESSA_ARC4U_0140_OUT.zip": ["c48dbedbea379a3ff919c388b95e99f19f200ccdedd71d9d3882b37061fdc633", 78053810, 660367], "20261119_REMESSA_ARC4U_0144_OUT.zip": ["ee3710d682244a35c2fe7eebbe3962a9d3821d5bfa11e61e1aa74d3b309a7e95", 1925547, 15679], "20261119_REMESSA_ARC4U_0900_OUT.zip": ["b5f8f207de23564ded8952f9b78d33a94d6888160982c22941e81778da8f91d8", 20257328, 171015], "20261119_RETIRADA_0140_OUT.zip": ["6d8763c598f95921d089508e01dd2fa2d5e495dbb2f9615f69a91d0eab99308b", 254040, 18688], "20261119_RETIRADA_0144_OUT.zip": ["b2b6f9d4b3976c33733262a8b31f1aa0f994cf20b5f65c029cb99ab3ececd223", 1149, 54], "20261119_RETIRADA_0900_OUT.zip": ["f1b5281f4bd0d6edc0aed23a961079940dd1c00f370655e60e6e309acca7fdb0", 1794, 116], "20261119_TELEFONES_BLOQUEADOS_0140_OUT.zip": ["f6d8eeb4d76c1db582881b53e73b35df83572ab40efa9a59b32d1adc24243cff", 36958, 6661], "20261119_TELEFONES_BLOQUEADOS_0144_OUT.zip": ["aec86b23e6bab8d8b98dd68341616bd916c84195037b66eeeb8d44beaecdc536", 36958, 6661], "20261119_TELEFONES_BLOQUEADOS_0900_OUT.zip": ["3ae47207d18c86a78486d00054fd72c870f8be4efd77677d645aaa863dc13342", 36958, 6661], "20261119_TELEFONE_0140_OUT.zip": ["d72c1e69578354585fa3724d80ae301af1d8b581ab83c8bc4e62aa6754d71301", 22680714, 2018955], "20261119_TELEFONE_0144_OUT.zip": ["4e311c9fbdd8e912123bdd23fd8a00865f0f39d97620155d51790921610f11e5", 546329, 49545], "20261119_TELEFONE_0900_OUT.zip": ["b65db9790c8b558f327af88320ecf33317b879dd1e6031db899f01d00e79fbe8", 5809156, 536476]};
+var STEPS = [['Receber', 'hash e antivírus'], ['Validar estrutura', 'cabeçalhos e colunas'], ['Normalizar', 'campos e domínios'], ['Conciliar', 'entre arquivos'], ['Simular', 'impacto na base'], ['Revisar', ''], ['Aprovar', ''], ['Publicar', '']];
+var IMPACT_EPS = [["0140 · CLEAN", 660367, 676915, 4900479623.77, 5032795971.86], ["0144 · CAÍDOS", 15679, 14481, 74362612.7, 68842306.92], ["0900 · DESAFIANTE", 171015, 167690, 705946721.1, 693934438.51]];
+var IMPACT_INST = [["PAN", 128865, -2274, -35066706.72], ["ITAU", 175345, -3325, -27552002.92], ["MERCADO PAGO", 76059, -2488, -18111464.57], ["SANTANDER", 117004, -2417, -11329071.18], ["NEON", 145103, -544, -9166161.87]];
+var IMPACT_PROD = [["NMCARD", "MERCADO PAGO", 75958, -2487], ["NICARD", "ITAU", 119089, -2254], ["NSCARD", "PERNAMBUCANAS", 84844, 1516], ["NACARD", "PAN", 47693, -1431], ["NSPSIM", "SUPER SIM", 44478, -1422]];
+var FALHAS = [['17/11/2026 08:52', 'Marina Alves', 'TELEFONE_0900 ausente no envio', 'Rejeitado na validação', 'Reenviado às 09:01 · aprovado'], ['12/11/2026 07:40', 'Letícia Souza', 'REMESSA_ARC4U_0140 com 2 colunas a menos', 'Rejeitado na validação', 'Banco reenviou às 10:15 · reprocessado'], ['05/11/2026 09:30', 'Marina Alves', 'Simulação acima do limite: −18% de contratos na 0144', 'Rejeitado na revisão', 'Confirmado com o banco · reprocessado em 06/11']];
+
+function nf(n) { return n.toLocaleString('pt-BR'); }
+function size(b) {
+  if (b >= 1048576) return (b / 1048576).toLocaleString('pt-BR', { maximumFractionDigits: 1 }) + ' MB';
+  if (b >= 1024) return Math.round(b / 1024).toLocaleString('pt-BR') + ' KB';
+  return b + ' B';
+}
+
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { files: {}, ignored: [], date: null, drag: false, phase: 'vazio', step: -1, open: 'eps', approver: 'Rafael Costa', vigente: '18/11/2026', pub19: null, restoreFor: null, restoreMotivo: '', restoreErr: false, toast: null };
+  }
+  componentWillUnmount() { clearInterval(this._iv); clearTimeout(this._t); }
+  flash(m) { var self = this; clearTimeout(this._t); this.setState({ toast: m }); this._t = setTimeout(function () { self.setState({ toast: null }); }, 3500); }
+
+  addFiles(list) {
+    var files = Object.assign({}, this.state.files), ignored = this.state.ignored.slice(), date = this.state.date;
+    for (var i = 0; i < list.length; i++) {
+      var f = list[i], m = RE.exec(f.name || '');
+      if (!m) { ignored.push({ name: f.name, why: 'nome fora do padrão' }); continue; }
+      var d = m[1], tipo = m[2].toUpperCase(), eps = m[3];
+      if (!date) date = d;
+      if (d !== date) { ignored.push({ name: f.name, why: 'data diferente do lote ' + date }); continue; }
+      if (!f.size) { ignored.push({ name: f.name, why: 'arquivo vazio' }); continue; }
+      var hd = new Date(); function p2(n) { return (n < 10 ? '0' : '') + n; }
+      files[tipo + '_' + eps] = { name: f.name, size: f.size, tipo: tipo, eps: eps, at: '19/11/2026 ' + p2(hd.getHours()) + ':' + p2(hd.getMinutes()), real: HASH[f.name] && f.size === HASH[f.name][1] || !!f.sim };
+    }
+    this.setState({ files: files, ignored: ignored, date: date, phase: Object.keys(files).length ? 'selecionado' : this.state.phase });
+  }
+
+  renderVals() {
+    var self = this, s = this.state;
+    var editing = s.phase === 'vazio' || s.phase === 'selecionado';
+    var nOk = Object.keys(s.files).length;
+    var missingReq = TYPES.some(function (t) { return t.req && EPS.some(function (e) { return !s.files[t.tipo + '_' + e]; }); });
+
+    var matrix = TYPES.map(function (t, ti) {
+      return {
+        id: 'tp' + ti, tipo: t.tipo, req: t.req, nota: t.nota,
+        cells: EPS.map(function (e) {
+          var f = s.files[t.tipo + '_' + e];
+          if (f) return { ok: true, erro: false, cls: 'cell c-ok', txt: size(f.size) };
+          if (t.req && nOk > 0) return { ok: false, erro: true, cls: 'cell c-erro', txt: 'falta' };
+          return { ok: false, erro: false, cls: 'cell c-falta', txt: '—' };
+        })
+      };
+    });
+
+    var total = TYPES.reduce(function (a, t) { return a + t.n[0] + t.n[1] + t.n[2]; }, 0);
+    var steps = STEPS.map(function (st, i) {
+      var cls = 'st-todo', note = st[1];
+      var dec = s.phase === 'revisao' || s.phase === 'publicado' || s.phase === 'rejeitado';
+      if (s.phase === 'processando') { cls = i < s.step ? 'st-done' : (i === s.step ? 'st-run' : 'st-todo'); if (i === s.step) note = 'em andamento'; }
+      if (dec && i < 5) { cls = 'st-done'; if (i < 5 && s.stamp) note = st[1] + ' · Rafael Costa'; }
+      if (i === 5) { note = 'relatório da simulação'; if (s.phase === 'revisao') { cls = 'st-wait'; note = 'aguarda aprovador'; } else if (dec) { cls = 'st-done'; note = 'por ' + (s.decidedBy || 'Marina Alves'); } }
+      if (i === 6) { note = 'outro usuário'; if (s.phase === 'publicado') { cls = 'st-done'; note = (s.pub19 ? s.pub19.por + ' · ' + s.pub19.em.slice(11) : 'aprovado'); } else if (s.phase === 'rejeitado') { cls = 'st-fail'; note = 'rejeitado'; } }
+      if (i === 7) { note = 'troca atômica'; if (s.phase === 'publicado') { cls = 'st-done'; note = 'base atualizada'; } else if (s.phase === 'rejeitado') { cls = 'st-fail'; note = 'base anterior mantida'; } }
+      return { n: 'Etapa ' + (i + 1), name: st[0], note: note, cls: 'step ' + cls };
+    });
+
+    var rules = RULES.map(function (r) {
+      var open = s.open === r.id;
+      return {
+        sev: r.sev, name: r.name, n: nf(r.n), desc: r.desc, acao: r.acao, open: open,
+        chev: open ? 'M6 15l6-6 6 6' : 'M6 9l6 6 6-6',
+        chipCls: r.sev === 'Aprovação' ? 'chip chip-warn' : (r.sev === 'Aviso' ? 'chip' : 'chip chip-ok'),
+        toggle: function () { self.setState({ open: open ? null : r.id }); }
+      };
+    });
+
+    var ST = {
+      vazio: ['chip', 'Aguardando arquivos'], selecionado: ['chip', 'Arquivos selecionados'], processando: ['chip chip-ok', 'Processando'],
+      revisao: ['chip chip-warn', 'Aguardando aprovação'], publicado: ['chip chip-dark', 'Publicado'], rejeitado: ['chip chip-crit', 'Rejeitado']
+    };
+    var dl = s.date ? s.date.slice(6, 8) + '/' + s.date.slice(4, 6) + '/' + s.date.slice(0, 4) : '';
+
+    return {
+      statusCls: ST[s.phase][0], statusLabel: ST[s.phase][1],
+      hasData: !!s.date, dataLote: dl,
+      nOk: nOk, pct: (nOk / 27 * 100).toFixed(1),
+      canEditFiles: editing,
+      dropCls: s.drag ? 'drop drop-on' : 'drop',
+      onDragOver: function (e) { e.preventDefault(); if (!s.drag) self.setState({ drag: true }); },
+      onDragLeave: function () { self.setState({ drag: false }); },
+      onDrop: function (e) { e.preventDefault(); self.setState({ drag: false }); self.addFiles(e.dataTransfer.files); },
+      onPick: function (e) { self.addFiles(e.target.files); e.target.value = ''; },
+      simulate: function () {
+        var list = [];
+        TYPES.forEach(function (t) { EPS.forEach(function (e, i) { var nm = '20261119_' + t.tipo + '_' + e + '_OUT.zip'; list.push({ name: nm, size: HASH[nm] ? HASH[nm][1] : Math.max(338, Math.round(t.mb[i] * 1048576)), sim: true }); }); });
+        self.setState({ files: {}, ignored: [], date: null }, function () { self.addFiles(list); });
+      },
+      matrix: matrix,
+      hasIgnored: s.ignored.length > 0, ignored: s.ignored,
+      ignoredTitle: s.ignored.length === 1 ? '1 arquivo ignorado' : s.ignored.length + ' arquivos ignorados',
+      showMissingReq: editing && nOk > 0 && missingReq,
+      canStart: editing && nOk > 0 && !missingReq, cantStart: !(editing && nOk > 0 && !missingReq),
+      clear: function () { self.setState({ files: {}, ignored: [], date: null, phase: 'vazio', step: -1 }); },
+      start: function () {
+        self.setState({ phase: 'processando', step: 0 });
+        clearInterval(self._iv);
+        self._iv = setInterval(function () {
+          var n = self.state.step + 1;
+          if (n >= 5) { clearInterval(self._iv); self.setState({ phase: 'revisao', step: 5, stamp: true }); }
+          else self.setState({ step: n });
+        }, 900);
+      },
+      steps: steps,
+      showFiles: nOk > 0, filesOpen: !!s.filesOpen, toggleFiles: function () { self.setState({ filesOpen: !s.filesOpen }); }, filesLabel: s.filesOpen ? 'Ocultar detalhes por arquivo' : 'Ver detalhes por arquivo',
+      fileRows: Object.keys(s.files).map(function (k) { var f = s.files[k], hh = HASH[f.name], proc = s.phase !== 'vazio' && s.phase !== 'selecionado';
+        return { name: f.name, tipo: f.tipo, eps: { '0140': '0140 · CLEAN', '0144': '0144 · CAÍDOS', '0900': '0900 · DESAFIANTE' }[f.eps], at: f.at, size: size(f.size),
+          regs: proc && hh ? nf(hh[2]) : (proc ? 'lido no servidor' : '—'), hashShort: hh && f.real ? hh[0].slice(0, 12) + '…' : 'calculado no envio', hashFull: hh && f.real ? hh[0] : 'O SHA-256 é calculado no servidor ao receber o arquivo.',
+          valid: proc ? (f.tipo === 'REMESSA_ARC4U' || f.tipo === 'ACORDO_ATUAL' || f.tipo === 'TELEFONE' ? 'Válido com aviso' : (hh && hh[2] === 0 ? 'Válido · sem registros' : 'Válido')) : 'Aguardando', validCls: proc ? (f.tipo === 'REMESSA_ARC4U' || f.tipo === 'ACORDO_ATUAL' || f.tipo === 'TELEFONE' ? 'chip chip-warn' : 'chip chip-ok') : 'chip',
+          st: s.phase === 'publicado' ? 'Publicado' : s.phase === 'rejeitado' ? 'Rejeitado' : proc ? 'Processado' : 'Recebido' }; }),
+      simCards: [['Arquivos esperados / recebidos', '27 / ' + nOk], ['Ausentes / excedentes', (27 - nOk) + ' / ' + s.ignored.length], ['Estruturas válidas', nOk + ' (9 com aviso)'], ['Estruturas inválidas', '0'],
+        ['Registros lidos', nf(total)], ['Contratos inseridos', '6.775'], ['Contratos atualizados', '81.034'], ['Registros rejeitados', '0'],
+        ['Duplicidades', '253.317 telefones · 10.378 contratos em 2 EPS'], ['Inconsistências', '177 tel. bloqueados · 24.778 acordos sem sinalizador · 1.704 curvas'], ['Impacto em contratos', '−12.025 posições'], ['Impacto em saldo', '−R$ 114,8 mi']].map(function (c) { return { k: c[0], v: c[1] }; }),
+      impEps: IMPACT_EPS.map(function (x) { return { k: x[0], a: nf(x[2]), b: nf(x[1]), d: (x[1] - x[2] >= 0 ? '+' : '−') + nf(Math.abs(x[1] - x[2])), sd: (x[3] - x[4] >= 0 ? '+R$ ' : '−R$ ') + (Math.abs(x[3] - x[4]) / 1e6).toLocaleString('pt-BR', { maximumFractionDigits: 1, minimumFractionDigits: 1 }) + ' mi' }; }),
+      impInst: IMPACT_INST.map(function (x) { return { k: x[0], b: nf(x[1]), d: (x[2] >= 0 ? '+' : '−') + nf(Math.abs(x[2])), sd: (x[3] >= 0 ? '+R$ ' : '−R$ ') + (Math.abs(x[3]) / 1e6).toLocaleString('pt-BR', { maximumFractionDigits: 1, minimumFractionDigits: 1 }) + ' mi' }; }),
+      impProd: IMPACT_PROD.map(function (x) { return { k: x[0], i: x[1], b: nf(x[2]), d: (x[3] >= 0 ? '+' : '−') + nf(Math.abs(x[3])) }; }),
+      falhas: FALHAS.map(function (f) { return { q: f[0], u: f[1], o: f[2], r: f[3], s: f[4] }; }),
+      showReview: s.phase === 'revisao' || s.phase === 'publicado' || s.phase === 'rejeitado',
+      totalLinhas: nf(total), rules: rules,
+      pendingApproval: s.phase === 'revisao', decided: s.phase === 'publicado' || s.phase === 'rejeitado',
+      publish: function () { if (s.approver === 'Rafael Costa') return; self.setState({ phase: 'publicado', vigente: '19/11/2026', pub19: { por: s.approver, em: '19/11/2026 13:45' } }); self.flash('Carga 19/11/2026 publicada. A versão de 18/11 segue guardada.'); },
+      approverName: s.approver, selfApprove: s.approver === 'Rafael Costa', canApprove: s.approver !== 'Rafael Costa',
+      switchApprover: function () { self.setState({ approver: 'Marina Alves' }); },
+      hist: (function () {
+        var list = [];
+        if (s.pub19) list.push({ data: '19/11/2026', arquivos: '27 · guardados', envio: 'Rafael Costa', aprov: s.pub19.por, pub: s.pub19.em });
+        else if (s.phase === 'revisao' || s.phase === 'rejeitado') list.push({ data: '19/11/2026', arquivos: '27 · guardados', envio: 'Rafael Costa', aprov: '—', pub: '—', pend: s.phase });
+        list.push({ data: '18/11/2026', arquivos: '27 · guardados', envio: 'Marina Alves', aprov: 'Rafael Costa', pub: '18/11/2026 09:12' });
+        list.push({ data: '17/11/2026', arquivos: '27 · guardados', envio: 'Marina Alves', aprov: 'Letícia Souza', pub: '17/11/2026 09:05' });
+        return list.map(function (h) {
+          var vig = s.vigente === h.data, st, stCls;
+          if (h.pend === 'revisao') { st = 'Aguardando aprovação'; stCls = 'chip chip-warn'; }
+          else if (h.pend === 'rejeitado') { st = 'Rejeitada'; stCls = 'chip chip-crit'; }
+          else if (vig) { st = 'Vigente'; stCls = 'chip chip-dark'; }
+          else { st = 'Publicada · guardada'; stCls = 'chip'; }
+          return Object.assign(h, { st: st, stCls: stCls, trCls: vig ? 'ld-cur' : '', canRestore: !vig && !h.pend && !!s.pub19 || (!vig && !h.pend && h.data === '17/11/2026'),
+            restore: function () { self.setState({ restoreFor: h.data, restoreMotivo: '', restoreErr: false }); } });
+        });
+      })(),
+      hasRestore: !!s.restoreFor, restoreData: s.restoreFor || '', currentData: s.vigente,
+      restoreMotivo: s.restoreMotivo, restoreErr: s.restoreErr,
+      onRestoreMotivo: function (e) { self.setState({ restoreMotivo: e.target.value, restoreErr: false }); },
+      cancelRestore: function () { self.setState({ restoreFor: null }); },
+      confirmRestore: function () { if (!s.restoreMotivo.trim()) { self.setState({ restoreErr: true }); return; } var d = s.restoreFor; self.setState({ vigente: d, restoreFor: null }); self.flash('Base restaurada para ' + d + '. Evento registrado na auditoria.'); },
+      hasToast: !!s.toast, toast: s.toast || '',
+      reject: function () { self.setState({ phase: 'rejeitado', decidedBy: s.approver }); },
+      reopen: function () { self.setState({ phase: 'revisao', vigente: '18/11/2026', pub19: null }); },
+      newLot: function () { self.setState({ files: {}, ignored: [], date: null, phase: 'vazio', step: -1, approver: 'Rafael Costa' }); },
+      userName: s.approver, userPerfil: s.approver === 'Marina Alves' ? 'Aprovador' : 'Importador · Administrador', userIni: s.approver === 'Marina Alves' ? 'MA' : 'RC'
+    };
+  }
+}
+
+</script>
+</body>
+</html>
