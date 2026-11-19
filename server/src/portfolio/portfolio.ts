@@ -8,6 +8,7 @@
 import { pool, type Db } from '../db/pool.js';
 import { getSetting } from '../services/settings.js';
 import { classifyFaixa, classifyOrigem, classifyProduto, classifyRanking, faixaLabel, type FlagCode } from './rules.js';
+import { ensureStatusesCurrent } from '../status/detail.js';
 
 export const SETTING_CARTEIRA = 'carteira_regras';
 export interface CarteiraSettings {
@@ -232,7 +233,7 @@ export const BASE_ATTRIBUTES: { key: keyof PortfolioRow; label: string; kind: 't
   { key: 'contrato', label: 'Contrato (DMACCT)', kind: 'text', source: 'Chave de todos os layouts' },
   { key: 'cpf', label: 'CPF/CNPJ', kind: 'text', source: 'DMSSNUM' },
   { key: 'nome', label: 'Nome do cliente', kind: 'text', source: 'DMNAME' },
-  { key: 'status_contrato', label: 'Status do contrato', kind: 'text', source: 'ATIVO / RETIRADO / SEM_DISTRIBUICAO (fluxo A)' },
+  { key: 'status_contrato', label: 'Status do contrato', kind: 'text', source: 'ATIVO / 005 - PARALISADO / SEM_DISTRIBUICAO (REM_CONTRATOS x RET_CARTEIRA/RET_DISTRIBUICAO)' },
   { key: 'dias_atraso', label: 'Dias de atraso', kind: 'number', source: 'U1DAYSGER02 (REM/BAT_CONTRATOS mais recente)' },
   { key: 'saldo_risco', label: 'Saldo de risco', kind: 'number', source: 'DMAMTDLQ (configurável)' },
   { key: 'saldo_devedor', label: 'Saldo devedor', kind: 'number', source: 'DMCURBAL' },
@@ -244,7 +245,7 @@ export const BASE_ATTRIBUTES: { key: keyof PortfolioRow; label: string; kind: 't
   { key: 'ranking', label: 'Ranking', kind: 'text', source: 'Regra 3' },
   { key: 'faixa_codigo', label: 'Faixa de atraso (código)', kind: 'text', source: 'Regra 5' },
   { key: 'acordo_id', label: 'ID do acordo (AHID)', kind: 'text', source: 'ACORDO_ASSESSORIA' },
-  { key: 'acordo_status', label: 'Status do acordo', kind: 'text', source: 'ATIVO / QUEBRADO (fluxo E)' },
+  { key: 'acordo_status', label: 'Status do acordo', kind: 'text', source: 'PROMESSA_ATIVA / PROMESSA_EM_ATRASO / ACORDO / QUEBRA_DE_ACORDO / ACORDO_EXTERNO (status operacional)' },
   { key: 'acordo_tipo', label: 'Tipo do acordo', kind: 'text', source: 'AHTYPE' },
   { key: 'acordo_data', label: 'Data do acordo', kind: 'date', source: 'AHDT' },
   { key: 'acordo_valor', label: 'Valor do acordo', kind: 'number', source: 'AHTOTPMT' },
@@ -263,11 +264,13 @@ let cache: { version: string; at: number; value: Awaited<ReturnType<typeof build
 
 /** A carteira é recalculada somente quando importações, batimentos ou regras mudam. */
 export async function getPortfolioCached() {
+  await ensureStatusesCurrent();
   const v = await pool.query<{ v: string }>(
     `SELECT concat_ws('|',
        (SELECT max(GREATEST(uploaded_at, confirmed_at, cancelled_at))::text FROM imports),
        (SELECT max(reprocess_count)::text FROM imports),
        (SELECT max(id)::text FROM reconciliation_runs),
+       (SELECT max(updated_at)::text FROM agreements),
        (SELECT updated_at::text FROM settings WHERE key = $1)) AS v`,
     [SETTING_CARTEIRA],
   );
@@ -395,7 +398,7 @@ export const AGREEMENT_ATTRIBUTES: { key: keyof AgreementRow; label: string; kin
   { key: 'acordo_id', label: 'Número do acordo (AHID)', kind: 'text', source: 'Chave do Pilar 1' },
   { key: 'contrato', label: 'Contrato do acordo', kind: 'text', source: 'DMACCT do ACORDO_ASSESSORIA (ou primeiro arquivo)' },
   { key: 'cpf', label: 'CPF/CNPJ', kind: 'text', source: 'DMSSNUM' },
-  { key: 'acordo_status', label: 'Status do acordo', kind: 'text', source: 'ATIVO / QUEBRADO / NAO_IDENTIFICADO' },
+  { key: 'acordo_status', label: 'Status do acordo', kind: 'text', source: 'PROMESSA_ATIVA / PROMESSA_EM_ATRASO / ACORDO / QUEBRA_DE_ACORDO / ACORDO_EXTERNO / NAO_IDENTIFICADO' },
   { key: 'acordo_tipo', label: 'Tipo do acordo', kind: 'text', source: 'AHTYPE' },
   { key: 'acordo_data', label: 'Data do acordo', kind: 'date', source: 'AHDT' },
   { key: 'acordo_valor', label: 'Valor do acordo', kind: 'number', source: 'AHTOTPMT' },
@@ -404,7 +407,7 @@ export const AGREEMENT_ATTRIBUTES: { key: keyof AgreementRow; label: string; kin
   { key: 'origem_ahcollid', label: 'AHCOLLID', kind: 'text', source: 'REPASSE, ACORDO_ASSESSORIA, BAT_ACORDO, BAT_ACORDO_PGTO' },
   { key: 'pagamentos_qtde', label: 'Quantidade de pagamentos', kind: 'number', source: 'REPASSE (linhas distintas)' },
   { key: 'pagamentos_valor', label: 'Valor pago', kind: 'number', source: 'Soma PMAMT do REPASSE' },
-  { key: 'status_contrato', label: 'Status do contrato', kind: 'text', source: 'Fluxo A' },
+  { key: 'status_contrato', label: 'Status do contrato', kind: 'text', source: 'Status operacional do contrato' },
   { key: 'produto', label: 'Produto Carrefour', kind: 'text', source: 'Regra 4' },
   { key: 'ranking', label: 'Ranking', kind: 'text', source: 'Regra 3' },
   { key: 'faixa_codigo', label: 'Faixa de atraso (código)', kind: 'text', source: 'Regra 5' },

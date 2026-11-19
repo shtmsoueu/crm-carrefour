@@ -1,4 +1,5 @@
 import { pool } from '../db/pool.js';
+import { ensureStatusesCurrent } from '../status/detail.js';
 
 export async function searchContracts(q: string) {
   const t = q.trim();
@@ -41,6 +42,7 @@ const br = (iso: string | null | undefined) => (iso ? iso.split('-').reverse().j
 
 /** Linha do tempo completa do contrato, a partir de todos os registros importados. */
 export async function contractDetail(key: string) {
+  await ensureStatusesCurrent();
   const c = await pool.query(`SELECT * FROM contracts WHERE contract_key = $1`, [key]);
   if (!c.rows[0]) return null;
   const recs = await pool.query(
@@ -55,7 +57,7 @@ export async function contractDetail(key: string) {
   const ahids = [...new Set(recs.rows.map((r) => r.ahid).filter(Boolean))];
   // Origem do acordo (AHCOLLID), quando disponível em algum arquivo, cruzando pelo AHID.
   const agreements = await pool.query(
-    `SELECT a.ahid::text, a.status, a.broken_at, a.agreement_date, a.agreement_type, a.total_amount::text, a.installments, o.ahcollid, o.fonte
+    `SELECT a.ahid::text, a.status, a.status_date, a.status_reason, a.days_late, a.beyond_tolerance, a.broken_at, a.agreement_date, a.agreement_type, a.total_amount::text, a.installments, o.ahcollid, o.fonte
      FROM agreements a
      LEFT JOIN LATERAL (
        SELECT trim(r.fields->>'AHCOLLID') AS ahcollid, r.file_type AS fonte FROM records r JOIN imports i ON i.id = r.import_id AND i.status = 'CONFIRMADO'

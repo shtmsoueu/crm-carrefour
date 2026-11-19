@@ -84,6 +84,17 @@ export async function loadLatestPerContract(db: pg.PoolClient, fileType: string,
   return new Map(r.rows.map((x) => [x.contract_key!, x]));
 }
 
+/** Registro mais recente por contrato com data de referência até a data de corte (situação na data do batimento). */
+export async function loadLatestPerContractUntil(db: pg.PoolClient, fileType: string, dateExpr = 'COALESCE(r.event_date, i.generation_date, i.file_name_date)', cutoff: string | null = null): Promise<Map<string, Rec & { ref_date: string | null }>> {
+  const r = await db.query<Rec & { ref_date: string | null }>(
+    `SELECT DISTINCT ON (r.contract_key) ${SELECT.replace('SELECT ', '')}, ${dateExpr} AS ref_date ${BASE}
+     WHERE r.file_type = $1 AND r.valid AND r.contract_key IS NOT NULL AND ($2::date IS NULL OR ${dateExpr} IS NULL OR ${dateExpr} <= $2::date)
+     ORDER BY r.contract_key, ${dateExpr} DESC NULLS LAST, i.id DESC, r.line_number DESC`,
+    [fileType, cutoff],
+  );
+  return new Map(r.rows.map((x) => [x.contract_key!, x]));
+}
+
 /** Data mais antiga de arquivo confirmado de um tipo (início do histórico importado). */
 export async function earliestFileDate(db: pg.PoolClient, fileType: string): Promise<string | null> {
   const r = await db.query<{ d: string | null }>(

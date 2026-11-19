@@ -10,7 +10,8 @@ import { join } from 'node:path';
 import { pool } from '../db/pool.js';
 import { migrate } from '../db/migrate.js';
 import { createImport, confirmImport, ImportError } from '../imports/service.js';
-import { runAllFlows } from '../reconciliation/index.js';
+import { hasBatimento, runAllFlows } from '../reconciliation/index.js';
+import { refreshStatuses } from '../status/refresh.js';
 import { SYSTEM_ACTOR } from '../services/audit.js';
 
 const dir = process.argv[2];
@@ -43,9 +44,14 @@ for (const f of (await readdir(dir)).sort()) {
 console.log('\n=== IMPORTAÇÃO ===');
 console.table(rows);
 
+console.log('\n=== STATUS OPERACIONAL ===');
+console.log(JSON.stringify(await refreshStatuses(), null, 2));
+
 console.log('\n=== BATIMENTOS ===');
 const t0 = Date.now();
-const runs = await runAllFlows(actor);
+// Batimento oficial: somente com arquivo BAT mensal confirmado.
+const runs = (await hasBatimento()) ? await runAllFlows(actor) : [];
+if (!runs.length) console.log('Nenhum BAT_CONTRATOS, BAT_ACORDO ou BAT_ACORDO_PGTO confirmado: batimento não executado.');
 for (const r of runs) {
   console.log(`\n${r.flow}: ${r.total} resultado(s), ${r.divergences} pendência(s)`);
   for (const [rule, st] of Object.entries(r.byRule)) console.log(`   ${rule}: ${JSON.stringify(st)}`);

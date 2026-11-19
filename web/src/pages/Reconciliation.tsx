@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { api, exportUrl, qs } from '../api';
 import { useAuth } from '../auth';
-import { ContractLink, ExportButtons, Loading, MapBadge, Notice, Pager, QuickFilters, RowActions, useLoad, useToast, titulo } from '../components/ui';
+import { ContractLink, ExportButtons, Hint, Loading, MapBadge, Notice, Pager, QuickFilters, RowActions, useLoad, useToast, titulo } from '../components/ui';
 import { FILE_TYPE_LABELS, fmtDate, fmtDateTime, fmtInt, RESULT_LABELS, shortNote } from '../format';
 
 export function ReconciliationPage() {
@@ -17,6 +17,8 @@ export function ReconciliationPage() {
   const [page, setPage] = useState(1);
   const [running, setRunning] = useState<string | null>(null);
   const flows = useLoad(() => api('/reconciliation/flows'), []);
+  const estado = useLoad(() => api('/reconciliation/estado'), []);
+  const batOk = !!estado.data?.disponivel;
   const params = { flow, status, rule, q: query };
   const results = useLoad(() => api(`/reconciliation/results${qs({ ...params, page, pageSize: 50 })}`), [flow, status, rule, query, page]);
   const current = flows.data?.find((f: any) => f.code === flow);
@@ -47,8 +49,27 @@ export function ReconciliationPage() {
         <div>
           <h1>{titulo('Batimentos')}</h1>
         </div>
-        {can('OPERADOR') && <button className="btn primary" disabled={!!running} onClick={() => runFlow()}>{running === 'ALL' ? 'Executando…' : 'Executar todos'}</button>}
+        {can('OPERADOR') && <button className="btn primary" disabled={!!running || !batOk} title={batOk ? undefined : 'Disponível após importar um arquivo BAT'} onClick={() => runFlow()}>{running === 'ALL' ? 'Executando…' : 'Executar todos'}</button>}
       </div>
+
+      {estado.data && (
+        <section className="panel">
+          <div className="panel-head">
+            <div><h2>Batimento mensal <Hint text="O batimento oficial usa somente BAT_CONTRATOS, BAT_ACORDO e BAT_ACORDO_PGTO (1 vez por mês) e roda ao confirmar um deles. Os arquivos diários atualizam apenas o status de contratos e acordos." /></h2></div>
+          </div>
+          <div className="panel-body">
+            <dl className="facts">
+              {estado.data.tipos.map((t: string) => {
+                const u = estado.data.ultimos.find((x: any) => x.file_type === t);
+                return (
+                  <div key={t}><dt className="code">{t}</dt>
+                    <dd>{u ? <Link to={`/importacao/${u.id}`}>{fmtDate(u.file_date)}</Link> : <span style={{ color: 'var(--warn)' }}>Aguardando arquivo</span>}</dd></div>
+                );
+              })}
+            </dl>
+          </div>
+        </section>
+      )}
 
       <section className="panel">
         <div className="table-wrap">
@@ -67,7 +88,7 @@ export function ReconciliationPage() {
                     <td className="num">{fmtInt(s?.total ?? 0)}</td>
                     <td className="num">{fmtInt(s?.byStatus?.CONCILIADO ?? 0)}</td>
                     <td className="num">{fmtInt(s?.divergences ?? 0)}</td>
-                    <td>{can('OPERADOR') && <button className="btn sm" disabled={!!running} onClick={(e) => { e.stopPropagation(); runFlow(f.code); }}>{running === f.code ? 'Executando…' : 'Executar'}</button>}</td>
+                    <td>{can('OPERADOR') && <button className="btn sm" disabled={!!running || !batOk} onClick={(e) => { e.stopPropagation(); runFlow(f.code); }}>{running === f.code ? 'Executando…' : 'Executar'}</button>}</td>
                   </tr>
                 );
               })}

@@ -13,7 +13,9 @@ import { actorOf, authenticate, hashPassword, issueSession, login, COOKIE, requi
 import { LAYOUTS } from './layouts/definitions.js';
 import { cancelImport, confirmImport, createImport, discardImport, getImport, ImportError, reprocessImport } from './imports/service.js';
 import { gunzipToTemp, readOriginal, removeTemp } from './imports/storage.js';
-import { flowsForFileType, listFlows, runAllFlows, runFlow } from './reconciliation/index.js';
+import { afterDataChange, BAT_TYPES, hasBatimento, listFlows, runAllFlows, runFlow } from './reconciliation/index.js';
+import { refreshStatuses } from './status/refresh.js';
+import { agreementDetail } from './status/detail.js';
 import { audit } from './services/audit.js';
 import { carteiraCrmRouter } from './routes/carteira-crm.js';
 import { getDashboard } from './services/dashboard.js';
@@ -36,11 +38,9 @@ const str = (v: unknown) => (typeof v === 'string' && v.trim() !== '' ? v.trim()
 const csv = (v: unknown) => String(v ?? '').split(',').map((x) => x.trim()).filter(Boolean);
 const MAX_EXPORT = 200_000;
 
-/** Reexecuta os fluxos afetados por um tipo de arquivo (após confirmação, cancelamento ou reprocessamento). */
+/** Após mudança nos dados: status operacional sempre; batimento oficial somente para arquivos BAT. */
 async function rerunFlows(fileType: string, req: Request) {
-  const out = [];
-  for (const code of flowsForFileType(fileType)) out.push(await runFlow(code, actorOf(req)));
-  return out.map((r) => ({ flow: r.flow, total: r.total, divergences: r.divergences }));
+  return afterDataChange([fileType], actorOf(req));
 }
 
 export function createApp() {
@@ -198,31 +198,26 @@ export function createApp() {
         results.push({ id, ok: false, error: (e as Error).message });
       }
     }
-    const types = new Set<string>([...(Array.isArray(req.body?.runFlowsFor) ? req.body.runFlowsFor.map(String) : [])]);
-    const codes = new Set<string>();
-    for (const t of types) for (const c of flowsForFileType(t)) codes.add(c);
-    const flows = [];
-    for (const code of codes) {
-      const r = await runFlow(code, actorOf(req));
-      flows.push({ flow: r.flow, total: r.total, divergences: r.divergences });
-    }
-    res.json({ results, flows });
+    // Na última chamada do lote o navegador informa os tipos confirmados: status sempre; batimento só se houver BAT.
+    const types = Array.isArray(req.body?.runFlowsFor) ? req.body.runFlowsFor.map(String) : [];
+    const after = types.length ? await afterDataChange(types, actorOf(req)) : null;
+    res.json({ results, flows: after?.flows ?? [], status: after?.status ?? null, batimento: after?.batimento ?? null });
   }));
   api.post('/imports/:id/confirm', requireRole('OPERADOR'), h(async (req, res) => {
     const imp = await confirmImport(int(req.params.id, 0, 2 ** 31 - 1), actorOf(req));
-    const flows = await rerunFlows(imp.file_type, req);
-    res.json({ import: imp, flows });
+    const after = await rerunFlows(imp.file_type, req);
+    res.json({ import: imp, ...after });
   }));
   api.post('/imports/:id/discard', requireRole('OPERADOR'), h(async (req, res) => {
     res.json(await discardImport(int(req.params.id, 0, 2 ** 31 - 1), actorOf(req), str(req.body?.reason) ?? null));
   }));
   api.post('/imports/:id/cancel', requireRole('ADMIN'), h(async (req, res) => {
     const imp = await cancelImport(int(req.params.id, 0, 2 ** 31 - 1), actorOf(req), String(req.body?.reason ?? ''));
-    res.json({ import: imp, flows: await rerunFlows(imp.file_type, req) });
+    res.json({ import: imp, ...(await rerunFlows(imp.file_type, req)) });
   }));
   api.post('/imports/:id/reprocess', requireRole('ADMIN'), h(async (req, res) => {
     const imp = await reprocessImport(int(req.params.id, 0, 2 ** 31 - 1), actorOf(req));
-    res.json({ import: imp, flows: imp.status === 'CONFIRMADO' ? await rerunFlows(imp.file_type, req) : [] });
+    res.json({ import: imp, ...(imp.status === 'CONFIRMADO' ? await rerunFlows(imp.file_type, req) : { flows: [] }) });
   }));
   api.get('/imports/:id/download', requireRole('OPERADOR'), h(async (req, res) => {
     const imp = await getImport(int(req.params.id, 0, 2 ** 31 - 1));
@@ -241,8 +236,28 @@ export function createApp() {
     res.json(listFlows().map((f) => ({ code: f.code, title: f.title, description: f.description, sources: f.sources, rules: f.rules, lastRun: by.get(f.code) ?? null })));
   }));
   api.post('/reconciliation/run', requireRole('OPERADOR'), h(async (req, res) => {
+    // Batimento oficial é mensal: exige ao menos um arquivo BAT confirmado.
+    if (!(await hasBatimento())) return res.status(409).json({ error: `Batimento disponível após importar ${BAT_TYPES.join(', ')}. Os arquivos operacionais atualizam apenas o status do contrato e do acordo.` });
+    await refreshStatuses();
     const flow = str(req.body?.flow);
     res.json(flow ? [await runFlow(flow, actorOf(req))] : await runAllFlows(actorOf(req)));
+  }));
+  api.get('/reconciliation/estado', h(async (_req, res) => {
+    const r = await pool.query(
+      `SELECT DISTINCT ON (file_type) file_type, id, original_name, COALESCE(generation_date, file_name_date) AS file_date, confirmed_at
+       FROM imports WHERE file_type = ANY($1::text[]) AND status = 'CONFIRMADO'
+       ORDER BY file_type, COALESCE(generation_date, file_name_date) DESC NULLS LAST, id DESC`, [BAT_TYPES]);
+    res.json({ tipos: BAT_TYPES, ultimos: r.rows, disponivel: r.rows.length > 0 });
+  }));
+  api.post('/status/atualizar', requireRole('OPERADOR'), h(async (req, res) => {
+    const r = await refreshStatuses();
+    await audit(actorOf(req), 'STATUS_ATUALIZADO', 'status', null, r);
+    res.json(r);
+  }));
+  api.get('/acordos/:ahid', h(async (req, res) => {
+    const d = await agreementDetail(req.params.ahid);
+    if (!d) return res.status(404).json({ error: 'Acordo não encontrado nos arquivos importados.' });
+    res.json(d);
   }));
   api.get('/reconciliation/results', h(async (req, res) => {
     const p: unknown[] = [];

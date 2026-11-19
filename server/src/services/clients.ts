@@ -51,6 +51,7 @@ export async function clientDetail(raw: string) {
       dias_atraso: p?.dias_atraso ?? null,
       saldo_risco: p?.saldo_risco ?? null,
       acordos_qtde: p?.acordos_qtde ?? 0,
+      acordo_id: p?.acordo_id ?? null,
       acordo_status: p?.acordo_status ?? null,
       acordo_valor: p?.acordo_valor ?? null,
       pagamentos_valor: p?.pagamentos_valor ?? 0,

@@ -17,13 +17,14 @@ import {
   loadAll,
   loadLatestImport,
   loadLatestPerAhid,
-  loadLatestPerContract,
+  loadLatestPerContractUntil,
   norm,
   normDoc,
   numEq,
   type Rec,
 } from './data.js';
 import { getSetting, SETTING_REJEICAO } from '../services/settings.js';
+import { CONTRACT_ACTIVE, CONTRACT_PAUSED, contractStatus } from '../status/rules.js';
 
 const br = (iso: string | null | undefined) => (iso ? iso.split('-').reverse().join('/') : '—');
 
@@ -132,89 +133,42 @@ function waiting(ctx: FlowContext, rule: string, recs: Rec[], keyName: string, t
 registerFlow({
   code: 'A_DISTRIBUICAO',
   title: 'A. Distribuição de contratos',
-  description: 'Contratos enviados pelo banco, reconhecidos no batimento, redistribuídos e retirados da carteira.',
-  sources: ['REM_CONTRATOS', 'BAT_CONTRATOS', 'RET_DISTRIBUICAO', 'RET_CARTEIRA'],
+  description: 'Batimento mensal: contratos ativos na assessoria x fotografia BAT_CONTRATOS enviada pelo banco.',
+  sources: ['BAT_CONTRATOS', 'REM_CONTRATOS', 'RET_DISTRIBUICAO', 'RET_CARTEIRA'],
   rules: [
+    'Executado somente com BAT_CONTRATOS (mensal). Os arquivos operacionais (REM/RET) apenas atualizam o status do contrato.',
     'Chave: DMACCT (Nº Conta-Nº Contrato / Nº Contrato).',
-    'Situação do contrato: evento mais recente entre distribuição (data de geração do REM_CONTRATOS) e retirada (IXFDATE do RET_DISTRIBUICAO ou data de geração do RET_CARTEIRA). Retirada na mesma data ou posterior => RETIRADO.',
-    'REM_CONTRATOS é incremental (inclusões/atualizações): a ausência de remessa para um contrato retirado é informativa. O reconhecimento oficial é feito contra a fotografia BAT_CONTRATOS.',
-    'BAT_CONTRATOS (última fotografia): contratos ativos distribuídos até a data do batimento x contratos do batimento. Campos comparados: DMSSNUM, DMNAME, DMCURBAL, DMAMTDLQ, DMDLQDT.',
+    'Situação na data do batimento: evento mais recente até a data do BAT_CONTRATOS entre REM_CONTRATOS (ativo) e RET_CARTEIRA/RET_DISTRIBUICAO (005 - PARALISADO).',
+    'Campos comparados com BAT_CONTRATOS: DMSSNUM, DMNAME, DMCURBAL, DMAMTDLQ, DMDLQDT.',
   ],
   async run(ctx) {
     const db = ctx.db;
-    const rem = await loadLatestPerContract(db, 'REM_CONTRATOS', 'COALESCE(i.generation_date, i.file_name_date)');
-    const retd = await loadLatestPerContract(db, 'RET_DISTRIBUICAO');
-    const retc = await loadLatestPerContract(db, 'RET_CARTEIRA', 'COALESCE(i.generation_date, i.file_name_date)');
-    if (!rem.size && !retd.size && !retc.size) {
-      ctx.note('AGUARDANDO', 'Nenhum REM_CONTRATOS, RET_DISTRIBUICAO ou RET_CARTEIRA confirmado.');
+    const bat = await loadLatestImport(db, 'BAT_CONTRATOS');
+    if (!bat.importId) {
+      ctx.note('AGUARDANDO', 'BAT_CONTRATOS não importado: o batimento mensal de contratos não pode ser executado.');
       return;
     }
+    const cutoff = bat.fileDate;
+    const rem = await loadLatestPerContractUntil(db, 'REM_CONTRATOS', 'COALESCE(i.generation_date, i.file_name_date)', cutoff);
+    const retd = await loadLatestPerContractUntil(db, 'RET_DISTRIBUICAO', undefined, cutoff);
+    const retc = await loadLatestPerContractUntil(db, 'RET_CARTEIRA', 'COALESCE(i.generation_date, i.file_name_date)', cutoff);
 
-    // Duplicidade de contrato no mesmo arquivo de remessa
-    const remAll = await loadAll(db, 'REM_CONTRATOS');
-    dupResults(ctx, 'CONTRATO_DUPLICADO_REMESSA', 'DMACCT', groupBy(remAll, (r) => (r.contract_key ? `${r.import_id}:${r.contract_key}` : null)), (_k, l) =>
-      `Contrato ${l[0].contract_key} presente ${l.length} vezes no arquivo ${l[0].import_name}`,
-    );
-
+    // Situação de cada contrato na data do batimento (mesma regra do status operacional).
     const statusRows: { k: string; s: string; d: string | null; src: string }[] = [];
-    const keys = new Set([...rem.keys(), ...retd.keys(), ...retc.keys()]);
-    for (const k of keys) {
+    for (const k of new Set([...rem.keys(), ...retd.keys(), ...retc.keys()])) {
       const r = rem.get(k);
       const a = retd.get(k);
       const c = retc.get(k);
       const wd = a && c ? ((a.ref_date ?? '') >= (c.ref_date ?? '') ? a : c) : (a ?? c);
-      if (r && wd) {
-        const retirado = (wd.ref_date ?? '') >= (r.ref_date ?? '');
-        statusRows.push({ k, s: retirado ? 'RETIRADO' : 'ATIVO', d: retirado ? wd.ref_date : r.ref_date, src: retirado ? wd.file_type : r.file_type });
-        ctx.result({
-          ...base(r, 'DMACCT', k),
-          rule: retirado ? 'DISTRIBUIDO_E_RETIRADO' : 'RETIRADO_E_REDISTRIBUIDO',
-          status: 'INFORMATIVO',
-          target_type: wd.file_type,
-          target_record_id: wd.id,
-          reason: retirado
-            ? `Distribuído em ${br(r.ref_date)} e retirado em ${br(wd.ref_date)} (${wd.file_type}${wd.fields.U_MOTBXA ? ': ' + wd.fields.U_MOTBXA : ''})`
-            : `Retirado em ${br(wd.ref_date)} e novamente distribuído em ${br(r.ref_date)}`,
-        });
-        compareFields(ctx, 'CPF_REMESSA_X_RETIRADA', r, wd, 'DMACCT', k, k, [
-          { field: 'DMSSNUM', label: 'CPF/CNPJ', src: r.cpf, dst: wd.cpf, kind: 'doc', category: 'DIVERGENCIA_CADASTRAL' },
-        ]);
-      } else if (r) {
-        statusRows.push({ k, s: 'ATIVO', d: r.ref_date, src: r.file_type });
-        ctx.result({ ...base(r, 'DMACCT', k), rule: 'CONTRATO_DISTRIBUIDO', status: 'INFORMATIVO', reason: `Distribuído em ${br(r.ref_date)}, sem retirada registrada` });
-      } else if (wd) {
-        statusRows.push({ k, s: 'RETIRADO', d: wd.ref_date, src: wd.file_type });
-        ctx.result({
-          ...base(wd, 'DMACCT', k),
-          rule: 'RETIRADA_SEM_REMESSA_NO_HISTORICO',
-          status: 'INFORMATIVO',
-          reason: `Retirado em ${br(wd.ref_date)} (${wd.file_type}${wd.fields.U_MOTBXA ? ': ' + wd.fields.U_MOTBXA : ''}); não há REM_CONTRATOS deste contrato no histórico importado`,
-        });
-      }
+      const st = contractStatus(r && { date: r.ref_date, source: r.file_type, importId: r.import_id, recordId: r.id }, wd && { date: wd.ref_date, source: wd.file_type, importId: wd.import_id, recordId: wd.id });
+      statusRows.push({ k, s: st.status, d: st.ev?.date ?? null, src: st.ev?.source ?? '' });
     }
 
-    // Atualiza a situação dos contratos (integridade: somente contratos existentes)
-    await db.query(`UPDATE contracts SET status='SEM_DISTRIBUICAO', status_date=NULL, status_source=NULL WHERE status <> 'SEM_DISTRIBUICAO'`);
-    for (let i = 0; i < statusRows.length; i += 5000) {
-      await db.query(
-        `UPDATE contracts c SET status = x.s, status_date = x.d, status_source = x.src, updated_at = now()
-         FROM jsonb_to_recordset($1::jsonb) AS x(k text, s text, d date, src text) WHERE c.contract_key = x.k`,
-        [JSON.stringify(statusRows.slice(i, i + 5000))],
-      );
-    }
-
-    // REM_CONTRATOS x BAT_CONTRATOS
-    const bat = await loadLatestImport(db, 'BAT_CONTRATOS');
-    if (!bat.importId) {
-      ctx.note('AGUARDANDO', 'BAT_CONTRATOS não importado: o reconhecimento dos contratos pelo banco não pode ser verificado.');
-      return;
-    }
     const batMap = new Map(bat.rows.filter((b) => b.contract_key).map((b) => [b.contract_key!, b]));
     dupResults(ctx, 'CONTRATO_DUPLICADO_BATIMENTO', 'DMACCT', groupBy(bat.rows, (r) => r.contract_key), (k, l) => `Contrato ${k} presente ${l.length} vezes no BAT_CONTRATOS`);
-    const active = statusRows.filter((s) => s.s === 'ATIVO' && rem.has(s.k));
+    const active = statusRows.filter((s) => s.s === CONTRACT_ACTIVE && rem.has(s.k));
     for (const s of active) {
       const r = rem.get(s.k)!;
-      if (bat.fileDate && r.ref_date && r.ref_date > bat.fileDate) continue; // distribuído após o batimento
       const b = batMap.get(s.k);
       if (!b) {
         ctx.divergence(
@@ -243,9 +197,9 @@ registerFlow({
           ...base(b, 'DMACCT', k),
           rule: 'BAT_CONTRATOS_X_REM',
           status: 'SOMENTE_DESTINO',
-          reason: st?.s === 'RETIRADO' ? `Contrato consta no batimento do banco, mas foi retirado em ${br(st.d)}` : 'Contrato consta no batimento do banco sem distribuição ativa na assessoria',
+          reason: st?.s === CONTRACT_PAUSED ? `Contrato consta no batimento do banco, mas está 005 - PARALISADO desde ${br(st.d)} (${st.src})` : 'Contrato consta no batimento do banco sem distribuição ativa na assessoria',
         },
-        st?.s === 'RETIRADO' ? 'CONTRATO_NAO_RECONHECIDO' : 'NAO_LOCALIZADO_ASSESSORIA',
+        st?.s === CONTRACT_PAUSED ? 'CONTRATO_NAO_RECONHECIDO' : 'NAO_LOCALIZADO_ASSESSORIA',
         k,
       );
     }
@@ -265,6 +219,7 @@ registerFlow({
     'Cada AHID é representado pela importação mais recente que o contém (uma linha por parcela).',
     'Campos comparados com BAT_ACORDO: DMACCT, DMSSNUM, AHDT, AHTOTPMT, VALOR_ENTRADA, AHPRD, AHTYPE.',
     'Acordos com data posterior à geração do BAT_ACORDO não são cobrados como não reconhecidos.',
+    'O status do acordo (promessa, atraso, acordo, quebra, externo) é calculado pelos arquivos operacionais, fora do batimento.',
   ],
   async run(ctx) {
     const db = ctx.db;
@@ -273,20 +228,6 @@ registerFlow({
       ctx.note('AGUARDANDO', 'Nenhum ACORDO_ASSESSORIA confirmado.');
       return;
     }
-    // Consolida o cadastro de acordos (integridade: agreements x contracts)
-    const rows = [...aco.entries()].map(([ahid, l]) => {
-      const h = agreementHead(l);
-      return { ahid, d: h.fields.AHDT, t: h.fields.AHTYPE, v: h.fields.AHTOTPMT, p: h.fields.AHPRD === null ? null : Number(h.fields.AHPRD) };
-    });
-    for (let i = 0; i < rows.length; i += 5000) {
-      await db.query(
-        `UPDATE agreements a SET agreement_date = x.d, agreement_type = x.t, total_amount = x.v, installments = x.p,
-           status = CASE WHEN a.status = 'NAO_IDENTIFICADO' THEN 'ATIVO' ELSE a.status END, updated_at = now()
-         FROM jsonb_to_recordset($1::jsonb) AS x(ahid bigint, d date, t text, v numeric, p int) WHERE a.ahid = x.ahid`,
-        [JSON.stringify(rows.slice(i, i + 5000))],
-      );
-    }
-
     // Consistência interna: mesmo AHID com contratos diferentes no mesmo arquivo
     for (const [ahid, l] of aco) {
       const contracts = new Set(l.map((r) => r.contract_key));
@@ -307,14 +248,14 @@ registerFlow({
       (await db.query<{ k: string }>(`SELECT DISTINCT r.contract_key AS k FROM records r JOIN imports i ON i.id=r.import_id AND i.status='CONFIRMADO' WHERE r.file_type IN ('REM_CONTRATOS','BAT_CONTRATOS') AND r.contract_key IS NOT NULL`)).rows.map((r) => r.k),
     );
     const withdrawn = new Map(
-      (await db.query<{ contract_key: string; status_date: string }>(`SELECT contract_key, status_date FROM contracts WHERE status='RETIRADO'`)).rows.map((r) => [r.contract_key, r.status_date]),
+      (await db.query<{ contract_key: string; status_date: string }>(`SELECT contract_key, status_date FROM contracts WHERE status=$1`, [CONTRACT_PAUSED])).rows.map((r) => [r.contract_key, r.status_date]),
     );
     for (const [ahid, l] of aco) {
       const h = agreementHead(l);
       const k = h.contract_key!;
       const wd = withdrawn.get(k);
       if (wd && h.fields.AHDT && h.fields.AHDT > wd) {
-        ctx.result({ ...base(h, 'AHID', ahid), rule: 'ACORDO_APOS_RETIRADA', status: 'INFORMATIVO', reason: `Acordo de ${br(h.fields.AHDT)} em contrato retirado da carteira em ${br(wd)}` });
+        ctx.result({ ...base(h, 'AHID', ahid), rule: 'ACORDO_APOS_RETIRADA', status: 'INFORMATIVO', reason: `Acordo de ${br(h.fields.AHDT)} em contrato 005 - PARALISADO desde ${br(wd)}` });
       }
       if (!distributed.has(k)) {
         ctx.result({ ...base(h, 'AHID', ahid), rule: 'ACORDO_SEM_DISTRIBUICAO_NO_HISTORICO', status: 'INFORMATIVO', reason: `Contrato ${k} sem REM_CONTRATOS/BAT_CONTRATOS no histórico importado` });
@@ -563,7 +504,7 @@ registerFlow({
   description: 'Acordos quebrados relacionados ao acordo original, com atualização de status.',
   sources: ['QUEBRA_ACORDO', 'ACORDO_ASSESSORIA'],
   rules: [
-    'Chave: AHID (Número do Acordo). O status do acordo passa a QUEBRADO com a data AHAUTDT.',
+    'Chave: AHID (Número do Acordo). O status QUEBRA DE ACORDO (data AHAUTDT) é aplicado pelo status operacional.',
     'Campos comparados: DMACCT, AHTYPE e AHDT (Data de Negociação x Data do Acordo).',
     'AHPRD não é comparado: na Quebra significa "total incluindo a entrada" e no Acordo "Qtde de parcelas".',
   ],
@@ -572,23 +513,14 @@ registerFlow({
     const q = await loadAll(db, 'QUEBRA_ACORDO');
     if (!q.length) {
       ctx.note('AGUARDANDO', 'Nenhum QUEBRA_ACORDO confirmado.');
-      await db.query(`UPDATE agreements SET status='ATIVO', broken_at=NULL WHERE status='QUEBRADO'`);
       return;
     }
-    // Uma entrada por (AHID, contrato): o mesmo AHID pode vir com contratos diferentes e nenhum
-    // registro pode ser descartado. Para a situação do acordo vale a quebra mais recente do AHID.
-    const latest = new Map<string, Rec>();
+    // Uma entrada por (AHID, contrato): o mesmo AHID pode vir com contratos diferentes e nenhum registro pode ser descartado.
     const perKey = new Map<string, Rec>();
     for (const r of q) {
       if (!r.ahid) continue;
-      latest.set(r.ahid, r); // ordenado por data do arquivo
       perKey.set(`${r.ahid}|${r.contract_key}`, r);
     }
-    await db.query(`UPDATE agreements SET status = CASE WHEN agreement_date IS NULL THEN 'NAO_IDENTIFICADO' ELSE 'ATIVO' END, broken_at=NULL WHERE status='QUEBRADO'`);
-    await db.query(
-      `UPDATE agreements a SET status='QUEBRADO', broken_at=x.d, updated_at=now() FROM jsonb_to_recordset($1::jsonb) AS x(ahid bigint, d date) WHERE a.ahid=x.ahid`,
-      [JSON.stringify([...latest.values()].map((r) => ({ ahid: r.ahid, d: r.event_date })))],
-    );
     const acoAvailable = await hasConfirmed(db, 'ACORDO_ASSESSORIA');
     if (!acoAvailable) ctx.note('AGUARDANDO', 'ACORDO_ASSESSORIA não importado: quebras não podem ser relacionadas ao acordo original.');
     const aco = acoAvailable ? await loadLatestPerAhid(db, 'ACORDO_ASSESSORIA') : new Map<string, Rec[]>();
@@ -613,7 +545,7 @@ registerFlow({
         { field: 'AHTYPE', label: 'Tipo de acordo', src: r.fields.AHTYPE, dst: h.fields.AHTYPE, kind: 'text', category: 'DIVERGENCIA_CADASTRAL' },
         { field: 'AHDT', label: 'Data de negociação', src: r.fields.AHDT, dst: h.fields.AHDT, kind: 'date', category: 'DIVERGENCIA_DATA' },
       ]);
-      if (n === 0) ctx.result({ ...base(r, 'AHID', ahid), rule: 'QUEBRA_X_ACORDO', status: 'CONCILIADO', target_type: 'ACORDO_ASSESSORIA', target_record_id: h.id, reason: `Acordo quebrado em ${br(r.event_date)} — status atualizado` });
+      if (n === 0) ctx.result({ ...base(r, 'AHID', ahid), rule: 'QUEBRA_X_ACORDO', status: 'CONCILIADO', target_type: 'ACORDO_ASSESSORIA', target_record_id: h.id, reason: `Acordo quebrado em ${br(r.event_date)}` });
     }
   },
 });

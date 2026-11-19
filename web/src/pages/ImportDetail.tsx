@@ -150,7 +150,7 @@ export function ImportDetailPage() {
     try {
       const r = await api(`/imports/${id}/${path}`, { method: 'POST', json: body ?? {} });
       const flows = r.flows as { flow: string; divergences: number }[] | undefined;
-      toast.show('ok', `${ok}${flows?.length ? ` Batimentos atualizados: ${flows.map((f) => f.flow.split('_')[0]).join(', ')}.` : ''}`);
+      toast.show('ok', `${ok}${flows?.length ? ` Batimento mensal executado: ${flows.map((f) => f.flow.split('_')[0]).join(', ')}.` : r.batimento === 'SOMENTE_STATUS' ? ' Status de contratos e acordos atualizado.' : ''}`);
       setAction(null);
       setReason('');
       reload();

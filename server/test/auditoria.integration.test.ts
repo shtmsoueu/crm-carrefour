@@ -11,8 +11,13 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
 process.env.DATABASE_URL = process.env.TEST_DATABASE_URL ?? 'postgres://crm:crm_dev_password@localhost:5432/crm_test';
 process.env.AUTH_ENABLED = 'false';
+process.env.STATUS_REF_DATE = '2026-11-19';
 
 const { pool } = await import('../src/db/pool.js');
+const { runAllFlows } = await import('../src/reconciliation/index.js');
+const { SYSTEM_ACTOR } = await import('../src/services/audit.js');
+/** Simula a execução mensal do batimento (nesta suíte não há arquivo BAT). */
+const monthlyRun = () => runAllFlows(SYSTEM_ACTOR);
 const { migrate } = await import('../src/db/migrate.js');
 const { createApp } = await import('../src/app.js');
 const app = createApp();
@@ -112,6 +117,8 @@ describe('comissão: integridade dos valores por caminhos independentes', () => 
   });
 
   it('duplicidade da comissão vira pendência com a quantidade de ocorrências', async () => {
+    expect((await api.get('/api/divergences?category=DUPLICIDADE').expect(200)).body.total).toBe(0); // sem batimento: nenhum confronto
+    await monthlyRun();
     const d = (await api.get('/api/divergences?category=DUPLICIDADE').expect(200)).body.rows;
     expect(d.length).toBe(1);
     expect(d[0]).toMatchObject({ contract_key: '20000000001', occurrences: 2 });
@@ -124,6 +131,7 @@ describe('Pilar 1: nenhum registro de quebra é perdido quando o mesmo acordo ve
     const r = await api.post('/api/imports').attach('file', Buffer.from(f, 'latin1'), 'QUEBRA_ACORDO_LEALCO_20261117_053345.txt').expect(201);
     expect(r.body.valid_records).toBe(3);
     await api.post(`/api/imports/${r.body.id}/confirm`).expect(200);
+    await monthlyRun();
     const e = (await api.get('/api/reconciliation/results?flow=E_QUEBRA&pageSize=50').expect(200)).body;
     expect(e.total).toBe(3); // sem ACORDO_ASSESSORIA: um resultado "aguardando arquivo" por registro, nenhum omitido
     expect(e.rows.every((x: any) => x.status === 'AGUARDANDO_ARQUIVO')).toBe(true);
@@ -158,9 +166,10 @@ describe('concorrência e reexecução', () => {
   });
 
   it('batimentos executados em paralelo não duplicam resultados', async () => {
-    await api.post('/api/reconciliation/run').send({}).expect(200);
+    await api.post('/api/reconciliation/run').send({}).expect(409); // sem BAT, o batimento não é executado
+    await monthlyRun();
     const one = await pool.query(`SELECT count(*)::int n FROM reconciliation_results`);
-    await Promise.all([api.post('/api/reconciliation/run').send({}), api.post('/api/reconciliation/run').send({})]);
+    await Promise.all([monthlyRun(), monthlyRun()]);
     const two = await pool.query(`SELECT count(*)::int n FROM reconciliation_results`);
     expect(two.rows[0].n).toBe(one.rows[0].n);
   });
@@ -188,12 +197,12 @@ describe('CRM: três pilares e rastreabilidade de 100% das linhas', () => {
   });
 
   it('Pilar 1 (acordo): AHID com zeros à esquerda no CRM e conformes sem confronto são explicitados', async () => {
-    const csv = ['Acordo;Status', '0000030000001;QUEBRADO', '30000002;'].join('\r\n');
+    const csv = ['Acordo;Status', '0000030000001;QUEBRA_DE_ACORDO', '30000002;'].join('\r\n');
     const s = await api.post('/api/crm/snapshots').attach('file', Buffer.from(csv, 'utf8'), 'crm_acordo.csv').expect(201);
     await api.put('/api/crm/perfil').send({ profile: { pillar: 'ACORDO', keyColumn: 'Acordo', comparisons: [{ crmColumn: 'Status', baseAttribute: 'acordo_status' }] } }).expect(200);
     const r = (await api.post(`/api/crm/snapshots/${s.body.id}/conciliar`).send({ scope: 'TODOS' }).expect(200)).body;
     expect(r.base_contas).toBe(2); // 30000001 e 30000002 (QUEBRA)
-    // Os dois acordos estão QUEBRADO na base; no CRM o segundo veio sem status -> divergente (CRM sem o dado).
+    // Os dois acordos estão QUEBRA_DE_ACORDO na base; no CRM o segundo veio sem status -> divergente (CRM sem o dado).
     expect([r.conforme, r.divergente, r.nao_importado]).toEqual([1, 1, 0]);
   });
 

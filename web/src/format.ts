@@ -62,14 +62,25 @@ export const DIV_STATUS: Record<string, { label: string; tone: string }> = {
 
 export const CONTRACT_STATUS: Record<string, { label: string; tone: string }> = {
   ATIVO: { label: 'Ativo na carteira', tone: 'ok' },
-  RETIRADO: { label: 'Retirado', tone: 'wait' },
+  '005 - PARALISADO': { label: '005 - Paralisado', tone: 'wait' },
   SEM_DISTRIBUICAO: { label: 'Sem distribuição registrada', tone: 'wait' },
 };
 
 export const AGREEMENT_STATUS: Record<string, { label: string; tone: string }> = {
-  ATIVO: { label: 'Ativo', tone: 'ok' },
-  QUEBRADO: { label: 'Quebrado', tone: 'bad' },
-  NAO_IDENTIFICADO: { label: 'Não identificado no ACORDO_ASSESSORIA', tone: 'wait' },
+  PROMESSA_ATIVA: { label: 'Promessa ativa', tone: 'info' },
+  PROMESSA_EM_ATRASO: { label: 'Promessa em atraso', tone: 'warn' },
+  ACORDO: { label: 'Acordo', tone: 'ok' },
+  QUEBRA_DE_ACORDO: { label: 'Quebra de acordo', tone: 'bad' },
+  ACORDO_EXTERNO: { label: 'Acordo externo', tone: 'wait' },
+  NAO_IDENTIFICADO: { label: 'Sem ACORDO_ASSESSORIA', tone: 'wait' },
+};
+
+export const INSTALLMENT_STATUS: Record<string, { label: string; tone: string }> = {
+  PAGA: { label: 'Paga', tone: 'ok' },
+  A_VENCER: { label: 'A vencer', tone: 'info' },
+  EM_ATRASO: { label: 'Em atraso', tone: 'warn' },
+  VENCIDA: { label: 'Fora da tolerância', tone: 'bad' },
+  QUEBRADA: { label: 'Quebrada', tone: 'wait' },
 };
 
 /** Aviso de fluxo em forma curta: "X não importado: ..." -> "Aguardando X". */

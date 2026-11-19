@@ -2,10 +2,9 @@ import { useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { api } from '../api';
 import { Badge, ContractLink, CopyButton, Empty, Hint, Loading, MapBadge, Notice, RowActions, titulo, useLoad } from '../components/ui';
-import { CONTRACT_STATUS, DIV_STATUS, fmtDate, fmtInt, fmtMoney, RESULT_LABELS } from '../format';
+import { AGREEMENT_STATUS, CONTRACT_STATUS, DIV_STATUS, fmtDate, fmtInt, fmtMoney, RESULT_LABELS } from '../format';
 import { CATEGORY } from './Dashboard';
 
-const AG_TONE: Record<string, string> = { ATIVO: 'ok', QUEBRADO: 'bad', NAO_IDENTIFICADO: 'wait' };
 
 /** Visão consolidada do cliente: todos os contratos do mesmo CPF/CNPJ no mesmo contexto. */
 export function ClientePage() {
@@ -64,7 +63,7 @@ export function ClientePage() {
                       <td className="small code">{c.faixa_codigo ?? '—'}</td>
                       <td className="num">{fmtInt(c.dias_atraso)}</td>
                       <td className="num">{fmtMoney(c.saldo_risco)}</td>
-                      <td className="small">{c.acordo_status ? <><Badge tone={AG_TONE[c.acordo_status] ?? 'wait'}>{c.acordo_status === 'NAO_IDENTIFICADO' ? 'Não identificado' : c.acordo_status === 'ATIVO' ? 'Ativo' : 'Quebrado'}</Badge> {fmtMoney(c.acordo_valor)}</> : <span className="muted">—</span>}</td>
+                      <td className="small">{c.acordo_status ? <><MapBadge map={AGREEMENT_STATUS} value={c.acordo_status} /> {c.acordo_id ? <Link to={`/acordos/${c.acordo_id}`}>{fmtMoney(c.acordo_valor)}</Link> : fmtMoney(c.acordo_valor)}</> : <span className="muted">—</span>}</td>
                       <td className="num">{fmtMoney(c.pagamentos_valor)}</td>
                       <td className="num" style={{ color: c.pendencias_abertas ? 'var(--bad)' : undefined }}>{fmtInt(c.pendencias_abertas)}<span className="muted"> / {fmtInt(c.pendencias_total)}</span></td>
                       <td className="acts"><RowActions related={{ to: `/pendencias?status=&q=${encodeURIComponent(c.contrato)}`, label: 'Pendências do contrato' }} /></td>

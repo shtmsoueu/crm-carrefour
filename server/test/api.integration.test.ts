@@ -10,6 +10,7 @@ import { head, line, rec, trail } from './helpers.js';
 
 process.env.DATABASE_URL = process.env.TEST_DATABASE_URL ?? 'postgres://crm:crm_dev_password@localhost:5432/crm_test';
 process.env.AUTH_ENABLED = 'true';
+process.env.STATUS_REF_DATE = '2026-11-19';
 
 const { pool } = await import('../src/db/pool.js');
 const { migrate } = await import('../src/db/migrate.js');
@@ -99,17 +100,40 @@ describe('importação, batimento e auditoria', () => {
   it('confirma e calcula indicadores a partir dos registros', async () => {
     const r = await admin.post(`/api/imports/${acordoId}/confirm`).expect(200);
     expect(r.body.import.status).toBe('CONFIRMADO');
-    expect(r.body.flows.map((f: any) => f.flow)).toContain('B_ACORDOS');
+    // Arquivo operacional: atualiza o status, sem batimento.
+    expect(r.body.flows).toEqual([]);
+    expect(r.body.batimento).toBe('SOMENTE_STATUS');
+    expect(r.body.status.acordos.por_status).toEqual({ PROMESSA_EM_ATRASO: 1, PROMESSA_ATIVA: 1 });
+    expect((await admin.get('/api/reconciliation/results?flow=B_ACORDOS').expect(200)).body.total).toBe(0);
     const d = await admin.get('/api/dashboard').expect(200);
     expect(d.body.kpis.acordos_realizados).toBe(2);
     expect(Number(d.body.kpis.valor_negociado)).toBe(250);
     expect(d.body.kpis.acordos_reconhecidos).toBeNull(); // sem BAT_ACORDO: nada é simulado
   });
 
-  it('repasse: pagamento conciliado com o acordo e pagamento sem acordo vira pendência', async () => {
+  it('repasse: marca a entrada como paga e o acordo passa a ACORDO, sem confronto diário', async () => {
     const r = await upload(admin, 'REPASSE_LEALCO_17112026.txt', repasseFile()).expect(201);
     expect(r.body.header_variant).toBe('CYBER_HT');
-    await admin.post(`/api/imports/${r.body.id}/confirm`).expect(200);
+    const c = await admin.post(`/api/imports/${r.body.id}/confirm`).expect(200);
+    expect(c.body.flows).toEqual([]);
+    const a = await admin.get('/api/acordos/5001').expect(200);
+    expect(a.body.acordo.status).toBe('ACORDO');
+    expect(a.body.acordo.status_source).toBe('REPASSE');
+    expect(a.body.acordo.status_file).toBe('REPASSE_LEALCO_17112026.txt');
+    expect(a.body.parcelas.map((p: any) => [p.numero, p.status])).toEqual([[0, 'PAGA'], [1, 'A_VENCER']]);
+    expect(a.body.parcelas[0].payment_file).toBe('REPASSE_LEALCO_17112026.txt');
+    expect((await admin.get('/api/reconciliation/results?flow=C_PAGAMENTOS').expect(200)).body.total).toBe(0);
+    expect((await admin.get('/api/divergences?category=PAGAMENTO_NAO_IDENTIFICADO').expect(200)).body.total).toBe(0);
+    // Sem BAT confirmado, a execução manual do batimento é recusada.
+    await admin.post('/api/reconciliation/run').send({}).expect(409);
+  });
+
+  it('batimento mensal: confirmar BAT executa o motor e os confrontos', async () => {
+    const r = await upload(admin, 'BAT_ACORDO_LEALCO_20261117_000003.txt', acordoFile('BAT_ACORDO', 7777, 3)).expect(201);
+    batId = r.body.id;
+    const c = await admin.post(`/api/imports/${batId}/confirm`).expect(200);
+    expect(c.body.batimento).toBe('EXECUTADO');
+    expect(c.body.flows.length).toBeGreaterThan(0);
     const res = await admin.get('/api/reconciliation/results?flow=C_PAGAMENTOS&rule=REPASSE_X_ACORDO').expect(200);
     const by = Object.fromEntries(res.body.rows.map((x: any) => [x.contract_key, x.status]));
     expect(by[ACC[0]]).toBe('CONCILIADO');
@@ -120,9 +144,6 @@ describe('importação, batimento e auditoria', () => {
   });
 
   it('BAT_ACORDO: reconhece acordos e aponta divergência de valor por campo', async () => {
-    const r = await upload(admin, 'BAT_ACORDO_LEALCO_20261117_000003.txt', acordoFile('BAT_ACORDO', 7777, 3)).expect(201);
-    batId = r.body.id;
-    await admin.post(`/api/imports/${batId}/confirm`).expect(200);
     const res = await admin.get('/api/reconciliation/results?flow=B_ACORDOS&rule=ACORDO_X_BAT_ACORDO').expect(200);
     const ok = res.body.rows.find((x: any) => x.ahid === '5001');
     const div = res.body.rows.find((x: any) => x.ahid === '5002');
