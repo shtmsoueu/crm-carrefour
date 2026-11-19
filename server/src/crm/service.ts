@@ -30,6 +30,11 @@ export interface Comparison {
   kind?: Kind;
   /** Equivalências de valores: valor no CRM -> valor na base (ex.: "Em dia" -> "ATIVO"). */
   equivalences?: { crm: string; base: string }[];
+  /**
+   * Quando a base original não possui a informação para a conta (ex.: conta sem acordo não tem
+   * parcelas nem AHCOLLID): 'ignore' (padrão) não confronta o campo; 'compare' exige que o CRM também esteja vazio.
+   */
+  whenBaseEmpty?: 'ignore' | 'compare';
 }
 export interface CrmProfile {
   keyColumn: string;
@@ -56,7 +61,11 @@ export function validateProfile(p: unknown): CrmProfile {
   return {
     keyColumn: v.keyColumn,
     key: { stripLeadingZeros: v.key?.stripLeadingZeros !== false, digitsOnly: !!v.key?.digitsOnly },
-    comparisons: v.comparisons.map((c) => ({ ...c, equivalences: (c.equivalences ?? []).filter((e) => e && String(e.crm).trim() !== '') })),
+    comparisons: v.comparisons.map((c) => ({
+      ...c,
+      whenBaseEmpty: c.whenBaseEmpty === 'compare' ? 'compare' : 'ignore',
+      equivalences: (c.equivalences ?? []).filter((e) => e && String(e.crm).trim() !== ''),
+    })),
   };
 }
 
@@ -181,6 +190,7 @@ export async function runReconciliation(snapshotId: number, scope: Scope, actor:
 
     const items: Record<string, unknown>[] = [];
     const fieldCounts: Record<string, number> = {};
+    const notCompared: Record<string, number> = {};
     let duplicated = 0;
     const baseSnap = (p: PortfolioRow) => Object.fromEntries(BASE_SNAPSHOT_FIELDS.map((k) => [k, p[k]]));
 
@@ -207,6 +217,10 @@ export async function runReconciliation(snapshotId: number, scope: Scope, actor:
         const attr = ATTR.get(c.baseAttribute)!;
         const kind = c.kind ?? attr.kind;
         const bv = p[c.baseAttribute];
+        if ((bv === null || bv === undefined || bv === '') && c.whenBaseEmpty !== 'compare') {
+          notCompared[attr.label] = (notCompared[attr.label] ?? 0) + 1;
+          return;
+        }
         // Em duplicidades, todas as linhas do CRM são confrontadas.
         for (const r of found) {
           const cv = r.data[c.crmColumn];
@@ -281,6 +295,8 @@ export async function runReconciliation(snapshotId: number, scope: Scope, actor:
       nao_consta_sem_base: semBase,
       duplicados_no_crm: [...crmBy.values()].filter((l) => l.length > 1).length,
       divergencias_por_campo: fieldCounts,
+      nao_comparados_por_campo: notCompared,
+      duplicados_itens: items.filter((i) => i.duplicado).length,
       comissao,
       alertas_regras: Object.fromEntries(Object.entries(flagCounts).map(([k, v]) => [FLAG_LABELS[k as keyof typeof FLAG_LABELS] ?? k, v])),
       duracao_ms: 0,

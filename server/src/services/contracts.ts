@@ -53,7 +53,18 @@ export async function contractDetail(key: string) {
     [key],
   );
   const ahids = [...new Set(recs.rows.map((r) => r.ahid).filter(Boolean))];
-  const agreements = await pool.query(`SELECT ahid::text, status, broken_at, agreement_date, agreement_type, total_amount::text, installments FROM agreements WHERE contract_key = $1 OR ahid = ANY($2::bigint[]) ORDER BY agreement_date NULLS LAST`, [key, ahids]);
+  // Origem do acordo (AHCOLLID), quando disponível em algum arquivo, cruzando pelo AHID.
+  const agreements = await pool.query(
+    `SELECT a.ahid::text, a.status, a.broken_at, a.agreement_date, a.agreement_type, a.total_amount::text, a.installments, o.ahcollid, o.fonte
+     FROM agreements a
+     LEFT JOIN LATERAL (
+       SELECT trim(r.fields->>'AHCOLLID') AS ahcollid, r.file_type AS fonte FROM records r JOIN imports i ON i.id = r.import_id AND i.status = 'CONFIRMADO'
+       WHERE r.ahid = a.ahid AND r.valid AND COALESCE(trim(r.fields->>'AHCOLLID'), '') <> ''
+       ORDER BY CASE r.file_type WHEN 'REPASSE' THEN 1 WHEN 'ACORDO_ASSESSORIA' THEN 2 WHEN 'BAT_ACORDO' THEN 3 ELSE 4 END, i.id DESC LIMIT 1
+     ) o ON TRUE
+     WHERE a.contract_key = $1 OR a.ahid = ANY($2::bigint[]) ORDER BY a.agreement_date NULLS LAST`,
+    [key, ahids],
+  );
   const results = await pool.query(
     `SELECT flow, rule, status, key_name, key_value, ahid::text, source_type, source_record_id::text, target_type, target_record_id::text,
        field, value_received, value_expected, reason

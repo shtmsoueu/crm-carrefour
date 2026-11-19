@@ -26,13 +26,25 @@ A conciliação é **somente leitura**:
 
 Teste de volume com as 5.225 contas ativas reais e uma exportação simulada com alterações propositais: 100% das alterações detectadas, em 0,16 s de processamento.
 
+## Princípio de operação diária
+As regras são permanentes; o conteúdo das cargas varia a cada dia.
+- **Ausência não bloqueia.** Um produto, faixa, ranking, arquivo ou coluna ausente no dia não gera alerta nem pendência e não interrompe nada: a categoria aparece com **zero** e o processamento segue.
+- **Inconsistência é sinalizada.** Só geram alerta os dados que existem e contrariam ou não se enquadram nas regras (ver tabela abaixo). A lista de alertas mostra apenas o que ocorreu no escopo.
+- **Informação complementar é usada quando disponível.** Exemplo: a origem (AHCOLLID). Cada arquivo é interpretado pelo próprio layout, sem dependência obrigatória entre arquivos.
+- **Arquivo vazio** (ex.: rejeição de campanha sem ocorrências) fica registrado com a situação VAZIO, sem pendência. Ele não é contado como processamento concluído com dados.
+
 ## Regras de negócio implementadas
 
-### 1. Origem
-`AHCOLLID = LEALCO` → **ASSESSORIA (DIRETO)**. Qualquer outro identificador → **INDIRETO**. A comparação ignora espaços e maiúsculas/minúsculas. É usado o AHCOLLID do acordo mais recente da conta (ACORDO_ASSESSORIA); sem acordo, o do último pagamento (REPASSE).
+### 1. Origem do acordo (informação complementar)
+- `AHCOLLID = LEALCO` → **ASSESSORIA (DIRETO)**; qualquer outro identificador preenchido → **INDIRETO**. A comparação ignora espaços e maiúsculas/minúsculas.
+- O AHCOLLID é procurado, **pela chave AHID**, em todo arquivo que tenha a coluna. Prioridade: REPASSE ("Gestor que capturou o acordo"), ACORDO_ASSESSORIA, BAT_ACORDO, BAT_ACORDO_PGTO.
+- A origem da conta é a do seu acordo mais recente. Se a conta não tem acordo no ACORDO_ASSESSORIA, vale o acordo do último pagamento.
+- **Sem AHCOLLID disponível** (conta sem acordo, ou arquivo sem a coluna): a origem fica vazia ("sem acordo identificado"), **sem alerta**, e as demais classificações seguem normalmente.
+- No REPASSE o campo é marcado como obrigatório no layout, mas é tratado como complementar: a ausência **não rejeita** o pagamento.
+- Só é sinalizado quando o **mesmo AHID tem AHCOLLID diferente entre arquivos**. Na carga real, os 139 acordos presentes no ACORDO e no REPASSE têm o mesmo AHCOLLID nos dois.
 
 ### 3. Ranking
-Usa os dias de atraso `U1DAYSGER02` e o saldo de risco `DMAMTDLQ` do cadastro mais recente (REM/BAT_CONTRATOS).
+Usa os dias de atraso `U1DAYSGER02` e o saldo de risco do cadastro mais recente (REM/BAT_CONTRATOS). O campo do saldo é configurável: `DMAMTDLQ` (padrão) ou `DMCURBAL`.
 - 0–364 dias: G1; 365–9.999 dias: G2.
 - Saldo maior que 1.500: MAIOR MIL; menor que 1.500: MENOR MIL.
 
@@ -41,32 +53,40 @@ Avaliado no código `U1PRODUTO`, em maiúsculas.
 - Contém `AT` → ATACADÃO.
 - Contém `SAMS` → SAMS CLUB.
 - Nenhum dos dois → CARREFOUR.
-- Os dois juntos → sem classificação e sinalizado.
+- A ausência de SAMS (ou de qualquer produto) no dia apenas mostra zero.
 
 ### 5. Faixas
 - G1: faixas 03 a 12 (61–364 dias).
-- G2: faixas 14 a 22 (365 dias em diante). Não existem as faixas 13 e 20.
-- Testes automatizados conferem todos os limites e que as faixas não se sobrepõem.
+- G2: faixas 14 a 22 (365 dias em diante).
+- Faixas sem contas aparecem com zero.
 
 ### 2. Comissão
-O arquivo de comissão é preservado integralmente: todas as linhas, inclusive as idênticas, compõem os totais da conta. A comissão aparece na carteira (por origem) e na conciliação (contas com comissão não importadas ou divergentes no CRM).
+O arquivo de comissão é preservado integralmente: todas as linhas, inclusive as idênticas, compõem os totais. A comissão é cruzada pela chave de contrato com a carteira (por origem) e com o CRM (contas com comissão não importadas ou divergentes).
 
-## Situações não contempladas — PRECISAM DE DEFINIÇÃO
-Essas contas ficam **sem classificação** e aparecem em "Situações não contempladas pelas regras".
+## Inconsistências sinalizadas (somente quando ocorrem)
+Essas contas ficam **sem a classificação afetada** e aparecem em "Inconsistências com as regras" para análise.
 
-| Alerta | Situação | Decisão necessária |
+| Alerta | Quando ocorre | Tratamento |
 |---|---|---|
-| `RANKING_G1_MENOR_MIL_CONFLITO` | A regra 3 cria **G1 – MENOR MIL**, mas a regra 5 diz que **não existe MENOR MIL no Grupo 1**. | O ranking G1 – MENOR MIL é mostrado e sinalizado, sem faixa. Definir se essas contas são válidas, se vão para outro ranking ou se são exceção. *Na carga de teste: 0 contas.* |
-| `RANKING_SALDO_IGUAL_1500` | Saldo de risco exatamente 1.500. | Definir se é MAIOR ou MENOR MIL. No G2 a faixa é atribuída, porque independe do ranking; no G1 não é. *Na carga: 0 contas.* |
-| `FAIXA_G1_ATE_60_DIAS` | G1 com 0 a 60 dias: as faixas do G1 começam em 61. | Definir faixa(s) para 0–60 dias, se existirem (faixas 01/02?). *Na carga: 0 contas (mínimo de 91 dias).* |
-| `RANKING_DIAS_FORA_DA_REGRA` | Dias negativos ou acima de 9.999. | Definir tratamento. *Na carga: 0.* |
-| `ORIGEM_SEM_AHCOLLID` | Conta sem acordo nem pagamento: não há AHCOLLID. | A regra classifica identificadores; a ausência de identificador não é "outro identificador". Definir se é INDIRETO, DIRETO ou "sem origem". *Na carga: todas as 5.225 contas ativas, porque nenhuma tem acordo no ACORDO_ASSESSORIA do dia.* |
-| `RANKING_SEM_DADOS` / `PRODUTO_SEM_CODIGO` | Conta sem cadastro (só aparece em retiradas, comissão etc.). | Informativo; no escopo "carteira ativa" não ocorre. |
+| `RANKING_SALDO_IGUAL_1500` | Saldo de risco exatamente 1.500. | Sem ranking; no G2 a faixa é atribuída (independe do ranking), no G1 não. Regra a definir. |
+| `RANKING_G1_MENOR_MIL_CONFLITO` | Conta com 0–364 dias e saldo menor que 1.500: a regra 3 a classifica como G1 – MENOR MIL, mas a regra 5 diz que não existe MENOR MIL no G1. | Ranking mostrado, sem faixa. Regra a definir. |
+| `FAIXA_G1_ATE_60_DIAS` | G1 com 0 a 60 dias (sem faixa definida). | Sem faixa. |
+| `RANKING_DIAS_FORA_DA_REGRA` | Dias negativos ou acima de 9.999. | Sem grupo/ranking. |
+| `RANKING_SEM_DADOS` | **Cadastro existente** com dias de atraso ou saldo de risco vazios. | Sem grupo/ranking. Conta sem cadastro (presente só em retiradas, comissão etc.) **não** gera alerta. |
+| `PRODUTO_SEM_CODIGO` | **Cadastro existente** com U1PRODUTO vazio. | Sem produto. |
+| `PRODUTO_AMBIGUO` | Código com AT e SAMS ao mesmo tempo. | Sem produto (evita sobreposição). |
+| `ORIGEM_DIVERGENTE_ENTRE_ARQUIVOS` | O mesmo acordo (AHID) com AHCOLLID diferente entre arquivos. | Origem pela prioridade acima; detalhe das fontes exibido. |
 
-Outras premissas para validação:
-- **Saldo de risco = `DMAMTDLQ`.** O layout do REPASSE descreve `DMAMTDLQ` como "Valor Risco Salvo (Saldo Principal)". Um administrador pode trocar para `DMCURBAL` (saldo devedor) na tela da carteira.
-- **Dias de atraso = `U1DAYSGER02`** ("Dias de Atraso - Envio"): é o valor na data do envio do arquivo, não recalculado diariamente.
-- **"MAIOR/MENOR MIL" com limite de 1.500:** os nomes foram mantidos exatamente como definidos.
-- **Nenhum código com "SAMS"** existe na carga de teste: confirmar a sigla usada pelo banco para o Sam's Club.
-- **PARCELAS:** a base usa `AHPRD` ("Qtde de Parcelas"). Para "1+29", AHPRD = 29. Se o CRM registra 30 (entrada + parcelas), todas as contas aparecerão divergentes: confirmar o critério do CRM.
-- **CANAL DE PAGAMENTO:** pode corresponder ao AHCOLLID do acordo (canal), ao AHCOLLID do pagamento ou ao PMTCODE (PX/PC/REC). A escolha é feita no mapeamento.
+Na carga de teste real não há nenhuma dessas ocorrências (0 alertas). Todos os casos são cobertos por testes automatizados.
+
+## Conciliação: dados ausentes
+- Quando a base original não tem a informação da conta (ex.: conta sem acordo não tem parcelas nem AHCOLLID), o campo **não é confrontado** por padrão. A quantidade de campos não confrontados é informada no resultado. Marque "Comparar mesmo quando a base não tem o dado" no mapeamento para exigir que o CRM também esteja vazio.
+- Quando o CRM está vazio e a base tem o dado, o campo é **divergente**: a informação não foi importada no CRM.
+- Situações sem registros mostram zero; a conciliação é executada normalmente.
+- Duplicados no CRM têm aba própria, além de compor a situação DIVERGENTE (ou NÃO CONSTA NA BASE, quando a conta não existe na base).
+
+## Premissas para validação
+- **Saldo de risco = `DMAMTDLQ`** ("Valor Risco Salvo (Saldo Principal)" no layout do REPASSE), alterável para `DMCURBAL` na tela da carteira.
+- **Dias de atraso = `U1DAYSGER02`** ("Dias de Atraso - Envio"), na data do envio do arquivo.
+- **PARCELAS:** a base usa `AHPRD`. Para "1+29", AHPRD = 29. Se o CRM registra 30 (entrada + parcelas), use uma comparação específica ou valide o critério.
+- **CANAL DE PAGAMENTO:** pode corresponder ao AHCOLLID do acordo, ao AHCOLLID do pagamento ou ao PMTCODE. A escolha é feita no mapeamento.

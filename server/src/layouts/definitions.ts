@@ -504,7 +504,9 @@ export const LAYOUTS: LayoutDef[] = [
             roles: ['ahid'],
             note: 'Layout indica tipo A; tratado como numérico (mesmo identificador AHID dos demais layouts, tipo N).',
           }),
-          f('AHCOLLID', 112, 119, 'A', 'Gestor que capturou o acordo', { required: true }),
+          f('AHCOLLID', 112, 119, 'A', 'Gestor que capturou o acordo', {
+            note: 'Marcado como obrigatório no layout; tratado como informação complementar (origem do acordo) por definição de negócio: ausência não rejeita o pagamento.',
+          }),
           f('DMAMTDLQ', 120, 134, 'N', 'Valor Risco Salvo (Saldo Principal) com 2 decimais', {
             decimals: 2,
             required: true,

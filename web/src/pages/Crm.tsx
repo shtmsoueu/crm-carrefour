@@ -6,7 +6,7 @@ import { Badge, Empty, ExportButtons, Loading, Notice, Pager, useLoad, useToast 
 import { fmtDateTime, fmtInt, fmtMoney } from '../format';
 
 interface Attr { key: string; label: string; kind: string; source: string }
-interface Comparison { crmColumn: string; baseAttribute: string; kind?: string; equivalences?: { crm: string; base: string }[] }
+interface Comparison { crmColumn: string; baseAttribute: string; kind?: string; equivalences?: { crm: string; base: string }[]; whenBaseEmpty?: 'ignore' | 'compare' }
 interface Profile { keyColumn: string; key: { stripLeadingZeros: boolean; digitsOnly: boolean }; comparisons: Comparison[] }
 
 const SITUACAO: Record<string, { label: string; tone: string }> = {
@@ -66,7 +66,13 @@ function MappingEditor({ headers, attrs, initial, onSaved }: { headers: string[]
                     <option value="text">Texto</option><option value="number">Número</option><option value="date">Data</option>
                   </select>
                 </td>
-                <td><textarea rows={2} style={{ width: 240 }} value={eqText[i] ?? ''} placeholder="Ex.: Assessoria = LEALCO" onChange={(e) => setEqText(eqText.map((t, j) => (j === i ? e.target.value : t)))} /></td>
+                <td>
+                  <textarea rows={2} style={{ width: 240 }} value={eqText[i] ?? ''} placeholder="Ex.: Assessoria = LEALCO" onChange={(e) => setEqText(eqText.map((t, j) => (j === i ? e.target.value : t)))} />
+                  <label className="row small" style={{ marginTop: 4 }} title="Ex.: conta sem acordo não tem parcelas na base. Marcado: o CRM também precisa estar vazio.">
+                    <input type="checkbox" style={{ height: 'auto' }} checked={c.whenBaseEmpty === 'compare'} onChange={(e) => upd(i, { whenBaseEmpty: e.target.checked ? 'compare' : 'ignore' })} />
+                    Comparar mesmo quando a base não tem o dado
+                  </label>
+                </td>
                 <td><button className="btn sm ghost" onClick={() => { setP({ ...p, comparisons: p.comparisons.filter((_, j) => j !== i) }); setEqText(eqText.filter((_, j) => j !== i)); }}>Remover</button></td>
               </tr>
             ))}
@@ -77,7 +83,7 @@ function MappingEditor({ headers, attrs, initial, onSaved }: { headers: string[]
         <button className="btn" onClick={() => { setP({ ...p, comparisons: [...p.comparisons, { crmColumn: headers[0], baseAttribute: 'status_contrato', kind: 'text', equivalences: [] }] }); setEqText([...eqText, '']); }}>Adicionar campo</button>
         <button className="btn primary" onClick={save}>Salvar mapeamento</button>
       </div>
-      <p className="small muted">Textos são comparados sem acentos, sem diferença de maiúsculas e com espaços normalizados. Números aceitam formatos 1.234,56 e 1234.56. Datas aceitam dd/mm/aaaa, aaaa-mm-dd e o formato do Excel.</p>
+      <p className="small muted">Quando a base original não tem a informação da conta (ex.: conta sem acordo não tem parcelas nem AHCOLLID), o campo não é confrontado, a menos que a opção acima esteja marcada. Textos são comparados sem acentos, sem diferença de maiúsculas e com espaços normalizados. Números aceitam formatos 1.234,56 e 1234.56. Datas aceitam dd/mm/aaaa, aaaa-mm-dd e o formato do Excel.</p>
       {toast.node}
     </div>
   );
@@ -92,7 +98,7 @@ function Results({ runId }: { runId: number }) {
   const [page, setPage] = useState(1);
   const [open, setOpen] = useState<string | null>(null);
   const run = useLoad(() => api(`/crm/execucoes/${runId}`), [runId]);
-  const params = { situacao: sit, campo, comissao: comissao ? 'true' : '', q: query };
+  const params = { situacao: sit === 'DUPLICADOS' ? '' : sit, duplicado: sit === 'DUPLICADOS' ? 'true' : '', campo, comissao: comissao ? 'true' : '', q: query };
   const items = useLoad(() => api(`/crm/execucoes/${runId}/itens${qs({ ...params, page, pageSize: 50 })}`), [runId, sit, campo, comissao, query, page]);
   const s = run.data?.summary;
   if (!s) return <Loading />;
@@ -122,6 +128,11 @@ function Results({ runId }: { runId: number }) {
               ))}
               {!s.duplicados_no_crm && !Object.keys(s.divergencias_por_campo).length && <li className="muted">Nenhuma inconsistência de campo.</li>}
             </ul>
+            {Object.keys(s.nao_comparados_por_campo ?? {}).length > 0 && (
+              <p className="small muted" style={{ marginTop: 12 }}>
+                Não confrontados por ausência do dado na base original: {Object.entries(s.nao_comparados_por_campo as Record<string, number>).map(([k, n]) => `${k} (${fmtInt(n)})`).join(', ')}.
+              </p>
+            )}
             <p className="small muted" style={{ marginTop: 12 }}>
               CRM: {fmtInt(s.crm_linhas)} linhas, {fmtInt(s.crm_contas)} contas distintas{s.crm_linhas_sem_chave ? `, ${fmtInt(s.crm_linhas_sem_chave)} linhas sem número de contrato` : ''}. Escopo: {s.escopo}. Processado em {(s.duracao_ms / 1000).toLocaleString('pt-BR')} s.
             </p>
@@ -149,7 +160,8 @@ function Results({ runId }: { runId: number }) {
 
       <section className="panel">
         <div className="tabs" role="tablist">
-          {cards.map(([k, n]) => <button key={k} className={sit === k ? 'on' : ''} onClick={() => { setSit(k); setPage(1); }}>{SITUACAO[k].label}<span className="num">{fmtInt(n)}</span></button>)}
+          {cards.map(([k, n]) => <button key={k} className={sit === k ? 'on' : ''} onClick={() => { setSit(k); setCampo(''); setPage(1); }}>{SITUACAO[k].label}<span className="num">{fmtInt(n)}</span></button>)}
+          <button className={sit === 'DUPLICADOS' ? 'on' : ''} onClick={() => { setSit('DUPLICADOS'); setCampo(''); setPage(1); }}>Duplicados no CRM<span className="num">{fmtInt(s.duplicados_itens ?? s.duplicados_no_crm)}</span></button>
         </div>
         <form className="row" style={{ padding: '12px 16px', alignItems: 'flex-end' }} onSubmit={(e) => { e.preventDefault(); setQuery(q); setPage(1); }}>
           {sit === 'DIVERGENTE' && (

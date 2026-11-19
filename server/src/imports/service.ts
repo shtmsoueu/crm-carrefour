@@ -130,9 +130,8 @@ function statsParams(res: ParseResult | null) {
 async function fileLevelDivergences(db: pg.PoolClient, importId: number, fileType: string, name: string, status: string, res: ParseResult | null) {
   const items: DivergenceInput[] = [];
   const base = { flow: 'IMPORTACAO', import_id: importId, source_file: name };
-  if (status === 'VAZIO') {
-    items.push({ ...base, fingerprint: `IMP|${importId}|VAZIO`, category: 'ARQUIVO_INVALIDO', rule: 'ARQUIVO_VAZIO', description: `Arquivo ${fileType} vazio (0 bytes): nenhuma informação recebida.` });
-  }
+  // Arquivo vazio não é pendência: a situação fica registrada na importação (status VAZIO),
+  // pois a ausência de registros no dia é uma condição normal de operação.
   if (status === 'INVALIDO' && res) {
     const msgs = res.issues.filter((i) => i.severity === 'ERRO' && i.line === null).map((i) => i.message);
     items.push({ ...base, fingerprint: `IMP|${importId}|INVALIDO`, category: 'ARQUIVO_INVALIDO', rule: 'ESTRUTURA_ARQUIVO', description: msgs.join(' ') });

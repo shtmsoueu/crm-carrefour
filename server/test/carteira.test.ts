@@ -11,9 +11,9 @@ describe('regra 1 — origem pelo AHCOLLID', () => {
   it('qualquer outro identificador é INDIRETO', () => {
     for (const v of ['Serasa', 'MIA', 'APP', 'LEALCO2', '26110609']) expect(classifyOrigem(v).value).toBe('INDIRETO');
   });
-  it('ausência de AHCOLLID não é classificada: é sinalizada', () => {
-    expect(classifyOrigem('').value).toBeNull();
-    expect(classifyOrigem(null).flag).toBe('ORIGEM_SEM_AHCOLLID');
+  it('ausência de AHCOLLID é informação complementar ausente: sem origem e sem alerta', () => {
+    expect(classifyOrigem('')).toEqual({ value: null });
+    expect(classifyOrigem(null)).toEqual({ value: null });
   });
 });
 

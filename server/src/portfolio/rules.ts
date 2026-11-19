@@ -7,7 +7,7 @@
  */
 
 export type FlagCode =
-  | 'ORIGEM_SEM_AHCOLLID'
+  | 'ORIGEM_DIVERGENTE_ENTRE_ARQUIVOS'
   | 'PRODUTO_SEM_CODIGO'
   | 'PRODUTO_AMBIGUO'
   | 'RANKING_SEM_DADOS'
@@ -17,10 +17,10 @@ export type FlagCode =
   | 'FAIXA_G1_ATE_60_DIAS';
 
 export const FLAG_LABELS: Record<FlagCode, string> = {
-  ORIGEM_SEM_AHCOLLID: 'Origem não identificada: conta sem AHCOLLID (sem acordo/pagamento informado)',
-  PRODUTO_SEM_CODIGO: 'Produto não identificado: código de produto (U1PRODUTO) ausente',
+  ORIGEM_DIVERGENTE_ENTRE_ARQUIVOS: 'Origem do acordo divergente: o mesmo AHID tem AHCOLLID diferente entre arquivos',
+  PRODUTO_SEM_CODIGO: 'Cadastro sem código de produto (U1PRODUTO) preenchido',
   PRODUTO_AMBIGUO: 'Produto ambíguo: código contém AT e SAMS ao mesmo tempo',
-  RANKING_SEM_DADOS: 'Ranking não calculado: dias de atraso ou saldo de risco ausentes',
+  RANKING_SEM_DADOS: 'Cadastro sem dias de atraso ou saldo de risco preenchidos',
   RANKING_SALDO_IGUAL_1500: 'Saldo de risco exatamente 1.500: regra não define MAIOR ou MENOR MIL',
   RANKING_DIAS_FORA_DA_REGRA: 'Dias de atraso fora das regras (negativo ou acima de 9.999)',
   RANKING_G1_MENOR_MIL_CONFLITO: 'Conflito de regras: G1 – MENOR MIL (regra 3) x "não existe MENOR MIL no Grupo 1" (regra 5)',
@@ -36,10 +36,13 @@ export interface Classified<T> {
 export type Origem = 'ASSESSORIA (DIRETO)' | 'INDIRETO';
 export const AGENCY_ID = 'LEALCO';
 
-/** AHCOLLID = LEALCO => ASSESSORIA (DIRETO); qualquer outro identificador => INDIRETO. */
+/**
+ * AHCOLLID = LEALCO => ASSESSORIA (DIRETO); qualquer outro identificador preenchido => INDIRETO.
+ * Informação complementar: sem AHCOLLID disponível a origem fica vazia, sem alerta.
+ */
 export function classifyOrigem(ahcollid: string | null | undefined): Classified<Origem> {
   const v = (ahcollid ?? '').trim();
-  if (!v) return { value: null, flag: 'ORIGEM_SEM_AHCOLLID' };
+  if (!v) return { value: null };
   return { value: v.toUpperCase() === AGENCY_ID ? 'ASSESSORIA (DIRETO)' : 'INDIRETO' };
 }
 

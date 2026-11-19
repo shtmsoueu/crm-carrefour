@@ -42,9 +42,9 @@ function acordoFile(code: 'ACORDO_ASSESSORIA' | 'BAT_ACORDO', valorAcordo2: numb
 
 function repasseFile() {
   const H = line(head('REPASSE', 1), { TIPO: 'H', EMPRESA: 'CYBER', ARQUIVO: 'REPASSE PAGAMENTO', TIPO_ENVIO: 'D', DATA_GERACAO: '11182026', SEQUENCIA_ARQUIVO: 4154 });
-  const pay = (i: number, ahid: number, amt: number) =>
-    line(rec('REPASSE'), { PMACCTG: '1', PMACCT: ACC[i].padStart(25, ' '), PMTDATE_TRANSACAO: '11172026', DMSSNUM: CPF[i], PMTCODE: 'PX', PMTDATE: '11172026', PMEDATE: '11172026', PMAMT: amt, PMBATCH: '00', AHID: ahid, AHCOLLID: 'APP', DMAMTDLQ: 0 });
-  const rows = [pay(0, 5001, 10000), pay(2, 9999, 7000)];
+  const pay = (i: number, ahid: number, amt: number, ahcollid: string) =>
+    line(rec('REPASSE'), { PMACCTG: '1', PMACCT: ACC[i].padStart(25, ' '), PMTDATE_TRANSACAO: '11172026', DMSSNUM: CPF[i], PMTCODE: 'PX', PMTDATE: '11172026', PMEDATE: '11172026', PMAMT: amt, PMBATCH: '00', AHID: ahid, AHCOLLID: ahcollid, DMAMTDLQ: 0 });
+  const rows = [pay(0, 5001, 10000, 'LEALCO'), pay(2, 9999, 7000, 'APP')];
   const T = line(trail('REPASSE', 1), { TIPO: 'T', DATA_GERACAO: '11182026', QTD_REGISTROS: rows.length + 2, SEQUENCIA_ARQUIVO: 4154 });
   return [H, ...rows, T].join('\r\n') + '\r\n';
 }
@@ -166,12 +166,12 @@ describe('importação, batimento e auditoria', () => {
     await admin.post(`/api/imports/${r.body.id}/discard`).send({}).expect(200);
   });
 
-  it('arquivo vazio fica como VAZIO, gera pendência e não pode ser confirmado', async () => {
+  it('arquivo vazio fica registrado como VAZIO (não é sucesso), sem gerar pendência', async () => {
     const r = await upload(admin, 'tb_campanha_rej_ext_LEALCO_20261117_034554.txt', '').expect(201);
     expect(r.body.status).toBe('VAZIO');
     await admin.post(`/api/imports/${r.body.id}/confirm`).expect(409);
-    const p = await admin.get('/api/divergences?category=ARQUIVO_INVALIDO').expect(200);
-    expect(p.body.rows.some((x: any) => x.import_id === undefined || x.source_file?.startsWith('tb_campanha'))).toBe(true);
+    const p = await admin.get('/api/divergences?category=ARQUIVO_INVALIDO&status=').expect(200);
+    expect(p.body.rows.some((x: any) => x.source_file?.startsWith('tb_campanha'))).toBe(false);
     // segundo arquivo vazio com outro nome não é tratado como duplicado
     await upload(admin, 'tb_campanha_rej_int_LEALCO_20261117_034551.txt', '').expect(201);
   });
@@ -223,7 +223,10 @@ describe('carteira classificada e conciliação com o CRM externo', () => {
     expect(acc0.origem).toBe('ASSESSORIA (DIRETO)');
     expect(acc0.canal_acordo).toBe('LEALCO');
     expect(acc0.parcelas).toBe(1);
-    expect(acc0.flags).toContain('RANKING_SEM_DADOS'); // sem REM_CONTRATOS: dias/saldo indisponíveis
+    // Sem REM_CONTRATOS não há cadastro a classificar: ausência de dados não é inconsistência.
+    expect(acc0.tem_cadastro).toBe(false);
+    expect(acc0.ranking).toBeNull();
+    expect(acc0.flags).toEqual([]);
   });
 
   it('carrega a exportação do CRM e sugere o mapeamento pelas colunas', async () => {
@@ -283,5 +286,111 @@ describe('carteira classificada e conciliação com o CRM externo', () => {
       res.on('end', () => cb(null, Buffer.concat(chunks)));
     }).expect(200);
     expect((orig.body as Buffer).toString('utf8')).toBe(csv);
+  });
+});
+
+describe('cargas variáveis: ausência de dados não bloqueia o processamento', () => {
+  const ACC2 = ['10000000004', '10000000005', '10000000006', '10000000007'];
+  const remFile = (seq: number, date: string) => {
+    const H = line(head('REM_CONTRATOS'), { TIPO: 'H', EMPRESA: 'CYBER', ARQUIVO: 'REMESSA_CONTRATOS_ASSESSORIA', TIPO_ENVIO: 'D', DATA_GERACAO: date, SEQUENCIA_ARQUIVO: seq });
+    const r = (acc: string, v: Record<string, string | number>) => line(rec('REM_CONTRATOS'), { DMACCTG: '1', DMACCT: acc, ...v });
+    const rows = [
+      r(ACC2[0], { U1PRODUTO: 'SAMSGOLD', U1DAYSGER02: 400, DMAMTDLQ: 150000, DMCURBAL: 999999 }), // SAMS, saldo = 1.500
+      r(ACC2[1], { U1PRODUTO: 'MC GOLD', DMAMTDLQ: 200000 }),                                    // cadastro sem dias de atraso
+      r(ACC2[2], { U1PRODUTO: 'MCATGOLD', U1DAYSGER02: 100, DMAMTDLQ: 200000 }),                 // G1 – MAIOR MIL, faixa 04
+      r(ACC2[3], { U1PRODUTO: 'VS GOLD', U1DAYSGER02: 1500, DMAMTDLQ: 50000 }),                  // G2 – MENOR MIL, faixa 22
+    ];
+    const T = line(trail('REM_CONTRATOS'), { TIPO: 'T', DATA_GERACAO: date, QTD_REGISTROS: rows.length, SEQUENCIA_ARQUIVO: seq });
+    return [H, ...rows, T].join('\r\n') + '\r\n';
+  };
+  const get = async (acc: string) => (await admin.get(`/api/carteira?scope=TODOS&q=${acc}`).expect(200)).body.rows[0];
+
+  it('importa um novo dia de remessa e classifica conforme as regras, inclusive categorias antes inexistentes', async () => {
+    const r = await upload(admin, 'REM_CONTRATOS_LEALCO_20261118_010101.txt', remFile(36000, '18112026')).expect(201);
+    expect(r.body.valid_records).toBe(4);
+    await admin.post(`/api/imports/${r.body.id}/confirm`).expect(200);
+    const sams = await get(ACC2[0]);
+    expect(sams.produto).toBe('SAMS CLUB');
+    expect(sams.grupo).toBe('G2');
+    expect(sams.ranking).toBeNull();
+    expect(sams.faixa_codigo).toBe('14'); // G2: faixa independe do ranking
+    expect(sams.flags).toEqual(['RANKING_SALDO_IGUAL_1500']);
+    const g1 = await get(ACC2[2]);
+    expect([g1.produto, g1.ranking, g1.faixa_codigo, g1.flags]).toEqual(['ATACADÃO', 'G1 – MAIOR MIL', '04', []]);
+    const g2 = await get(ACC2[3]);
+    expect([g2.produto, g2.ranking, g2.faixa_codigo, g2.flags]).toEqual(['CARREFOUR', 'G2 – MENOR MIL', '22', []]);
+  });
+
+  it('cadastro existente com campo vazio é inconsistência real e é sinalizado', async () => {
+    const semDias = await get(ACC2[1]);
+    expect(semDias.tem_cadastro).toBe(true);
+    expect(semDias.flags).toEqual(['RANKING_SEM_DADOS']);
+  });
+
+  it('resumo mostra somente alertas que ocorrem e zero para categorias sem registros', async () => {
+    const r = await admin.get('/api/carteira?scope=ATIVOS').expect(200);
+    const flags = Object.keys(r.body.summary.flags);
+    expect(flags.sort()).toEqual(['RANKING_SALDO_IGUAL_1500', 'RANKING_SEM_DADOS']);
+    expect(r.body.summary.matriz['G1 – MENOR MIL']).toBeUndefined();
+    expect(r.body.summary.porProduto['SAMS CLUB'].contas).toBe(1);
+  });
+
+  it('origem do acordo é buscada em qualquer arquivo com AHCOLLID, pela chave AHID', async () => {
+    // ACC[2] não tem acordo no ACORDO_ASSESSORIA: a origem vem do REPASSE (AHID 9999, AHCOLLID APP).
+    const c = await get(ACC[2]);
+    expect(c.origem).toBe('INDIRETO');
+    expect(c.origem_ahcollid).toBe('APP');
+    expect(c.origem_fonte).toMatch(/^REPASSE/);
+    expect(c.flags).toEqual([]);
+  });
+
+  it('pagamento sem AHCOLLID é aceito e não gera pendência de layout', async () => {
+    const H = line(head('REPASSE', 1), { TIPO: 'H', EMPRESA: 'CYBER', ARQUIVO: 'REPASSE PAGAMENTO', TIPO_ENVIO: 'D', DATA_GERACAO: '11192026', SEQUENCIA_ARQUIVO: 4200 });
+    const p = line(rec('REPASSE'), { PMACCTG: '1', PMACCT: ACC[1].padStart(25, ' '), PMTDATE_TRANSACAO: '11182026', DMSSNUM: CPF[1], PMTCODE: 'REC', PMTDATE: '11182026', PMEDATE: '11182026', PMAMT: 1000, PMBATCH: '00', DMAMTDLQ: 0 });
+    const T = line(trail('REPASSE', 1), { TIPO: 'T', DATA_GERACAO: '11192026', QTD_REGISTROS: 3, SEQUENCIA_ARQUIVO: 4200 });
+    const r = await upload(admin, 'REPASSE_LEALCO_19112026.txt', [H, p, T].join('\r\n') + '\r\n').expect(201);
+    expect(r.body.valid_records).toBe(1);
+    expect(r.body.rejected_records).toBe(0);
+    await admin.post(`/api/imports/${r.body.id}/confirm`).expect(200);
+    const d = await pool.query(`SELECT count(*)::int n FROM divergences WHERE import_id = $1 AND category = 'ERRO_LAYOUT'`, [r.body.id]);
+    expect(d.rows[0].n).toBe(0);
+  });
+
+  it('AHCOLLID diferente entre arquivos para o mesmo acordo é sinalizado (inconsistência real)', async () => {
+    const H = line(head('REPASSE', 1), { TIPO: 'H', EMPRESA: 'CYBER', ARQUIVO: 'REPASSE PAGAMENTO', TIPO_ENVIO: 'D', DATA_GERACAO: '11202026', SEQUENCIA_ARQUIVO: 4300 });
+    const p = line(rec('REPASSE'), { PMACCTG: '1', PMACCT: ACC[1].padStart(25, ' '), PMTDATE_TRANSACAO: '11192026', DMSSNUM: CPF[1], PMTCODE: 'PX', PMTDATE: '11192026', PMEDATE: '11192026', PMAMT: 5000, PMBATCH: '01', AHID: 5002, AHCOLLID: 'Serasa', DMAMTDLQ: 0 });
+    const T = line(trail('REPASSE', 1), { TIPO: 'T', DATA_GERACAO: '11202026', QTD_REGISTROS: 3, SEQUENCIA_ARQUIVO: 4300 });
+    const r = await upload(admin, 'REPASSE_LEALCO_20112026.txt', [H, p, T].join('\r\n') + '\r\n').expect(201);
+    await admin.post(`/api/imports/${r.body.id}/confirm`).expect(200);
+    const c = await get(ACC[1]);
+    expect(c.flags).toContain('ORIGEM_DIVERGENTE_ENTRE_ARQUIVOS');
+    expect(c.origem_detalhe).toMatch(/ACORDO_ASSESSORIA: LEALCO/);
+    expect(c.origem_detalhe).toMatch(/REPASSE: Serasa/);
+  });
+
+  it('CRM: campo sem dado na base não é confrontado por padrão; com "comparar" vira divergência', async () => {
+    const csv = ['Contrato;Parcelas', `${ACC2[2]};12`].join('\r\n'); // conta sem acordo na base (parcelas vazio)
+    const snap = await admin.post('/api/crm/snapshots').attach('file', Buffer.from(csv, 'utf8'), 'crm_dia2.csv').expect(201);
+    const profile = (whenBaseEmpty: string) => ({ keyColumn: 'Contrato', key: { stripLeadingZeros: true }, comparisons: [{ crmColumn: 'Parcelas', baseAttribute: 'parcelas', kind: 'number', whenBaseEmpty }] });
+    await admin.put('/api/crm/perfil').send({ profile: profile('ignore') }).expect(200);
+    const a = await admin.post(`/api/crm/snapshots/${snap.body.id}/conciliar`).send({ scope: 'COM_CADASTRO' }).expect(200);
+    expect(a.body.conforme).toBe(1);
+    expect(a.body.divergente).toBe(0);
+    expect(a.body.nao_importado).toBe(3); // demais contas com cadastro: não importadas
+    expect(a.body.nao_comparados_por_campo['Quantidade de parcelas']).toBe(1);
+    await admin.put('/api/crm/perfil').send({ profile: profile('compare') }).expect(200);
+    const b = await admin.post(`/api/crm/snapshots/${snap.body.id}/conciliar`).send({ scope: 'COM_CADASTRO' }).expect(200);
+    expect(b.body.divergente).toBe(1);
+    expect(b.body.conforme).toBe(0);
+  });
+
+  it('conciliação sem nenhuma divergência executa normalmente (categorias vazias = zero)', async () => {
+    const csv = ['Contrato', ...ACC2].join('\r\n');
+    const snap = await admin.post('/api/crm/snapshots').attach('file', Buffer.from(csv, 'utf8'), 'crm_completo.csv').expect(201);
+    await admin.put('/api/crm/perfil').send({ profile: { keyColumn: 'Contrato', key: { stripLeadingZeros: true }, comparisons: [] } }).expect(200);
+    const r = await admin.post(`/api/crm/snapshots/${snap.body.id}/conciliar`).send({ scope: 'COM_CADASTRO' }).expect(200);
+    expect([r.body.conforme, r.body.nao_importado, r.body.divergente, r.body.nao_consta_na_base, r.body.duplicados_no_crm]).toEqual([4, 0, 0, 0, 0]);
+    const items = await admin.get(`/api/crm/execucoes/${r.body.runId}/itens?situacao=DIVERGENTE`).expect(200);
+    expect(items.body.total).toBe(0);
   });
 });

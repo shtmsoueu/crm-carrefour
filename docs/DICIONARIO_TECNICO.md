@@ -544,7 +544,7 @@
 | `PMAMT` | 82 | 96 | 15 | N | 2 | x | Valor do Pagamento |
 | `PMBATCH` | 97 | 98 | 2 | A |  | x | Número da parcela paga |
 | `AHID` | 99 | 111 | 13 | N |  |  | ID do acordo _Obs.: Layout indica tipo A; tratado como numérico (mesmo identificador AHID dos demais layouts, tipo N)._ |
-| `AHCOLLID` | 112 | 119 | 8 | A |  | x | Gestor que capturou o acordo |
+| `AHCOLLID` | 112 | 119 | 8 | A |  |  | Gestor que capturou o acordo _Obs.: Marcado como obrigatório no layout; tratado como informação complementar (origem do acordo) por definição de negócio: ausência não rejeita o pagamento._ |
 | `DMAMTDLQ` | 120 | 134 | 15 | N | 2 | x | Valor Risco Salvo (Saldo Principal) com 2 decimais _Obs.: Layout indica tipo A; a descrição informa "com 2 decimais", portanto interpretado como numérico com 2 decimais._ |
 
 ## Remessa de Boletos (`REM_BOLETOS`)

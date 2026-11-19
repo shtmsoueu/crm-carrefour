@@ -12,7 +12,7 @@ Execução: `npm run validate-loads -- <pasta com os arquivos de Cargas_teste.zi
 | REM_CONTRATOS_LEALCO_20261117_051318.txt | REM_CONTRATOS | Confirmado | 5.227 | 5.225 | 5.225 | 0 | 0 | confere (registros de dados) |
 | RET_DISTRIBUICAO_LEALCO_17112026.txt | RET_DISTRIBUICAO | Confirmado | 6.117 | 6.115 | 6.115 | 0 | 0 | confere (inclui header/trailer) |
 | RET_CARTEIRA_LEALCO_17112026.txt | RET_CARTEIRA | Confirmado | 69 | 67 | 67 | 0 | 0 | confere (inclui header/trailer) |
-| REPASSE_LEALCO_17112026.txt | REPASSE | Confirmado | 427 | 425 | 421 | 4 | 0 | confere (inclui header/trailer) |
+| REPASSE_LEALCO_17112026.txt | REPASSE | Confirmado | 427 | 425 | 425 | 0 | 0 | confere (inclui header/trailer) |
 | REM_BOLETOS_LEALCO_20261117_051639.txt | REM_BOLETOS | Confirmado | 3.064 | 3.062 | 3.059 | 3 | 0 | **não confere** (trailer informa 2.315) |
 | QUEBRA_ACORDO_LEALCO_20261117_053345.txt | QUEBRA_ACORDO | Confirmado | 242 | 242 | 242 | 0 | 0 | layout sem controle |
 | ELEGIBILIDADE_LEALCO_20261117_053338.txt | ELEGIBILIDADE | Confirmado | 2.055 | 2.053 | 2.053 | 0 | 0 | layout sem controle (2 linhas em branco ignoradas) |
@@ -22,16 +22,15 @@ Execução: `npm run validate-loads -- <pasta com os arquivos de Cargas_teste.zi
 | tb_campanha_rej_ext_LEALCO_20261117_034554.txt | REJ_CAMPANHA_EXT | **Vazio** | 0 | 0 | 0 | 0 | 0 | — |
 | tb_campanha_rej_int_LEALCO_20261117_034551.txt | REJ_CAMPANHA_INT | **Vazio** | 0 | 0 | 0 | 0 | 0 | — |
 
-Os dois arquivos de rejeição vazios ficam com situação **VAZIO**, geram pendência "Arquivo inválido" e **não podem ser confirmados**: não são tratados como processamento concluído. Como todo arquivo de 0 byte tem o mesmo SHA-256, a duplicidade de arquivos vazios é controlada pelo nome + tipo (sem isso, o segundo seria bloqueado indevidamente).
+Os dois arquivos de rejeição vazios ficam com situação **VAZIO** e **não podem ser confirmados**: não são tratados como processamento concluído com dados. Eles não geram pendência, porque a ausência de ocorrências no dia é uma condição normal. Como todo arquivo de 0 byte tem o mesmo SHA-256, a duplicidade de arquivos vazios é controlada pelo nome + tipo (sem isso, o segundo seria bloqueado indevidamente).
 
 ### Registros rejeitados (violações reais do layout)
 
 | Arquivo | Qtde | Motivo |
 |---|---:|---|
 | REM_BOLETOS (registro tipo 1) | 3 | `DMZIP` é numérico (N 8) e veio com hífen (ex.: `NNNNN-NN`). |
-| REPASSE | 4 | `AHCOLLID` é obrigatório e veio em branco (pagamentos `REC` sem acordo). |
 
-Cada um vira pendência **"Outros erros de layout"** com linha, campo e motivo.
+Cada um vira pendência **"Outros erros de layout"** com linha, campo e motivo. O `AHCOLLID` do REPASSE, embora marcado como obrigatório no layout, é tratado como informação complementar: os 4 pagamentos sem esse campo são aceitos.
 
 ### Alertas (registro aceito)
 
@@ -61,7 +60,7 @@ Todas estão no dicionário técnico (`docs/DICIONARIO_TECNICO.md`) e na tela *D
 |---|---|
 | A. Distribuição | 5.225 contratos distribuídos (ativos); 6.182 retirados sem remessa no histórico (informativo, porque REM_CONTRATOS é incremental). **Aguardando BAT_CONTRATOS** para o reconhecimento pelo banco. |
 | B. Acordos | 1.183 acordos (14.100 linhas de parcela) consolidados. **Aguardando BAT_ACORDO**: nenhum reconhecimento é simulado. |
-| C. Pagamentos | 421 pagamentos válidos: 139 conciliados com o acordo pelo AHID e 282 sem acordo nos ACORDO_ASSESSORIA importados (pendência *Pagamento não identificado*). 171 acordos com parcela vencida no período dos repasses e sem pagamento (informativo). **Aguardando BAT_ACORDO_PGTO**. |
+| C. Pagamentos | 425 pagamentos válidos: 139 conciliados com o acordo pelo AHID e 286 sem acordo (4 deles sem ID de acordo) nos ACORDO_ASSESSORIA importados (pendência *Pagamento não identificado*). 171 acordos com parcela vencida no período dos repasses e sem pagamento (informativo). **Aguardando BAT_ACORDO_PGTO**. |
 | D. Boletos | 766 parcelas: 534 conferem com o acordo (AHID + vencimento + valor); 232 de acordos não localizados (*Acordo não reconhecido*). |
 | E. Quebra | 241 acordos quebrados (242 linhas, um AHID repetido) com status atualizado para QUEBRADO. Nenhum está nos ACORDO_ASSESSORIA da carga, então todos ficam como *Acordo não reconhecido*. |
 | F. Elegibilidade | Os 227 tipos de acordo usados nos 1.183 acordos existem no catálogo e estão vigentes na data do acordo. A elegibilidade por contrato requer regra (layout sem contrato). |

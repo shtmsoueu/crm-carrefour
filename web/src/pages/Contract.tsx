@@ -103,10 +103,11 @@ export function ContractPage() {
               <div className="panel-head"><h2>Acordos</h2></div>
               <div className="table-wrap">
                 <table className="data">
-                  <thead><tr><th>Acordo (AHID)</th><th>Data</th><th>Tipo</th><th className="num">Valor</th><th className="num">Parcelas</th><th>Situação</th></tr></thead>
+                  <thead><tr><th>Acordo (AHID)</th><th>Data</th><th>Tipo</th><th className="num">Valor</th><th className="num">Parcelas</th><th>Origem (AHCOLLID)</th><th>Situação</th></tr></thead>
                   <tbody>{data.agreements.map((a: any) => (
                     <tr key={a.ahid}><td className="code">{a.ahid}</td><td>{fmtDate(a.agreement_date)}</td><td className="code">{a.agreement_type ?? '—'}</td>
                       <td className="num">{fmtMoney(a.total_amount)}</td><td className="num">{a.installments ?? '—'}</td>
+                      <td className="small">{a.ahcollid ? <>{a.ahcollid.toUpperCase() === 'LEALCO' ? 'ASSESSORIA (DIRETO)' : 'INDIRETO'} <span className="muted">({a.ahcollid}, {a.fonte})</span></> : <span className="muted">não informado nos arquivos</span>}</td>
                       <td><MapBadge map={AGREEMENT_STATUS} value={a.status} />{a.broken_at && <span className="small muted"> em {fmtDate(a.broken_at)}</span>}</td></tr>
                   ))}</tbody>
                 </table>

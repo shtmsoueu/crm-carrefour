@@ -58,7 +58,7 @@ export function CarteiraPage() {
         </label>
         <label className="field">Origem
           <select value={f.origem} onChange={(e) => set({ origem: e.target.value })}>
-            <option value="">Todas</option><option>ASSESSORIA (DIRETO)</option><option>INDIRETO</option><option value={VAZIO}>Não identificada</option>
+            <option value="">Todas</option><option>ASSESSORIA (DIRETO)</option><option>INDIRETO</option><option value={VAZIO}>Sem acordo identificado</option>
           </select>
         </label>
         <label className="field">Ranking
@@ -86,7 +86,7 @@ export function CarteiraPage() {
           <div>
             Saldo de risco calculado com <b className="code">{regras.data.settings.saldoCampo}</b>
             {regras.data.settings.saldoCampo === 'DMAMTDLQ' ? ' ("Valor Risco Salvo (Saldo Principal)", conforme o layout do REPASSE)' : ' (Saldo Devedor Contábil)'}.
-            {' '}Dias de atraso: <b className="code">U1DAYSGER02</b>. Produto pelo código <b className="code">U1PRODUTO</b>. Origem pelo <b className="code">AHCOLLID</b> do acordo mais recente da conta.
+            {' '}Dias de atraso: <b className="code">U1DAYSGER02</b>. Produto pelo código <b className="code">U1PRODUTO</b>. Origem (complementar) pelo <b className="code">AHCOLLID</b> do acordo da conta, localizado pelo AHID em qualquer arquivo que traga a coluna.
             {can('ADMIN') && (
               <span> Alterar saldo para{' '}
                 <button className="btn sm" onClick={() => changeSaldo(regras.data.settings.saldoCampo === 'DMAMTDLQ' ? 'DMCURBAL' : 'DMAMTDLQ')}>
@@ -120,14 +120,14 @@ export function CarteiraPage() {
               <h2>Origem (AHCOLLID)</h2>
               <ul className="kpi-list">
                 {['ASSESSORIA (DIRETO)', 'INDIRETO', VAZIO].map((k) => (
-                  <li key={k}>{k === VAZIO ? 'Não identificada (sem acordo)' : k} <b>{fmtInt(s.porOrigem[k]?.contas ?? 0)}</b></li>
+                  <li key={k}>{k === VAZIO ? 'Sem acordo identificado' : k} <b>{fmtInt(s.porOrigem[k]?.contas ?? 0)}</b></li>
                 ))}
               </ul>
             </div>
             <div className={`kpi-group ${Object.keys(s.flags).length ? 'alert' : ''}`}>
-              <h2>Para validação</h2>
+              <h2>Inconsistências</h2>
               <div className="kpi-lead">{fmtInt(Object.values(s.flags as Record<string, { contas: number }>).reduce((a, b) => a + b.contas, 0))}</div>
-              <div className="kpi-lead-label">alertas de regra</div>
+              <div className="kpi-lead-label">contas com dados fora das regras</div>
             </div>
           </section>
 
@@ -150,13 +150,14 @@ export function CarteiraPage() {
                     const tot = Object.values(row as Record<string, { contas: number; saldo: number }>).reduce((a, b) => ({ contas: a.contas + b.contas, saldo: a.saldo + b.saldo }), { contas: 0, saldo: 0 });
                     return (
                       <tr key={r}>
-                        <td className="nowrap"><b>{r === VAZIO ? 'Sem ranking' : r}</b>{r === 'G1 – MENOR MIL' && <div className="small" style={{ color: 'var(--warn)' }}>conflito entre regras 3 e 5</div>}</td>
+                        <td className="nowrap"><b>{r === VAZIO ? 'Sem ranking' : r}</b>{r === 'G1 – MENOR MIL' && (s.matriz[r] ? <div className="small" style={{ color: 'var(--warn)' }}>conflito entre regras 3 e 5</div> : null)}</td>
                         {faixas.map((x) => {
                           const c = cell(r, x.codigo);
-                          const invalid = x.grupo !== r.slice(0, 2) && r !== VAZIO;
+                          // Combinações inexistentes pelas regras: faixa de outro grupo, e MENOR MIL no G1 (regra 5).
+                          const invalid = (x.grupo !== r.slice(0, 2) && r !== VAZIO) || r === 'G1 – MENOR MIL';
                           return (
                             <td key={x.codigo} className="num" style={invalid ? { background: 'var(--surface-sunk)' } : undefined}>
-                              {c ? <button className="btn ghost sm" style={{ padding: 0, height: 'auto' }} onClick={() => set({ ranking: r, faixa: x.codigo })}>{fmtInt(c.contas)}</button> : ''}
+                              {c ? <button className="btn ghost sm" style={{ padding: 0, height: 'auto' }} onClick={() => set({ ranking: r, faixa: x.codigo })}>{fmtInt(c.contas)}</button> : invalid || r === VAZIO ? '' : <span className="muted">0</span>}
                             </td>
                           );
                         })}
@@ -173,9 +174,9 @@ export function CarteiraPage() {
 
           <div className="grid-2">
             <section className="panel">
-              <div className="panel-head"><div><h2>Situações não contempladas pelas regras</h2><p>Precisam de definição antes de qualquer classificação.</p></div></div>
+              <div className="panel-head"><div><h2>Inconsistências com as regras</h2><p>Somente contas cujos dados efetivamente contrariam ou não se enquadram nas regras.</p></div></div>
               <div className="panel-body">
-                {Object.keys(s.flags).length === 0 ? <p className="muted">Nenhum alerta neste escopo.</p> : (
+                {Object.keys(s.flags).length === 0 ? <p className="muted">Nenhuma inconsistência com as regras neste escopo. Categorias sem registros no dia aparecem com zero na distribuição.</p> : (
                   <ul className="hbars">
                     {Object.entries(s.flags as Record<string, { label: string; contas: number }>).sort((a, b) => b[1].contas - a[1].contas).map(([k, v]) => (
                       <li key={k} style={{ gridTemplateColumns: '1fr 64px' }}>
@@ -206,7 +207,7 @@ export function CarteiraPage() {
               <table className="data">
                 <thead><tr><th>Origem</th><th className="num">Contas</th><th className="num">Linhas de comissão</th><th className="num">Valor recebido</th><th className="num">Remuneração devida (bruto)</th></tr></thead>
                 <tbody>{Object.entries(s.comissaoPorOrigem as Record<string, any>).map(([k, v]) => (
-                  <tr key={k}><td>{k === VAZIO ? 'Não identificada (sem acordo)' : k}</td><td className="num">{fmtInt(v.contas)}</td><td className="num">{fmtInt(v.linhas)}</td><td className="num">{fmtMoney(v.valor_recebido)}</td><td className="num">{fmtInt(v.remuneracao_bruta)}</td></tr>
+                  <tr key={k}><td>{k === VAZIO ? 'Sem acordo identificado' : k}</td><td className="num">{fmtInt(v.contas)}</td><td className="num">{fmtInt(v.linhas)}</td><td className="num">{fmtMoney(v.valor_recebido)}</td><td className="num">{fmtInt(v.remuneracao_bruta)}</td></tr>
                 ))}</tbody>
               </table>
               {Object.keys(s.comissaoPorOrigem).length === 0 && <div className="empty">Nenhuma conta com comissão neste escopo.</div>}
@@ -227,7 +228,7 @@ export function CarteiraPage() {
                     <td className="num">{p.saldo_risco === null ? '—' : fmtMoney(p.saldo_risco)}</td>
                     <td className="small nowrap">{p.ranking ?? '—'}</td>
                     <td className="small">{p.faixa_codigo ? `F${p.faixa_codigo}` : '—'}</td>
-                    <td className="small">{p.origem ?? '—'}{p.origem_ahcollid && <div className="muted">{p.origem_ahcollid}</div>}</td>
+                    <td className="small">{p.origem ?? <span className="muted">sem acordo</span>}{p.origem_ahcollid && <div className="muted">{p.origem_ahcollid}</div>}</td>
                     <td className="small code">{p.acordo_id ?? '—'}</td>
                     <td className="num">{p.parcelas ?? '—'}</td>
                     <td className="num">{p.comissao_linhas ? fmtMoney(p.comissao_valor_recebido) : '—'}</td>
