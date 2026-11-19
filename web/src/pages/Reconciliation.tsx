@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { api, exportUrl, qs } from '../api';
 import { useAuth } from '../auth';
-import { ExportButtons, Loading, MapBadge, Notice, Pager, useLoad, useToast } from '../components/ui';
+import { ExportButtons, Loading, MapBadge, Notice, Pager, useLoad, useToast, titulo } from '../components/ui';
 import { FILE_TYPE_LABELS, fmtDate, fmtDateTime, fmtInt, RESULT_LABELS } from '../format';
 
 export function ReconciliationPage() {
@@ -45,7 +45,7 @@ export function ReconciliationPage() {
     <div className="stack">
       <div className="page-head">
         <div>
-          <h1>Batimentos</h1>
+          <h1>{titulo('Batimentos')}</h1>
           <p>Resultado individual por registro, com origem, destino, chave utilizada e motivo. Os fluxos são recalculados automaticamente a cada confirmação de arquivo.</p>
         </div>
         {can('OPERADOR') && <button className="btn primary" disabled={!!running} onClick={() => runFlow()}>{running === 'ALL' ? 'Executando…' : 'Executar todos os batimentos'}</button>}

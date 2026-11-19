@@ -2,7 +2,7 @@ import { useRef, useState, type DragEvent } from 'react';
 import { Link } from 'react-router-dom';
 import { api, ApiError } from '../api';
 import { useAuth } from '../auth';
-import { MapBadge, Notice, useLoad } from '../components/ui';
+import { MapBadge, Notice, useLoad, titulo } from '../components/ui';
 import { FILE_TYPE_LABELS, fmtBytes, fmtDateTime, fmtInt, IMPORT_STATUS } from '../format';
 
 interface Item { file: File; type: string; state: 'fila' | 'enviando' | 'ok' | 'erro'; message?: string; importId?: number; status?: string; records?: number; rejected?: number }
@@ -60,7 +60,7 @@ export function ImportPage() {
     <div className="stack">
       <div className="page-head">
         <div>
-          <h1>Importar arquivos</h1>
+          <h1>{titulo('Importar arquivos')}</h1>
           <p>Cada arquivo é identificado pela nomenclatura oficial do De-Para e interpretado com o seu próprio layout. Nada é gravado na base até você conferir a pré-visualização e confirmar.</p>
         </div>
       </div>

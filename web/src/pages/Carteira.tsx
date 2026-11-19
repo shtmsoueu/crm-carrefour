@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { api, exportUrl, qs } from '../api';
 import { useAuth } from '../auth';
-import { Badge, ExportButtons, Loading, Notice, Pager, useLoad, useToast } from '../components/ui';
+import { Badge, ExportButtons, Loading, Notice, Pager, useLoad, useToast, titulo } from '../components/ui';
 import { CONTRACT_STATUS, fmtInt, fmtMoney } from '../format';
 import { MapBadge } from '../components/ui';
 
@@ -40,7 +40,7 @@ export function CarteiraPage() {
     <div className="stack">
       <div className="page-head">
         <div>
-          <h1>Carteira classificada</h1>
+          <h1>{titulo('Carteira classificada')}</h1>
           <p>Cada conta com produto, origem, grupo, ranking e faixa de atraso, calculados a partir dos arquivos importados. Situações que as regras não cobrem ficam sinalizadas, sem classificação presumida.</p>
         </div>
         <ExportButtons href={(fmt) => exportUrl('/carteira', f, fmt)} />

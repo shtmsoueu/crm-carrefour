@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { api } from '../api';
 import { useAuth } from '../auth';
-import { Notice, useToast } from '../components/ui';
+import { Notice, useToast, titulo } from '../components/ui';
 
 export function SettingsPage() {
   const { can } = useAuth();
@@ -24,7 +24,7 @@ export function SettingsPage() {
   };
   return (
     <div className="stack">
-      <div className="page-head"><div><h1>Configurações</h1></div></div>
+      <div className="page-head"><div><h1>{titulo('Configurações')}</h1></div></div>
       <section className="panel">
         <div className="panel-head"><div><h2>Arquivos de rejeição de campanha</h2>
           <p>O De-Para informa que estes arquivos não possuem layout e contêm somente o contrato e o motivo da rejeição. Defina como extrair esses dados quando a estrutura for confirmada com o banco. Até lá, as linhas são armazenadas integralmente e o batimento de campanhas fica pendente de configuração.</p></div></div>

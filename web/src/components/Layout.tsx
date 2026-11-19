@@ -24,7 +24,7 @@ export function Layout() {
     <div className="shell">
       <aside className={`sidebar ${open ? 'open' : ''}`} aria-label="Menu principal">
         <div className="brand">
-          <strong>Batimento Carrefour</strong>
+          <strong><span className="t-leve">Batimento</span> Carrefour</strong>
           <span>Gestão da carteira e conciliação</span>
         </div>
         <nav className="nav">

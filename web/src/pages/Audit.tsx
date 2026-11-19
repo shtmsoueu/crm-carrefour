@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { api, qs } from '../api';
-import { Loading, Notice, Pager, useLoad } from '../components/ui';
+import { Loading, Notice, Pager, useLoad, titulo } from '../components/ui';
 import { fmtDateTime } from '../format';
 
 export function AuditPage() {
@@ -10,7 +10,7 @@ export function AuditPage() {
   const set = (k: keyof typeof f) => (e: { target: { value: string } }) => { setPage(1); setF({ ...f, [k]: e.target.value }); };
   return (
     <div className="stack">
-      <div className="page-head"><div><h1>Auditoria</h1><p>Registro de todas as operações: acessos, importações, confirmações, cancelamentos, reprocessamentos, batimentos, exportações e tratamentos de pendência.</p></div></div>
+      <div className="page-head"><div><h1>{titulo('Auditoria')}</h1><p>Registro de todas as operações: acessos, importações, confirmações, cancelamentos, reprocessamentos, batimentos, exportações e tratamentos de pendência.</p></div></div>
       <div className="filters">
         <label className="field">Ação<select value={f.action} onChange={set('action')}><option value="">Todas</option>{data?.actions?.map((a: string) => <option key={a}>{a}</option>)}</select></label>
         <label className="field">Usuário<input value={f.user} onChange={set('user')} /></label>

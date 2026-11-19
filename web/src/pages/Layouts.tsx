@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Badge, Loading, Notice } from '../components/ui';
+import { Badge, Loading, Notice, titulo } from '../components/ui';
 import { getLayouts, type LayoutDef, type RecordDef } from '../layouts';
 
 const NOTE_TONE: Record<string, string> = { CORRECAO: 'warn', DIVERGENCIA_ARQUIVO_REAL: 'origin', LIMITACAO: 'bad', INFORMACAO: 'info' };
@@ -37,7 +37,7 @@ export function LayoutsPage() {
     <div className="stack">
       <div className="page-head">
         <div>
-          <h1>Dicionário de layouts</h1>
+          <h1>{titulo('Dicionário de layouts')}</h1>
           <p>Especificação técnica usada por cada importador, construída a partir das planilhas oficiais. Correções e divergências observadas nas cargas reais estão registradas em cada layout.</p>
         </div>
         <label className="field">Layout

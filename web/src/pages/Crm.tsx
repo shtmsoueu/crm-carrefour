@@ -2,7 +2,7 @@ import { Fragment, useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { api, exportUrl, fileForm, qs } from '../api';
 import { useAuth } from '../auth';
-import { Badge, Empty, ExportButtons, Loading, Notice, Pager, useLoad, useToast } from '../components/ui';
+import { Badge, Empty, ExportButtons, Loading, Notice, Pager, useLoad, useToast, titulo } from '../components/ui';
 import { fmtDateTime, fmtInt, fmtMoney } from '../format';
 
 interface Attr { key: string; label: string; kind: string; source: string }
@@ -270,7 +270,7 @@ export function CrmPage() {
     <div className="stack">
       <div className="page-head">
         <div>
-          <h1>Conciliação com o CRM</h1>
+          <h1>{titulo('Conciliação com o CRM')}</h1>
           <p>Confronta 100% das contas da base original (arquivos do banco) com a exportação do CRM oficial. O CRM nunca é alterado: o sistema apenas lê a exportação.</p>
         </div>
       </div>

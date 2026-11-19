@@ -1,0 +1,70 @@
+/* Identidade visual · Funil Daily Carrefour
+   Tokens de cor, tipografia, espaçamento e raio usados nos quadros do Daily e do Hora a hora.
+   Fonte: Roboto (Google Fonts) — https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap */
+
+:root {
+  /* Cores · marca */
+  --cor-azul-60: #004E9F;   /* cor principal: faixa do topo, card de destaque, linha do rodapé */
+  --cor-vermelho: #E3000D;  /* destaque: barra e número de acordos, selo do topo */
+  --cor-azul-70: #00387B;   /* azul para texto, números de destaque, barra de CPCA */
+  --cor-azul-20: #CCDCEC;   /* barras intermediárias do funil, bordas de cards azuis */
+  --cor-azul-10: #E6EDF5;   /* fundo de card de resumo, card "soft", linha de total */
+
+  /* Cores · neutros */
+  --cor-branco: #FFFFFF;    /* fundo da página, texto sobre azul */
+  --cor-cinza-10: #F5F7F9;  /* fundo de cards e linhas alternadas */
+  --cor-cinza-20: #EFF2F5;  /* cabeçalho de tabelas */
+  --cor-cinza-30: #E6EAEE;  /* bordas, divisórias, barra da primeira etapa do funil */
+
+  /* Cores · texto */
+  --texto-principal: #000000;
+  --texto-secundario: #3D3D3D;  /* rótulos, percentuais de apoio, variação negativa */
+  --texto-terciario: #5C5C5C;   /* notas, legendas de cálculo */
+  --texto-sobre-azul: #FFFFFF;
+  --texto-destaque: #E3000D;
+
+  /* Semântica */
+  --variacao-positiva: #00387B; /* ▲ */
+  --variacao-negativa: #3D3D3D; /* ▼ */
+
+  /* Tipografia */
+  --fonte: "Roboto", Arial, sans-serif;
+  --peso-leve: 300;      /* primeira palavra de títulos ("Funil", "Totais") */
+  --peso-regular: 400;
+  --peso-medio: 500;     /* rótulos de tabela, números comuns */
+  --peso-negrito: 700;   /* segunda palavra de títulos, números de destaque */
+
+  /* Escala tipográfica (px) · quadro completo 1080 px de largura */
+  --fs-hero: 88px;        /* "Funil / Daily" no topo */
+  --fs-titulo-secao: 32px;
+  --fs-kpi: 30px;
+  --fs-kpi-valor-monetario: 25px;
+  --fs-percentual-funil: 28px;
+  --fs-subtitulo: 28px;   /* "Novembro/2026 · até 16/11" */
+  --fs-corpo: 17px;
+  --fs-tabela: 15px;
+  --fs-rotulo: 14px;
+  --fs-nota: 13px;
+
+  /* Escala tipográfica (px) · slides de PNG 1080 × 1350 */
+  --fs-png-titulo: 52px;
+  --fs-png-secao: 40px;
+  --fs-png-kpi: 48px;
+  --fs-png-percentual: 44px;
+  --fs-png-corpo: 24px;
+  --fs-png-nota: 20px;
+
+  /* Raios */
+  --raio-grande: 32px;   /* faixa do topo, blocos de funil */
+  --raio-medio: 24px;    /* cards de KPI, tabelas, cards de resumo */
+  --raio-pequeno: 16px;  /* barras do funil, selos, chips */
+
+  /* Espaçamento */
+  --margem-quadro: 48px;      /* quadro completo */
+  --margem-png: 56px;         /* slides de PNG */
+  --espaco-secoes: 32px;
+  --espaco-grade: 16px;       /* entre cards */
+  --espaco-grade-png: 20px;
+  --padding-card: 24px 20px;
+  --padding-topo: 48px 56px;
+}

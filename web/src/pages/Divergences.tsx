@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { api, exportUrl, qs } from '../api';
 import { useAuth } from '../auth';
-import { ExportButtons, Loading, MapBadge, Modal, Notice, Pager, useLoad, useToast } from '../components/ui';
+import { ExportButtons, Loading, MapBadge, Modal, Notice, Pager, useLoad, useToast, titulo } from '../components/ui';
 import { DIV_STATUS, fmtDateTime, fmtInt } from '../format';
 import { CATEGORY } from './Dashboard';
 
@@ -54,7 +54,7 @@ export function DivergencesPage() {
     <div className="stack">
       <div className="page-head">
         <div>
-          <h1>Pendências de batimento</h1>
+          <h1>{titulo('Pendências de batimento')}</h1>
           <p>Ocorrências identificadas na importação e nos batimentos. Uma pendência que deixa de ser detectada é encerrada automaticamente; se voltar a ocorrer, é reaberta.</p>
         </div>
         <ExportButtons href={(fmt) => exportUrl('/divergences', params, fmt)} />

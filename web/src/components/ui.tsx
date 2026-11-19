@@ -97,3 +97,15 @@ export function useToast() {
   const node = msg ? <div className="toast"><Notice tone={msg.tone}>{msg.text}</Notice></div> : null;
   return { show, node };
 }
+
+/** Padrão da identidade visual: primeira palavra em peso leve, restante em negrito. */
+export function titulo(text: string) {
+  const i = text.indexOf(' ');
+  if (i < 0) return text;
+  return (
+    <>
+      <span className="t-leve">{text.slice(0, i)}</span>
+      {text.slice(i)}
+    </>
+  );
+}

@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { api } from '../api';
-import { Empty, Loading, MapBadge, Notice } from '../components/ui';
+import { Empty, Loading, MapBadge, Notice, titulo } from '../components/ui';
 import { AGREEMENT_STATUS, CONTRACT_STATUS, DIV_STATUS, fmtDate, fmtDateTime, fmtInt, fmtMoney, RESULT_LABELS } from '../format';
 import { CATEGORY } from './Dashboard';
 
@@ -68,7 +68,7 @@ export function ContractPage() {
     <div className="stack">
       <div className="page-head">
         <div>
-          <h1>Consulta de contrato</h1>
+          <h1>{titulo('Consulta de contrato')}</h1>
           <p>Linha do tempo completa do contrato a partir de todos os arquivos importados, com o resultado dos batimentos de cada evento.</p>
         </div>
       </div>

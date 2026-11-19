@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { api } from '../api';
 import { useAuth } from '../auth';
-import { Badge, Loading, Modal, Notice, useLoad, useToast } from '../components/ui';
+import { Badge, Loading, Modal, Notice, useLoad, useToast, titulo } from '../components/ui';
 import { fmtDateTime } from '../format';
 
 const ROLES = { ADMIN: 'Administrador', OPERADOR: 'Operador', CONSULTA: 'Consulta' } as const;
@@ -26,7 +26,7 @@ export function UsersPage() {
   return (
     <div className="stack">
       <div className="page-head">
-        <div><h1>Usuários</h1><p>Administrador: tudo, inclusive cancelar e reprocessar importações. Operador: importa, confirma, executa batimentos e trata pendências. Consulta: somente leitura.</p></div>
+        <div><h1>{titulo('Usuários')}</h1><p>Administrador: tudo, inclusive cancelar e reprocessar importações. Operador: importa, confirma, executa batimentos e trata pendências. Consulta: somente leitura.</p></div>
         <button className="btn primary" onClick={() => setForm({ username: '', name: '', role: 'OPERADOR', password: '' })}>Novo usuário</button>
       </div>
       {error && <Notice tone="bad">{error}</Notice>}

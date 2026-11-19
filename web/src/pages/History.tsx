@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { api, exportUrl, qs } from '../api';
-import { ExportButtons, Loading, MapBadge, Notice, Pager, useLoad } from '../components/ui';
+import { ExportButtons, Loading, MapBadge, Notice, Pager, useLoad, titulo } from '../components/ui';
 import { FILE_TYPE_LABELS, fmtDateTime, fmtInt, IMPORT_STATUS } from '../format';
 
 export function HistoryPage() {
@@ -14,7 +14,7 @@ export function HistoryPage() {
     <div className="stack">
       <div className="page-head">
         <div>
-          <h1>Histórico de importações</h1>
+          <h1>{titulo('Histórico de importações')}</h1>
           <p>Todos os arquivos recebidos, com o resultado do processamento e a rastreabilidade até o arquivo original.</p>
         </div>
         <ExportButtons href={(fmt) => exportUrl('/imports', f, fmt)} />

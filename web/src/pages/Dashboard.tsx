@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { api, qs } from '../api';
-import { Empty, Loading, Notice, useLoad } from '../components/ui';
+import { Empty, Loading, Notice, useLoad, titulo } from '../components/ui';
 import { FILE_TYPE_LABELS, fmtDate, fmtInt, fmtMoney, RESULT_LABELS } from '../format';
 
 interface Etapa {
@@ -79,7 +79,7 @@ export function DashboardPage() {
     <div className="stack">
       <div className="page-head">
         <div>
-          <h1>Painel da carteira</h1>
+          <h1>{titulo('Painel da carteira')}</h1>
           <p>Indicadores calculados exclusivamente a partir dos arquivos importados e confirmados.</p>
         </div>
       </div>
@@ -126,7 +126,7 @@ export function DashboardPage() {
                 <li title="CPF/CNPJ distintos (visão unique): uma pessoa pode ter vários contratos">Clientes únicos (CPF/CNPJ) <b>{fmtInt(k.clientes_unicos)}</b></li>
               </ul>
             </div>
-            <div className="kpi-group">
+            <div className="kpi-group destaque">
               <h2>Acordos</h2>
               <div className="kpi-lead">{fmtMoney(k.valor_negociado)}</div>
               <div className="kpi-lead-label">negociados em {fmtInt(k.acordos_realizados)} acordos</div>
